@@ -1,2 +1,83 @@
-# uprotocol-sdk-python
-uProtocol Python SDK
+image:https://github.com/eclipse-uprotocol/.github/raw/main/logo/uprotocol_logo.png[alt=uProtocol,640]
+
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=https://opensource.org/licenses/Apache-2.0]
+
+= Eclipse uProtocol Python SDK
+:toc:
+
+*_IMPORTANT NOTE:_ This project is under active development*
+
+== Overview
+
+The main object of this module is to enable constructing and deconstructing uProtocol CloudEvents.
+
+The core module contains functional factory methods for creating CloudEvents as well as functional factory methods that make it more intuitive to create URIs that are used to configure source and sink (destination) elements in the uProtocol CloudEvents.
+
+This module contains the data model structures as well as core functionality for building uProtocol CloudEvents and URIs for sink and source attributes.
+
+The SDKs are then used by the code generators to auto-populate service stubs with generated code that builds CloudEvents. For more information on auto-generating service stubs, please refer to http://github.com/eclipse-uprotocol/uprotocol[uProtocol Main Project]
+
+== Getting Started
+
+
+=== Requirements
+
+- Python 3.8 or above
+- pip
+
+=== Setup SDK local repository and install
+
+```
+$ git clone https://github.com/eclipse-uprotocol/uprotocol-sdk-python.git
+$ cd uprotocol-sdk-python
+$ pip install .
+
+```
+*This will install the uprotocol-sdk-python, making its classes and modules available for import in your python code.*
+
+=== UriFactory
+
+Matches the uProtocol URI Format. and is used to define source and sink (destination) attributes of uProtocol CloudEvents.
+The factory builds URIs.
+
+URI is used as a method to uniquely identify devices, services, and resources on the network.
+
+*An Uri is built from the following elements:*
+
+* *UAuthority* - represents the device and domain of the software, the deployment. You can specify local or remote options.
+* *UEntity* - The Software Entity defines the software name and version.
+* *UResource* - The resource of the software can be a service name, and instance in the service and the name of the protobuf IDL message.
+
+==== UAuthority
+
+An Authority consists of a device and a domain per uProtocol URI format.
+
+An Authority represents the deployment location of a specific Software Entity.
+
+==== UEntity - uE
+
+An Software Entity is a piece of software deployed somewhere on a device. The uE is used in the source and sink parts of communicating software.
+
+A uE that *publishes* events is a *Service* role.
+
+A uE that *consumes* events is an *Application* role.
+
+A uE may combine bother Service and Application roles.
+
+
+==== UResource
+
+A service API - defined in the uE - has Resources and Methods. Both of these are represented by the UResource class.
+
+An UResource is something that can be manipulated/controlled/exposed by a service. 
+
+Resources are unique when prepended with UAuthority that represents the device and Software Entity that represents the service.
+
+An Resource represents a resource from a Service such as "door" and an optional specific instance such as "front_left".
+In addition, it can optionally contain the name of the resource Message type, such as "Door". 
+
+The Message type matches the protobuf service IDL that defines structured data types. A message is a data structure type used to define data that is passed in events and rpc methods.
+
+=== CloudEventFactory
+Factory class that builds the various types of CloudEvents for uProtocol (publish, notification, request, response)
+

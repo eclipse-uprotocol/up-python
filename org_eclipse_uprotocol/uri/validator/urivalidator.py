@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
+
 # Copyright (c) 2023 General Motors GTO LLC
 
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -21,6 +21,7 @@ from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
 
 # -------------------------------------------------------------------------
 
+from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
 from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
 from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
 

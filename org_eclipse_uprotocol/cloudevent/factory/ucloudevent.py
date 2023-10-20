@@ -21,10 +21,8 @@
 
 # -------------------------------------------------------------------------
 
-import base64
 from datetime import datetime, timedelta
 
-from cloudevents.sdk.event import v1
 from cloudevents.sdk.event.v1 import Event
 from google.protobuf import any_pb2
 from google.protobuf.message import DecodeError

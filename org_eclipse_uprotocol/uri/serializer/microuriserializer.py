@@ -19,8 +19,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import io
 # -------------------------------------------------------------------------
+
+import io
 import ipaddress
 import socket
 from enum import Enum
@@ -32,18 +33,6 @@ from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
 from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
 from org_eclipse_uprotocol.uri.serializer.uriserializer import UriSerializer
 
-
-# class AddressType(Enum):
-#     LOCAL = 0
-#     IPV4 = 1
-#     IPV6 = 2
-#
-#     def __init__(self, value):
-#         self._value = value
-#
-#     @property
-#     def value(self):
-#         return self._value
 
 class AddressType(Enum):
     LOCAL = 0

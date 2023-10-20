@@ -19,17 +19,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# -------------------------------------------------------------------------
+
 import re
 
-# -------------------------------------------------------------------------
 from org_eclipse_uprotocol.uri.datamodel.uauthority import UAuthority
 from org_eclipse_uprotocol.uri.datamodel.uentity import UEntity
 from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
 from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
 from org_eclipse_uprotocol.uri.serializer.uriserializer import UriSerializer
-
-
-# Define the classes UUri, UAuthority, UEntity, and UResource with their respective methods and properties.
 
 
 class LongUriSerializer(UriSerializer):

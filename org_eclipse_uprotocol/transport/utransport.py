@@ -20,6 +20,7 @@
 # under the License.
 
 # -------------------------------------------------------------------------
+
 from abc import ABC, abstractmethod
 
 from org_eclipse_uprotocol.transport.datamodel.uattributes import UAttributes

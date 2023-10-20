@@ -20,6 +20,7 @@
 # under the License.
 
 # -------------------------------------------------------------------------
+
 from org_eclipse_uprotocol.uri.datamodel.uauthority import UAuthority
 from org_eclipse_uprotocol.uri.datamodel.uentity import UEntity
 from org_eclipse_uprotocol.uri.datamodel.uresource import UResource

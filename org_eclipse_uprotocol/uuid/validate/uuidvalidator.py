@@ -19,8 +19,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from collections import namedtuple
 # -------------------------------------------------------------------------
+
+from collections import namedtuple
 from enum import Enum
 
 from org_eclipse_uprotocol.uuid.factory import UUID

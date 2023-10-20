@@ -26,14 +26,7 @@ from google.protobuf.any_pb2 import Any
 
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributes
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventtype import UCloudEventType
-from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from org_eclipse_uprotocol.cloudevent.serialize.base64protobufserializer import Base64ProtobufSerializer
-from org_eclipse_uprotocol.transport.datamodel.upriority import UPriority
-from org_eclipse_uprotocol.uri.datamodel.uauthority import UAuthority
-from org_eclipse_uprotocol.uri.datamodel.uentity import UEntity
-from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
-from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from org_eclipse_uprotocol.uuid.factory.uuidfactory import Factories
 
 

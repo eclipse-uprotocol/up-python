@@ -19,9 +19,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# -------------------------------------------------------------------------
+
 from abc import ABC, abstractmethod
 
-# -------------------------------------------------------------------------
 from google.rpc.code_pb2 import Code
 from google.rpc.status_pb2 import Status
 

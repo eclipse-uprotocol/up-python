@@ -23,11 +23,11 @@
 
 from concurrent.futures import Future
 
+from google.protobuf import any_pb2
 from google.rpc.code_pb2 import Code
 from google.rpc.status_pb2 import Status
 
 from org_eclipse_uprotocol.rpc.rpcresult import RpcResult
-from org_eclipse_uprotocol.transport.datamodel.upayload import UPayload
 
 
 class RpcMapper:
@@ -41,7 +41,8 @@ class RpcMapper:
                 raise RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
 
             try:
-                any_message = UPayload.get_any_from_payload_data(payload.data)
+                any_message = any_pb2.Any()
+                any_message.ParseFromString(payload.data)
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     return RpcMapper.unpack_payload(any_message, expected_cls)
             except Exception as e:
@@ -68,7 +69,8 @@ class RpcMapper:
                 raise RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
 
             try:
-                any_message = UPayload.get_any_from_payload_data(payload.data)
+                any_message = any_pb2.Any()
+                any_message.ParseFromString(payload.data)
 
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     if expected_cls == Status:

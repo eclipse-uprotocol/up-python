@@ -25,25 +25,27 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional
 
+import google.rpc.code_pb2
+
 
 class Code(Enum):
-    OK = 0
-    CANCELLED = 1
-    UNKNOWN = 2
-    INVALID_ARGUMENT = 3
-    DEADLINE_EXCEEDED = 4
-    NOT_FOUND = 5
-    ALREADY_EXISTS = 6
-    PERMISSION_DENIED = 7
-    UNAUTHENTICATED = 16
-    RESOURCE_EXHAUSTED = 8
-    FAILED_PRECONDITION = 9
-    ABORTED = 10
-    OUT_OF_RANGE = 11
-    UNIMPLEMENTED = 12
-    INTERNAL = 13
-    UNAVAILABLE = 14
-    DATA_LOSS = 15
+    OK = google.rpc.code_pb2.OK
+    CANCELLED = google.rpc.code_pb2.CANCELLED
+    UNKNOWN = google.rpc.code_pb2.UNKNOWN
+    INVALID_ARGUMENT = google.rpc.code_pb2.INVALID_ARGUMENT
+    DEADLINE_EXCEEDED = google.rpc.code_pb2.DEADLINE_EXCEEDED
+    NOT_FOUND = google.rpc.code_pb2.NOT_FOUND
+    ALREADY_EXISTS = google.rpc.code_pb2.ALREADY_EXISTS
+    PERMISSION_DENIED = google.rpc.code_pb2.PERMISSION_DENIED
+    UNAUTHENTICATED = google.rpc.code_pb2.UNAUTHENTICATED
+    RESOURCE_EXHAUSTED = google.rpc.code_pb2.RESOURCE_EXHAUSTED
+    FAILED_PRECONDITION = google.rpc.code_pb2.FAILED_PRECONDITION
+    ABORTED = google.rpc.code_pb2.ABORTED
+    OUT_OF_RANGE =google.rpc.code_pb2.OUT_OF_RANGE
+    UNIMPLEMENTED = google.rpc.code_pb2.UNIMPLEMENTED
+    INTERNAL = google.rpc.code_pb2.INTERNAL
+    UNAVAILABLE = google.rpc.code_pb2.UNAVAILABLE
+    DATA_LOSS = google.rpc.code_pb2.DATA_LOSS
     UNSPECIFIED = -1
 
 

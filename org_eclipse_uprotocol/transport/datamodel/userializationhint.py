@@ -40,6 +40,9 @@ class USerializationHint(Enum):
     # Raw binary data that has not been serialized
     RAW = (4, "application/octet-stream")
 
+    # Text Format
+    TEXT = (5, "text/plain")
+
     def __init__(self, hint_number: int, mime_type: str):
         self.hint_number = hint_number
         self.mime_type = mime_type
@@ -51,15 +54,30 @@ class USerializationHint(Enum):
         return self.mime_type
 
     @classmethod
-    def from_int(cls, value: int):
-        for item in cls:
-            if item.value[0] == value:
-                return item
+    def from_hint_number(cls, value: int):
+        for hint in cls:
+            if hint.get_hint_number() == value:
+                return hint
         return None
 
     @classmethod
-    def from_string(cls, mime_type: str):
-        for item in cls:
-            if item.value[1] == mime_type:
-                return item
+    def from_mime_type(cls, value: str):
+        for hint in cls:
+            if hint.get_mime_type() == value:
+                return hint
         return None
+
+
+# Example usage
+if __name__ == "__main__":
+    hint = USerializationHint.PROTOBUF
+    print("Hint Number:", hint.get_hint_number())
+    print("MIME Type:", hint.get_mime_type())
+
+    hint_by_number = USerializationHint.from_hint_number(3)
+    if hint_by_number:
+        print("Hint found by number:", hint_by_number.name)
+
+    hint_by_mime_type = USerializationHint.from_mime_type("application/json")
+    if hint_by_mime_type:
+        print("Hint found by MIME type:", hint_by_mime_type.name)

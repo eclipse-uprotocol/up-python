@@ -23,6 +23,7 @@
 
 import time
 from abc import abstractmethod
+from datetime import datetime
 from enum import Enum
 
 from org_eclipse_uprotocol.transport.datamodel.uattributes import UAttributes
@@ -47,13 +48,10 @@ class UAttributesValidator:
     @staticmethod
     def validate_id(attr: UAttributes) -> UStatus:
         attr_id = attr.id
-        try:
-            if UUIDUtils.isuuid(attr_id):
-                return UStatus.ok()
-            else:
-                return UStatus.failed_with_msg_and_code(f"Invalid UUID [{attr_id}]", Code.INVALID_ARGUMENT)
-        except Exception as e:
-            return UStatus.failed_with_msg_and_code(f"Invalid UUID [{attr_id}] [{str(e)}]", Code.INVALID_ARGUMENT)
+        if UUIDUtils.isuuid(attr_id):
+            return UStatus.ok()
+        else:
+            return UStatus.failed_with_msg_and_code("Invalid UUID [{}]".format(attr_id), Code.INVALID_ARGUMENT)
 
     @staticmethod
     def validate_priority(attr: UAttributes) -> UStatus:
@@ -107,24 +105,23 @@ class UAttributesValidator:
         else:
             return UStatus.ok()
 
-    def is_expired(u_attributes: UAttributes):
-        try:
-            maybe_ttl = u_attributes.ttl
-            maybe_time = UUIDUtils.getTime(u_attributes.id)
+    def is_expired(self, u_attributes: UAttributes):
+        maybe_ttl = u_attributes.ttl
+        maybe_time = UUIDUtils.getTime(u_attributes.id)
 
-            if maybe_time is None:
-                return UStatus.failed_with_msg_and_code("Invalid Time", Code.INVALID_ARGUMENT)
+        if maybe_time is None:
+            return UStatus.failed_with_msg_and_code("Invalid Time", Code.INVALID_ARGUMENT)
 
-            if maybe_ttl is None or maybe_ttl <= 0:
-                return UStatus.ok_with_ack_id("Not Expired")
-
-            delta = time.time() * 1000 - maybe_time
-
-            return UStatus.failed_with_msg_and_code("Payload is expired",
-                                                    Code.DEADLINE_EXCEEDED) if delta >= maybe_ttl else UStatus.ok_with_ack_id(
-                "Not Expired")
-        except Exception:
+        if maybe_ttl is None:
             return UStatus.ok_with_ack_id("Not Expired")
+
+        ttl = maybe_ttl
+        if ttl <= 0:
+            return UStatus.ok_with_ack_id("Not Expired")
+        delta = int((datetime.now() - maybe_time).total_seconds() * 1000)
+        return UStatus.failed_with_msg_and_code("Payload is expired",
+                                                Code.DEADLINE_EXCEEDED) if delta >= ttl else UStatus.ok_with_ack_id(
+            "Not Expired")
 
 
 class Publish(UAttributesValidator):

@@ -57,15 +57,12 @@ class MicroUriSerializer(UriSerializer):
     UP_VERSION = 0x1
 
     def serialize(self, uri: UUri) -> bytes:
-        if uri is None or uri.is_empty():
+        if uri is None or uri.is_empty() or not uri.is_micro_form():
             return bytearray()
 
         maybe_address = uri.get_u_authority().address
         maybe_ue_id = uri.get_u_entity().id
         maybe_uresource_id = uri.get_u_resource().id
-
-        if maybe_uresource_id is None or maybe_ue_id is None:
-            return bytearray()
 
         os = io.BytesIO()
         os.write(bytes([self.UP_VERSION]))

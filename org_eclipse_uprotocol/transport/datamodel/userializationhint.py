@@ -20,6 +20,7 @@
 # under the License.
 
 # -------------------------------------------------------------------------
+
 from enum import Enum, unique
 
 
@@ -55,6 +56,11 @@ class USerializationHint(Enum):
 
     @classmethod
     def from_hint_number(cls, value: int):
+        """
+        Find the serialization hint matching the mimeType value. Mind you, it might not exist.<br><br>
+        @param value:numeric hint value.
+        @return:Returns the USerializationHint matching the numeric value.
+        """
         for hint in cls:
             if hint.get_hint_number() == value:
                 return hint
@@ -62,22 +68,12 @@ class USerializationHint(Enum):
 
     @classmethod
     def from_mime_type(cls, value: str):
+        """
+        Find the serialization hint  matching the String value. Mind you, it might not exist.<br><br>
+        @param value:String hint value.
+        @return:Returns the USerializationHint matching the String value.
+        """
         for hint in cls:
             if hint.get_mime_type() == value:
                 return hint
         return None
-
-
-# Example usage
-if __name__ == "__main__":
-    hint = USerializationHint.PROTOBUF
-    print("Hint Number:", hint.get_hint_number())
-    print("MIME Type:", hint.get_mime_type())
-
-    hint_by_number = USerializationHint.from_hint_number(3)
-    if hint_by_number:
-        print("Hint found by number:", hint_by_number.name)
-
-    hint_by_mime_type = USerializationHint.from_mime_type("application/json")
-    if hint_by_mime_type:
-        print("Hint found by MIME type:", hint_by_mime_type.name)

@@ -50,6 +50,11 @@ class UPriority(Enum):
 
     @classmethod
     def from_int(cls, value: int):
+        """
+         Find the Priority matching the numeric value. Mind you, it might not exist.<br><br>
+        @param value:numeric priority value.
+        @return:Returns the Priority matching the numeric value. Mind you, it might not exist.
+        """
         for item in cls:
             if item.value[1] == value:
                 return item
@@ -57,6 +62,11 @@ class UPriority(Enum):
 
     @classmethod
     def from_string(cls, value: str):
+        """
+        Find the Priority matching the QOS String value. Mind you, it might not exist.<br><br>
+        @param value:QOS String priority value.
+        @return:Returns the Priority matching the QOS String value. Mind you, it might not exist.
+        """
         for item in cls:
             if item.value[0] == value:
                 return item

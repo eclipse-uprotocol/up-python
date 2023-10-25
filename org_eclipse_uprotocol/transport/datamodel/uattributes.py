@@ -27,6 +27,7 @@ from org_eclipse_uprotocol.uuid.factory import UUID
 
 
 class UAttributesBuilder:
+
     def __init__(self, id: UUID, type: UMessageType, priority: UPriority):
         self.id = id
         self.type = type
@@ -68,11 +69,37 @@ class UAttributesBuilder:
 
 
 class UAttributes:
+    """
+     When sending data over uTransport the basic API for send uses a source topic and the UPayload as the
+     data.<br>Any other information about the message is placed in the UAttributes class.<br>The UAttributes class
+     holds the additional information along with business methods for understanding more about the actual message
+     sent. UAttributes is the class that defines the Payload. It is the place for configuring time to live,
+     priority, security tokens and more.<br>Each UAttributes class defines a different type of message payload. The
+     payload can represent a simple published payload with some state change, Payload representing an RPC request or
+     Payload representing an RPC response.
+    """
+
     def __init__(self, id: UUID, type: UMessageType, priority: UPriority, ttl: int, token: str, sink: UUri, plevel: int,
                  commstatus: int, reqid: UUID):
+        """
+        Construct the transport UAttributes object.<br><br>
+        @param id:Unique identifier for the message. Required.
+        @param type:Message type such as Publish a state change, RPC request or RPC response. Required.
+        @param priority:Message priority. Required.
+        @param ttl:Time to live in milliseconds.
+        @param token:Authorization token used for TAP.
+        @param sink:Explicit destination URI, used in notifications and RPC messages.
+        @param plevel:Permission Level.
+        @param commstatus:Communication Status, used to indicate platform communication errors that occurred during
+        delivery.
+        @param reqid: Request ID, used to indicate the id of the RPC request that matches this RPC response.
+        """
+
+        # Required Attributes
         self.id = id
         self.type = type
         self.priority = priority
+        # Optional Attributes
         self.ttl = ttl
         self.token = token
         self.sink = sink
@@ -82,13 +109,32 @@ class UAttributes:
 
     @staticmethod
     def empty():
+        """
+        Static factory method for creating an empty attributes object, to avoid working with null.<br><br>
+        @return: Returns an empty attributes that indicates that there are no added additional attributes to
+        configure.<br>  An empty UAttributes is not valid, in the same way null is not valid, this is because
+        UAttributes has 3 required values - id, type and priority.
+        """
         return UAttributes(None, None, None, None, None, None, None, None, None)
 
     @staticmethod
     def for_rpc_request(id: UUID, sink: UUri) -> UAttributesBuilder:
+        """
+        Static factory method for creating a base UAttributes for an RPC request.<br><br>
+        @param id:id Unique identifier for the RPC request message.
+        @param sink:UUri describing the exact RPC command.
+        @return:Returns a base UAttributes that can be used to build an RPC request.
+        """
         return UAttributesBuilder(id, UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE).with_sink(sink)
 
     @staticmethod
     def for_rpc_response(id: UUID, sink: UUri, reqid: UUID) -> UAttributesBuilder:
+        """
+        Static factory method for creating a base UAttributes for an RPC response.<br><br>
+        @param id:Unique identifier for the RPC response message.
+        @param sink:UUri describing where the response needs to go.
+        @param reqid:The UUID of the message that this response is responding to.
+        @return: Returns a base UAttributes that can be used to build an RPC response.
+        """
         return UAttributesBuilder(id, UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE).with_sink(sink).with_reqid(
             reqid)

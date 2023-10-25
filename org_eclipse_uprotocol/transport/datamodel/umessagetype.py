@@ -20,11 +20,16 @@
 # under the License.
 
 # -------------------------------------------------------------------------
+
 from enum import Enum, unique
 
 
 @unique
 class UMessageType(Enum):
+    """
+    uProtocol defines message types. Using the message type, validation can be performed to ensure transport validity
+    of the data in the UAttributes.
+    """
     PUBLISH = (0, "pub.v1")  # Publish or notification event
     REQUEST = (1, "req.v1")  # Request
     RESPONSE = (2, "res.v1")  # Response
@@ -41,6 +46,11 @@ class UMessageType(Enum):
 
     @classmethod
     def from_int(cls, value: int):
+        """
+        Find the Message type from a numeric value. Mind you, it might not exist.<br><br>
+        @param value:numeric message type.
+        @return:Returns the UMessageType matching the numeric value.
+        """
         for item in cls:
             if item.int_value == value:
                 return item
@@ -48,6 +58,11 @@ class UMessageType(Enum):
 
     @classmethod
     def from_string(cls, value: str):
+        """
+        Find the Message type from a string value. Mind you, it might not exist.
+        @param value:string message type.
+        @return:Returns the UMessageType matching the string value.
+        """
         for item in cls:
             if item.string_value == value:
                 return item

@@ -27,25 +27,49 @@ from org_eclipse_uprotocol.transport.datamodel.userializationhint import USerial
 
 
 class UPayload:
+    """
+    The UPayload contains the clean Payload information along with its raw serialized structure of a byte[].
+    """
     EMPTY = None
 
     def __init__(self, data: bytes, hint: Optional[USerializationHint] = None):
+        """
+        Create a UPayload.<br><br>
+        @param data:A byte array of the actual data.
+        @param hint:Hint regarding the bytes contained within the UPayload
+        """
         self.data = data if data is not None else bytes()
         self.hint = hint if hint is not None else USerializationHint.UNKNOWN
 
     def get_data(self) -> bytes:
+        """
+        The actual serialized or raw data, which can be deserialized or simply used as is.<br><br>
+        @return:Returns the actual serialized or raw data, which can be deserialized or simply used as is.
+        """
         return self.data
 
     def get_hint(self) -> USerializationHint:
+        """
+        The hint regarding the bytes contained within the UPayload.
+        @return:Returns the hint regarding the bytes contained within the UPayload.
+        """
         return self.hint
 
     @classmethod
     def empty(cls):
+        """
+
+        @return: Returns an empty representation of UPayload.
+        """
         if cls.EMPTY is None:
             cls.EMPTY = UPayload(bytes(), USerializationHint.UNKNOWN)
         return cls.EMPTY
 
     def is_empty(self):
+        """
+
+        @return:Returns true if the data in the UPayload is empty.
+        """
         return len(self.data) == 0
 
     def __eq__(self, other):

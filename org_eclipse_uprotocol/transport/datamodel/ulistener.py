@@ -29,13 +29,18 @@ from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
 
 
 class UListener(ABC):
+    """
+    For any implementation that defines some kind of callback or function that will be called to handle incoming
+    messages.
+    """
+
     @abstractmethod
     def on_receive(self, topic: UUri, payload: UPayload, attributes: UAttributes) -> UStatus:
         """
-        Method called to handle/process events.
-        :param topic: Topic the underlying source of the message.
-        :param payload: Payload of the message.
-        :param attributes: Transportation attributes.
-        :return: Returns an Ack every time a message is received and processed.
+        Method called to handle/process events.<br><br>
+        @param topic: Topic the underlying source of the message.
+        @param payload: Payload of the message.
+        @param attributes: Transportation attributes.
+        @return Returns an Ack every time a message is received and processed.
         """
         pass

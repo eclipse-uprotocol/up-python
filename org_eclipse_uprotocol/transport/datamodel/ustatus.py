@@ -29,6 +29,11 @@ import google.rpc.code_pb2
 
 
 class Code(Enum):
+    """
+     Enum to contain the status code that we map to google.rpc.Code.<br>Please refer to <a
+     href="https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto">code.proto</a>for
+     documentation on the codes listed below
+    """
     OK = google.rpc.code_pb2.OK
     CANCELLED = google.rpc.code_pb2.CANCELLED
     UNKNOWN = google.rpc.code_pb2.UNKNOWN
@@ -41,7 +46,7 @@ class Code(Enum):
     RESOURCE_EXHAUSTED = google.rpc.code_pb2.RESOURCE_EXHAUSTED
     FAILED_PRECONDITION = google.rpc.code_pb2.FAILED_PRECONDITION
     ABORTED = google.rpc.code_pb2.ABORTED
-    OUT_OF_RANGE =google.rpc.code_pb2.OUT_OF_RANGE
+    OUT_OF_RANGE = google.rpc.code_pb2.OUT_OF_RANGE
     UNIMPLEMENTED = google.rpc.code_pb2.UNIMPLEMENTED
     INTERNAL = google.rpc.code_pb2.INTERNAL
     UNAVAILABLE = google.rpc.code_pb2.UNAVAILABLE
@@ -50,6 +55,10 @@ class Code(Enum):
 
 
 class UStatus(ABC):
+    """
+    UProtocol general status for all operations.<br> A UStatus is generated using the static factory methods,
+    making is easy to quickly create UStatus objects.<br> Example: UStatus ok = UStatus.ok();
+    """
     OK = "ok"
     FAILED = "failed"
 
@@ -66,6 +75,10 @@ class UStatus(ABC):
         pass
 
     def isFailed(self) -> bool:
+        """
+        Return true if UStatus is a failure.<br><br>
+        @return:Returns true if the UStatus is failed.
+        """
         return not self.isSuccess()
 
     def __str__(self) -> str:
@@ -110,8 +123,15 @@ class UStatus(ABC):
 
 
 class OKStatus(UStatus):
+    """
+    A successful UStatus.
+    """
 
     def __init__(self, ack_id: str):
+        """
+         A successful status could contain an id for tracking purposes.
+        @param ack_id:
+        """
         self.ack_id = ack_id
 
     def isSuccess(self) -> bool:
@@ -125,6 +145,9 @@ class OKStatus(UStatus):
 
 
 class FailStatus(UStatus):
+    """
+    A failed UStatus.
+    """
 
     def __init__(self, fail_msg: str, code: Code):
         self.fail_msg = fail_msg

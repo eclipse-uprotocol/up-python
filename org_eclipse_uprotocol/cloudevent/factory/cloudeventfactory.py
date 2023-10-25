@@ -19,14 +19,13 @@
 # under the License.
 
 # -------------------------------------------------------------------------
-from cloudevents.sdk.event import v1
-from cloudevents.sdk.event.v1 import Event
+
+from cloudevents.http import CloudEvent
 from google.protobuf import empty_pb2
 from google.protobuf.any_pb2 import Any
 
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributes
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventtype import UCloudEventType
-from org_eclipse_uprotocol.cloudevent.serialize.base64protobufserializer import Base64ProtobufSerializer
 from org_eclipse_uprotocol.uuid.factory.uuidfactory import Factories
 
 
@@ -35,73 +34,64 @@ class CloudEventFactory:
 
     @staticmethod
     def request(application_uri_for_rpc: str, service_method_uri: str, request_id: str, proto_payload: Any,
-                attributes: UCloudEventAttributes) -> Event:
+                attributes: UCloudEventAttributes) -> CloudEvent:
         event_id = CloudEventFactory.generate_cloud_event_id()
-        event = CloudEventFactory.build_base_cloud_event(event_id, application_uri_for_rpc,
-                                                         Base64ProtobufSerializer.deserialize(
-                                                             proto_payload.SerializeToString()),
-                                                         proto_payload.DESCRIPTOR.full_name, attributes)
-        event.SetEventType(UCloudEventType.REQUEST.type())
-        ext = event.Get("Extensions")[0]
-        ext["sink"] = service_method_uri
-        ext["reqid"] = request_id
-        event.SetExtensions(ext)
-        return event
+        cloud_event = CloudEventFactory.build_base_cloud_event(event_id, application_uri_for_rpc,
+
+                                                               proto_payload.SerializeToString(),
+                                                               proto_payload.DESCRIPTOR.full_name, attributes,
+                                                               UCloudEventType.REQUEST.type())
+        cloud_event.__setitem__("sink", service_method_uri)
+        cloud_event.__setitem__("reqid", request_id)
+        return cloud_event
 
     @staticmethod
     def response(application_uri_for_rpc: str, service_method_uri: str, request_id: str, proto_payload: Any,
-                 attributes: UCloudEventAttributes) -> Event:
+                 attributes: UCloudEventAttributes) -> CloudEvent:
         event_id = CloudEventFactory.generate_cloud_event_id()
-        event = CloudEventFactory.build_base_cloud_event(event_id, service_method_uri,
-                                                         Base64ProtobufSerializer.deserialize(
-                                                             proto_payload.SerializeToString()),
-                                                         proto_payload.DESCRIPTOR.full_name, attributes)
-        event.SetEventType(UCloudEventType.RESPONSE.type())
-        ext = event.Get("Extensions")[0]
-        ext["sink"] = application_uri_for_rpc
-        ext["reqid"] = request_id
-        event.SetExtensions(ext)
+        cloud_event = CloudEventFactory.build_base_cloud_event(event_id, service_method_uri,
 
-        return event
+                                                               proto_payload.SerializeToString(),
+                                                               proto_payload.DESCRIPTOR.full_name, attributes,
+                                                               UCloudEventType.RESPONSE.type())
+        cloud_event.__setitem__("sink", application_uri_for_rpc)
+        cloud_event.__setitem__("reqid", request_id)
+        return cloud_event
 
     @staticmethod
     def failed_response(application_uri_for_rpc: str, service_method_uri: str, request_id: str,
-                        communication_status: int, attributes: UCloudEventAttributes) -> Event:
+                        communication_status: int, attributes: UCloudEventAttributes) -> CloudEvent:
         event_id = CloudEventFactory.generate_cloud_event_id()
         # Create an Any message packing an Empty message
         empty_proto_payload = Any()
         empty_proto_payload.Pack(empty_pb2.Empty())
-        event = CloudEventFactory.build_base_cloud_event(event_id, service_method_uri,
-                                                         Base64ProtobufSerializer.deserialize(
-                                                             empty_proto_payload.SerializeToString()),  # Empty payload
-                                                         "google.protobuf.Empty", attributes)
-        event.SetEventType(UCloudEventType.RESPONSE.type())
-        ext = event.Get("Extensions")[0]
-        ext["sink"] = application_uri_for_rpc
-        ext["reqid"] = request_id
-        ext["commstatus"] = communication_status
-        event.SetExtensions(ext)
+        cloud_event = CloudEventFactory.build_base_cloud_event(event_id, service_method_uri,
 
-        return event
+                                                               empty_proto_payload.SerializeToString(),  # Empty payload
+                                                               "google.protobuf.Empty", attributes,
+                                                               UCloudEventType.RESPONSE.type())
+        cloud_event.__setitem__("sink", application_uri_for_rpc)
+        cloud_event.__setitem__("reqid", request_id)
+        cloud_event.__setitem__("commstatus", communication_status)
+
+        return cloud_event
 
     @staticmethod
-    def publish(source: str, proto_payload: Any, attributes: UCloudEventAttributes) -> Event:
+    def publish(source: str, proto_payload: Any, attributes: UCloudEventAttributes) -> CloudEvent:
         event_id = CloudEventFactory.generate_cloud_event_id()
-        event = CloudEventFactory.build_base_cloud_event(event_id, source, Base64ProtobufSerializer.deserialize(
-            proto_payload.SerializeToString()), proto_payload.DESCRIPTOR.full_name, attributes)
-        event.SetEventType(UCloudEventType.PUBLISH.type())
-        return event
+        cloud_event = CloudEventFactory.build_base_cloud_event(event_id, source, proto_payload.SerializeToString(),
+                                                               proto_payload.DESCRIPTOR.full_name, attributes,
+                                                               UCloudEventType.PUBLISH.type())
+        return cloud_event
 
     @staticmethod
-    def notification(source: str, sink: str, proto_payload: Any, attributes: UCloudEventAttributes) -> Event:
+    def notification(source: str, sink: str, proto_payload: Any, attributes: UCloudEventAttributes) -> CloudEvent:
         event_id = CloudEventFactory.generate_cloud_event_id()
-        event = CloudEventFactory.build_base_cloud_event(event_id, source, Base64ProtobufSerializer.deserialize(
-            proto_payload.SerializeToString()), proto_payload.DESCRIPTOR.full_name, attributes)
-        event.SetEventType(UCloudEventType.PUBLISH.type())
-        ext = event.Get("Extensions")[0]
-        ext["sink"] = sink
-        event.SetExtensions(ext)
-        return event
+        cloud_event = CloudEventFactory.build_base_cloud_event(event_id, source, proto_payload.SerializeToString(),
+                                                               proto_payload.DESCRIPTOR.full_name, attributes,
+                                                               UCloudEventType.PUBLISH.type())
+        cloud_event.__setitem__("sink", sink)
+        return cloud_event
 
     @staticmethod
     def generate_cloud_event_id() -> str:
@@ -110,25 +100,11 @@ class CloudEventFactory:
         return str(uuid_inst)
 
     @staticmethod
-    def build_base_cloud_event(id: str, source: str, proto_payload_bytes: str, proto_payload_schema: str,
-                               attributes: UCloudEventAttributes) -> Event:
-        # Set extensions
-        extensions = {}
-        if attributes.ttl:
-            extensions["ttl"] = attributes.ttl
+    def build_base_cloud_event(id: str, source: str, proto_payload_bytes: bytes, proto_payload_schema: str,
+                               attributes: UCloudEventAttributes, type) -> CloudEvent:
+        json_attributes = {"ttl": attributes.ttl, "priority": attributes.priority, "hash": attributes.hash,
+                           "token": attributes.token, "id": id, "source": source, "type": type}
 
-        if attributes.priority:
-            extensions["priority"] = attributes.priority
+        cloud_event = CloudEvent(json_attributes, proto_payload_bytes)
 
-        if attributes.hash:
-            extensions["hash"] = attributes.hash
-
-        if attributes.token:
-            extensions["token"] = attributes.token
-
-        cloud_event = v1.Event()
-        cloud_event.SetEventID(id)
-        cloud_event.SetSource(source)
-        cloud_event.SetData(proto_payload_bytes)
-        cloud_event.SetExtensions(extensions)
         return cloud_event

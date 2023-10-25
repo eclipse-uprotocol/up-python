@@ -23,76 +23,74 @@
 
 from datetime import datetime, timedelta
 
-from cloudevents.sdk.event.v1 import Event
+from cloudevents.http import CloudEvent
 from google.protobuf import any_pb2
 from google.protobuf.message import DecodeError
 from google.rpc.code_pb2 import Code
 
-from org_eclipse_uprotocol.cloudevent.serialize.base64protobufserializer import Base64ProtobufSerializer
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
 
 
 class UCloudEvent:
     @staticmethod
-    def get_source(ce: Event) -> str:
-        return str(ce.source)
+    def get_source(ce: CloudEvent) -> str:
+        return UCloudEvent.extract_string_value_from_attributes("source", ce)
 
     @staticmethod
-    def get_sink(ce: Event) -> str:
-        return UCloudEvent.extract_string_value_from_extension("sink", ce)
+    def get_sink(ce: CloudEvent) -> str:
+        return UCloudEvent.extract_string_value_from_attributes("sink", ce)
 
     @staticmethod
-    def get_request_id(ce: Event) -> str:
-        return UCloudEvent.extract_string_value_from_extension("reqid", ce)
+    def get_request_id(ce: CloudEvent) -> str:
+        return UCloudEvent.extract_string_value_from_attributes("reqid", ce)
 
     @staticmethod
-    def get_hash(ce: Event) -> str:
-        return UCloudEvent.extract_string_value_from_extension("hash", ce)
+    def get_hash(ce: CloudEvent) -> str:
+        return UCloudEvent.extract_string_value_from_attributes("hash", ce)
 
     @staticmethod
-    def get_priority(ce: Event) -> str:
-        return UCloudEvent.extract_string_value_from_extension("priority", ce)
+    def get_priority(ce: CloudEvent) -> str:
+        return UCloudEvent.extract_string_value_from_attributes("priority", ce)
 
     @staticmethod
-    def get_ttl(ce: Event) -> int:
-        ttl_str = UCloudEvent.extract_string_value_from_extension("ttl", ce)
+    def get_ttl(ce: CloudEvent) -> int:
+        ttl_str = UCloudEvent.extract_string_value_from_attributes("ttl", ce)
         return int(ttl_str) if ttl_str is not None else None
 
     @staticmethod
-    def get_token(ce: Event) -> str:
-        return UCloudEvent.extract_string_value_from_extension("token", ce)
+    def get_token(ce: CloudEvent) -> str:
+        return UCloudEvent.extract_string_value_from_attributes("token", ce)
 
     @staticmethod
-    def get_communication_status(ce: Event) -> int:
-        comm_status = UCloudEvent.extract_string_value_from_extension("commstatus", ce)
+    def get_communication_status(ce: CloudEvent) -> int:
+        comm_status = UCloudEvent.extract_string_value_from_attributes("commstatus", ce)
         return int(comm_status) if comm_status is not None else Code.OK
 
     @staticmethod
-    def has_communication_status_problem(ce: Event) -> bool:
+    def has_communication_status_problem(ce: CloudEvent) -> bool:
         return UCloudEvent.get_communication_status(ce) != 0
 
     @staticmethod
-    def add_communication_status(ce: Event, communication_status) -> Event:
+    def add_communication_status(ce: CloudEvent, communication_status) -> CloudEvent:
         if communication_status is None:
             return ce
-
-        ce.extensions["commstatus"] = communication_status
+        ce.__setitem__("commstatus", communication_status)
         return ce
 
     @staticmethod
-    def get_creation_timestamp(ce: Event) -> int:
-        cloud_event_id = ce.id
+    def get_creation_timestamp(ce: CloudEvent) -> int:
+        cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = UUIDUtils.fromString(cloud_event_id)
 
         return UUIDUtils.getTime(uuid) if uuid is not None else None
 
     @staticmethod
-    def is_expired_by_cloud_event_creation_date(ce: Event) -> bool:
+    def is_expired_by_cloud_event_creation_date(ce: CloudEvent) -> bool:
         maybe_ttl = UCloudEvent.get_ttl(ce)
         if maybe_ttl is None or maybe_ttl <= 0:
             return False
 
-        cloud_event_creation_time = ce.time
+        cloud_event_creation_time = UCloudEvent.extract_string_value_from_attributes("time", ce)
         if cloud_event_creation_time is None:
             return False
 
@@ -102,11 +100,11 @@ class UCloudEvent:
         return now > creation_time_plus_ttl
 
     @staticmethod
-    def is_expired(ce: Event) -> bool:
+    def is_expired(ce: CloudEvent) -> bool:
         maybe_ttl = UCloudEvent.get_ttl(ce)
         if maybe_ttl is None or maybe_ttl <= 0:
             return False
-        cloud_event_id = ce.id
+        cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
 
         try:
             uuid = UUIDUtils.fromString(cloud_event_id)
@@ -120,43 +118,46 @@ class UCloudEvent:
 
     # Check if a CloudEvent is a valid UUIDv6 or v8 .
     @staticmethod
-    def is_cloud_event_id(ce: Event) -> bool:
-        cloud_event_id = ce.id
+    def is_cloud_event_id(ce: CloudEvent) -> bool:
+        cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = UUIDUtils.fromString(cloud_event_id)
 
         return uuid is not None and UUIDUtils.isuuid(uuid)
 
     @staticmethod
-    def get_payload(ce: Event) -> any_pb2.Any:
-        data = ce.data
+    def get_payload(ce: CloudEvent) -> any_pb2.Any:
+        data = ce.get_data()
         if data is None:
             return any_pb2.Any()
         try:
-            return any_pb2.Any().FromString(Base64ProtobufSerializer.serialize(ce.data))
+            return any_pb2.Any().FromString(data)
         except DecodeError:
             return any_pb2.Any()
 
     @staticmethod
-    def unpack(ce: Event, clazz):
+    def unpack(ce: CloudEvent, clazz):
         try:
             return UCloudEvent.get_payload(ce).Unpack(clazz)
         except DecodeError:
             return None
 
     @staticmethod
-    def to_string(ce: Event) -> str:
+    def to_string(ce: CloudEvent) -> str:
         if ce is not None:
             sink_str = UCloudEvent.get_sink(ce)
             sink_str = f", sink='{sink_str}'" if sink_str is not None else ""
-            return f"CloudEvent{{id='{ce.id}', source='{ce.source}'{sink_str}, type='{ce.type}'}}"
+            id = UCloudEvent.extract_string_value_from_attributes("id", ce)
+            source = UCloudEvent.extract_string_value_from_attributes("source", ce)
+            type = UCloudEvent.extract_string_value_from_attributes("type", ce)
+            return f"CloudEvent{{id='{id}', source='{source}'{sink_str}, type='{type}'}}"
         else:
             return "null"
 
     @staticmethod
-    def extract_string_value_from_extension(extension_name, ce: Event) -> str:
-        return ce.extensions.get(extension_name)
+    def extract_string_value_from_attributes(attr_name, ce: CloudEvent) -> str:
+        return ce.get_attributes().get(attr_name)
 
     @staticmethod
-    def extract_integer_value_from_extension(extension_name, ce: Event) -> int:
-        value = UCloudEvent.extract_string_value_from_extension(extension_name, ce)
+    def extract_integer_value_from_attributes(attr_name, ce: CloudEvent) -> int:
+        value = UCloudEvent.extract_string_value_from_attributes(attr_name, ce)
         return int(value) if value is not None else None

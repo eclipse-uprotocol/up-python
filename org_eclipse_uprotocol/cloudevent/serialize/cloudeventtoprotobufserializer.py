@@ -21,7 +21,7 @@
 
 # -------------------------------------------------------------------------
 
-from cloudevents.sdk.event.v1 import Event
+from cloudevents.http import CloudEvent
 
 from org_eclipse_uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
 
@@ -31,8 +31,8 @@ class CloudEventToProtobufSerializer(CloudEventSerializer):
     def __init__(self):
         pass
 
-    def serialize(self, ce: Event) -> bytes:
+    def serialize(self, ce: CloudEvent) -> bytes:
         pass
 
-    def deserialize(self, bytes_data: bytes):
+    def deserialize(self, bytes_data: bytes) -> CloudEvent:
         pass

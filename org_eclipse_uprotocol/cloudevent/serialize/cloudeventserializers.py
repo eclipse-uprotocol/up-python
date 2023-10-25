@@ -20,6 +20,7 @@
 # under the License.
 
 # -------------------------------------------------------------------------
+
 from enum import Enum
 
 from org_eclipse_uprotocol.cloudevent.serialize.cloudeventtojsonserializer import CloudEventToJsonSerializer

@@ -31,8 +31,23 @@ from org_eclipse_uprotocol.rpc.rpcresult import RpcResult
 
 
 class RpcMapper:
+    """
+    RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with an RPC Response (
+    uP-L2). APIs that return Message assumes that the payload is protobuf serialized com.google.protobuf.Any (
+    USerializationHint.PROTOBUF) and will barf if anything else is passed
+    """
+
     @staticmethod
     def map_response(response_future: Future, expected_cls):
+        """
+         Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the
+         declared expected return type of the RPC method or an exception.<br><br>
+        @param response_future:CompletableFuture&lt;UPayload&gt; response from uTransport.
+        @param expected_cls:The class name of the declared expected return type of the RPC method.
+        @return:Returns a CompletableFuture containing the declared expected return type of the RPC method or an
+        exception.
+        """
+
         def handle_response(payload, exception):
             if exception:
                 raise exception
@@ -61,6 +76,15 @@ class RpcMapper:
 
     @staticmethod
     def map_response_to_result(response_future: Future, expected_cls):
+        """
+        Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing an RpcResult
+        containing the declared expected return type T, or a Status containing any errors.<br><br>
+        @param response_future:CompletableFuture&lt;Any&gt; response from Link.
+        @param expected_cls:The class name of the declared expected return type of the RPC method.
+        @return:Returns a CompletableFuture containing an RpcResult containing the declared expected return type T,
+        or a Status containing any errors.
+        """
+
         def handle_response(payload, exception=None):
             if exception:
                 raise exception
@@ -101,6 +125,14 @@ class RpcMapper:
 
     @staticmethod
     def unpack_payload(payload, expected_cls):
+        """
+        Unpack a payload of type {@link Any} into an object of type T, which is what was packing into the {@link Any}
+        object.<br><br>
+        @param payload:an {@link Any} message containing a type of expectedClazz.
+        @param expected_cls:The class name of the object packed into the {@link Any}
+        @return:Returns an object of type T and of the class name specified, that was packed into the {@link Any}
+        object.
+        """
         try:
             payload.Unpack(expected_cls)
             return expected_cls

@@ -21,7 +21,13 @@
 
 # -------------------------------------------------------------------------
 class CallOptions:
+    """
+    This class is used when making uRPC calls to pass additional options.
+    """
     TIMEOUT_DEFAULT = 10000
+    """
+    Default timeout of a call in milliseconds.
+    """
 
     def __init__(self, timeout=TIMEOUT_DEFAULT, token=""):
         self.mTimeout = timeout
@@ -33,10 +39,18 @@ class CallOptions:
 
     @property
     def timeout(self):
+        """
+        Get a timeout.<br><br>
+        @return:  A timeout in milliseconds.
+        """
         return self.mTimeout
 
     @property
     def token(self):
+        """
+        Get an OAuth2 access token.<br><br>
+        @return: An Optional OAuth2 access token.
+        """
         return self.mToken if self.mToken else None
 
     def __eq__(self, other):
@@ -52,6 +66,9 @@ class CallOptions:
 
 
 class CallOptionsBuilder:
+    """
+    Builder for constructing <code>CallOptions</code>.
+    """
     TIMEOUT_DEFAULT = 10000
 
     def __init__(self):
@@ -59,12 +76,26 @@ class CallOptionsBuilder:
         self.mToken = ""
 
     def with_timeout(self, timeout):
+        """
+        Add a timeout.<br><br>
+        @param timeout:A timeout in milliseconds.
+        @return:This builder.
+        """
         self.mTimeout = timeout if timeout > 0 else self.TIMEOUT_DEFAULT
         return self
 
     def with_token(self, token):
+        """
+        Add an OAuth2 access token.<br><br>
+        @param token:An OAuth2 access token.
+        @return:This builder.
+        """
         self.mToken = token
         return self
 
     def build(self):
+        """
+        Construct a <code>CallOptions</code> from this builder.<br><br>
+        @return:A constructed <code>CallOptions</code>.
+        """
         return CallOptions(self.mTimeout, self.mToken)

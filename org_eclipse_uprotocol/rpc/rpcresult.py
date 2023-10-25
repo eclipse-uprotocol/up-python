@@ -31,6 +31,10 @@ T = TypeVar('T')
 
 
 class RpcResult(ABC):
+    """
+    Wrapper class for RPC Stub calls. It contains a Success with the type of the RPC call, or a failure with the
+    Status returned by the failed call.
+    """
 
     @abstractmethod
     def isSuccess(self) -> bool:

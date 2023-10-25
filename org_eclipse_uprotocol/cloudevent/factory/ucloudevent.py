@@ -32,46 +32,113 @@ from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
 
 
 class UCloudEvent:
+    """
+    Class to extract  information from a CloudEvent.
+    """
+
     @staticmethod
     def get_source(ce: CloudEvent) -> str:
+        """
+        Extract the source from a cloud event. The source is a mandatory attribute. The CloudEvent constructor does
+        not allow creating a cloud event without a source.<br><br>
+        @param ce:CloudEvent with source to be extracted.
+        @return:Returns the String value of a CloudEvent source attribute.
+        """
         return UCloudEvent.extract_string_value_from_attributes("source", ce)
 
     @staticmethod
     def get_sink(ce: CloudEvent) -> str:
+        """
+        Extract the sink from a cloud event. The sink attribute is optional.<br><br>
+        @param ce:CloudEvent with sink to be extracted.
+        @return:Returns an Optional String value of a CloudEvent sink attribute if it exists, otherwise an
+        Optional.empty() is returned.
+        """
         return UCloudEvent.extract_string_value_from_attributes("sink", ce)
 
     @staticmethod
     def get_request_id(ce: CloudEvent) -> str:
+        """
+        Extract the request id from a cloud event that is a response RPC CloudEvent. The attribute is optional.<br><br>
+        @param ce: the response RPC CloudEvent with request id to be extracted.
+        @return: Returns an Optional String value of a response RPC CloudEvent request id attribute if it exists,
+        otherwise an Optional.empty() is returned.
+        """
         return UCloudEvent.extract_string_value_from_attributes("reqid", ce)
 
     @staticmethod
     def get_hash(ce: CloudEvent) -> str:
+        """
+        Extract the hash attribute from a cloud event. The hash attribute is optional.<br><br>
+        @param ce: CloudEvent with hash to be extracted.
+        @return:Returns an Optional String value of a CloudEvent hash attribute if it exists, otherwise an
+        Optional.empty() is returned.
+        """
         return UCloudEvent.extract_string_value_from_attributes("hash", ce)
 
     @staticmethod
     def get_priority(ce: CloudEvent) -> str:
+        """
+        Extract the string value of the priority attribute from a cloud event. The priority attribute is
+        optional.<br><br>
+        @param ce:CloudEvent with priority to be extracted.
+        @return:Returns an Optional String value of a CloudEvent priority attribute if it exists,  otherwise an
+        Optional.empty() is returned.
+        """
         return UCloudEvent.extract_string_value_from_attributes("priority", ce)
 
     @staticmethod
     def get_ttl(ce: CloudEvent) -> int:
+        """
+        Extract the integer value of the ttl attribute from a cloud event. The ttl attribute is optional.<br><br>
+        @param ce:CloudEvent with ttl to be extracted.
+        @return: Returns an Optional String value of a CloudEvent ttl attribute if it exists,otherwise an
+        Optional.empty() is returned.
+        """
         ttl_str = UCloudEvent.extract_string_value_from_attributes("ttl", ce)
         return int(ttl_str) if ttl_str is not None else None
 
     @staticmethod
     def get_token(ce: CloudEvent) -> str:
+        """
+        Extract the string value of the token attribute from a cloud event. The token attribute is optional.<br><br>
+        @param ce: CloudEvent with token to be extracted.
+        @return:Returns an Optional String value of a CloudEvent priority token if it exists, otherwise an
+        Optional.empty() is returned.
+        """
         return UCloudEvent.extract_string_value_from_attributes("token", ce)
 
     @staticmethod
     def get_communication_status(ce: CloudEvent) -> int:
+        """
+        Extract the integer value of the communication status attribute from a cloud event. The communication status
+        attribute is optional. If there was a platform communication error that occurred while delivering this
+        cloudEvent, it will be indicated in this attribute. If the attribute does not exist, it is assumed that
+        everything was Code.OK_VALUE.<br><br>
+        @param ce: CloudEvent with the platformError to be extracted.
+        @return: Returns a {@link Code} value that indicates of a platform communication error while delivering this
+        CloudEvent or Code.OK_VALUE.
+        """
         comm_status = UCloudEvent.extract_string_value_from_attributes("commstatus", ce)
         return int(comm_status) if comm_status is not None else Code.OK
 
     @staticmethod
     def has_communication_status_problem(ce: CloudEvent) -> bool:
+        """
+        Indication of a platform communication error that occurred while trying to deliver the CloudEvent.<br><br>
+        @param ce:CloudEvent to be queried for a platform delivery error.
+        @return:returns true if the provided CloudEvent is marked with having a platform delivery problem.
+        """
         return UCloudEvent.get_communication_status(ce) != 0
 
     @staticmethod
     def add_communication_status(ce: CloudEvent, communication_status) -> CloudEvent:
+        """
+        Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.<br><br>
+        @param ce:CloudEvent that the platform delivery error will be added.
+        @param communication_status:the platform delivery error Code to add to the CloudEvent.
+        @return:Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.
+        """
         if communication_status is None:
             return ce
         ce.__setitem__("commstatus", communication_status)
@@ -79,6 +146,11 @@ class UCloudEvent:
 
     @staticmethod
     def get_creation_timestamp(ce: CloudEvent) -> int:
+        """
+        Extract the timestamp from the UUIDV8 CloudEvent Id.<br><br>
+        @param ce:The CloudEvent with the timestamp to extract.
+        @return:Return the timestamp from the UUIDV8 CloudEvent Id or an empty Optional if timestamp can't be extracted.
+        """
         cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = UUIDUtils.fromString(cloud_event_id)
 
@@ -86,6 +158,13 @@ class UCloudEvent:
 
     @staticmethod
     def is_expired_by_cloud_event_creation_date(ce: CloudEvent) -> bool:
+        """
+        Calculate if a CloudEvent configured with a creation time and a ttl attribute is expired. The ttl attribute
+        is a configuration of how long this event should live for after it was generated (in milliseconds)<br><br>
+        @param ce:The CloudEvent to inspect for being expired.
+        @return:Returns true if the CloudEvent was configured with a ttl &gt; 0 and a creation time to compare for
+        expiration.
+        """
         maybe_ttl = UCloudEvent.get_ttl(ce)
         if maybe_ttl is None or maybe_ttl <= 0:
             return False
@@ -101,6 +180,12 @@ class UCloudEvent:
 
     @staticmethod
     def is_expired(ce: CloudEvent) -> bool:
+        """
+        Calculate if a CloudEvent configured with UUIDv8 id and a ttl attribute is expired. The ttl attribute is a
+        configuration of how long this event should live for after it was generated (in milliseconds).<br><br>
+        @param ce:The CloudEvent to inspect for being expired.
+        @return:Returns true if the CloudEvent was configured with a ttl &gt; 0 and UUIDv8 id to compare for expiration.
+        """
         maybe_ttl = UCloudEvent.get_ttl(ce)
         if maybe_ttl is None or maybe_ttl <= 0:
             return False
@@ -116,9 +201,13 @@ class UCloudEvent:
             delta = 0
         return delta >= maybe_ttl
 
-    # Check if a CloudEvent is a valid UUIDv6 or v8 .
     @staticmethod
     def is_cloud_event_id(ce: CloudEvent) -> bool:
+        """
+        Check if a CloudEvent is a valid UUIDv6 or v8 .<br><br>
+        @param ce:The CloudEvent with the id to inspect.
+        @return: Returns true if the CloudEvent is valid.
+        """
         cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = UUIDUtils.fromString(cloud_event_id)
 
@@ -126,6 +215,12 @@ class UCloudEvent:
 
     @staticmethod
     def get_payload(ce: CloudEvent) -> any_pb2.Any:
+        """
+        Extract the payload from the CloudEvent as a protobuf Any object. <br>An all or nothing error handling
+        strategy is implemented. If anything goes wrong, an Any.getDefaultInstance() will be returned.<br><br>
+        @param ce:CloudEvent containing the payload to extract.
+        @return:Extracts the payload from a CloudEvent as a Protobuf Any object.
+        """
         data = ce.get_data()
         if data is None:
             return any_pb2.Any()
@@ -136,6 +231,15 @@ class UCloudEvent:
 
     @staticmethod
     def unpack(ce: CloudEvent, clazz):
+        """
+        Extract the payload from the CloudEvent as a protobuf Message of the provided class. The protobuf of this
+        message class must be loaded on the client for this to work. <br>  An all or nothing error handling strategy
+        is implemented. If anything goes wrong, an empty optional will be returned. <br><br> Example: <br>
+        <pre>Optional&lt;SomeMessage&gt; unpacked = UCloudEvent.unpack(cloudEvent, SomeMessage.class);</pre><br><br>
+        @param ce:CloudEvent containing the payload to extract.
+        @param clazz:The class that extends {@link Message} that the payload is extracted into.
+        @return:  Returns a {@link Message} payload of the class type that is provided.
+        """
         try:
             return UCloudEvent.get_payload(ce).Unpack(clazz)
         except DecodeError:
@@ -143,6 +247,13 @@ class UCloudEvent:
 
     @staticmethod
     def to_string(ce: CloudEvent) -> str:
+        """
+        Function used to pretty print a CloudEvent containing only the id, source, type and maybe a sink. Used mainly
+        for logging.<br><br>
+        @param ce:The CloudEvent we want to pretty print.
+        @return:returns the String representation of the CloudEvent containing only the id, source, type and maybe a
+        sink.
+        """
         if ce is not None:
             sink_str = UCloudEvent.get_sink(ce)
             sink_str = f", sink='{sink_str}'" if sink_str is not None else ""
@@ -155,9 +266,25 @@ class UCloudEvent:
 
     @staticmethod
     def extract_string_value_from_attributes(attr_name, ce: CloudEvent) -> str:
+        """
+        Utility for extracting the String value of an attribute.<br><br>
+        @param attr_name:The name of the CloudEvent attribute.
+        @param ce:The CloudEvent containing the data.
+        @return:the Optional String value of an attribute matching the attribute name, or an Optional.empty() is the
+        value does not exist.
+        """
+
         return ce.get_attributes().get(attr_name)
 
     @staticmethod
     def extract_integer_value_from_attributes(attr_name, ce: CloudEvent) -> int:
+        """
+
+        Utility for extracting the Integer value of an attribute.<br><br>
+        @param attr_name:The name of the CloudEvent attribute.
+        @param ce:The CloudEvent containing the data.
+        @return:returns the Optional Integer value of an attribute matching the attribute name,or an Optional.empty()
+        is the value does not exist.
+        """
         value = UCloudEvent.extract_string_value_from_attributes(attr_name, ce)
         return int(value) if value is not None else None

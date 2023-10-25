@@ -26,14 +26,29 @@ from builtins import str
 
 
 class Base64ProtobufSerializer:
+    """
+    Helper for serializing Base64 protobuf data.
+    """
+
     @staticmethod
     def deserialize(proto_bytes: bytes) -> str:
+        """
+        Deserialize a base64 protobuf payload into a Base64 String.<br><br>
+
+        @param proto_bytes: byte[] data
+        @return: Returns a String from the base64 protobuf payload.
+        """
         if proto_bytes is None:
             return ""
         return base64.b64encode(proto_bytes).decode('utf-8')  # return base64.b64decode(proto_bytes).decode('utf-8')
 
     @staticmethod
-    def serialize(string_to_serialize: str) -> bytes:  # input is base64 string
+    def serialize(string_to_serialize: str) -> bytes:
+        """
+        Serialize a String into Base64 format.<br><br>
+        @param string_to_serialize:String to serialize.
+        @return: Returns the Base64 formatted String as a byte[].
+        """
         if string_to_serialize is None:
             return bytearray()
         return base64.b64decode(string_to_serialize.encode('utf-8'))

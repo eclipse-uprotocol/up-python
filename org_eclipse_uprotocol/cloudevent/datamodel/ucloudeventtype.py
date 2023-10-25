@@ -26,6 +26,9 @@ from typing import Optional
 
 
 class UCloudEventType(Enum):
+    """
+    Enumeration for the core types of uProtocol CloudEvents.
+    """
     PUBLISH = "pub.v1"
     REQUEST = "req.v1"
     RESPONSE = "res.v1"
@@ -35,6 +38,11 @@ class UCloudEventType(Enum):
 
     @staticmethod
     def value_of_type(typestr: str) -> Optional['UCloudEventType']:
+        """
+        Convert a String type into a maybe UCloudEventType.<br><br>
+        @param typestr: The String value of the UCloudEventType.
+        @return: returns the UCloudEventType associated with the provided String.
+        """
         for ce_type in UCloudEventType:
             if ce_type.type() == typestr:
                 return ce_type

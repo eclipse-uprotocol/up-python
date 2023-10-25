@@ -28,6 +28,9 @@ from org_eclipse_uprotocol.cloudevent.serialize.cloudeventtoprotobufserializer i
 
 
 class CloudEventSerializers(Enum):
+    """
+    Provides Singleton instances of the CloudEvent Serializers.
+    """
     JSON = CloudEventToJsonSerializer()
     PROTOBUF = CloudEventToProtobufSerializer()
 

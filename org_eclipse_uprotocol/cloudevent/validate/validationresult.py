@@ -28,6 +28,9 @@ from google.rpc.status_pb2 import Status
 
 
 class ValidationResult(ABC):
+    """
+    Class wrapping a ValidationResult of success or failure wrapping the value of a google.rpc.Status.
+    """
     STATUS_SUCCESS = Status(code=Code.OK, message="OK")
 
     def __init__(self):
@@ -58,6 +61,10 @@ class ValidationResult(ABC):
 
 
 class Failure(ValidationResult):
+    """
+    Implementation for failure, wrapping the message.
+    """
+
     def __init__(self, message):
         super().__init__()
         self.message = message if message else "Validation Failed."
@@ -76,6 +83,10 @@ class Failure(ValidationResult):
 
 
 class Success(ValidationResult):
+    """
+     Implementation for success, wrapping a google.rpc.Status with Code 0 for success.
+    """
+
     def to_status(self) -> Status:
         return ValidationResult.STATUS_SUCCESS
 

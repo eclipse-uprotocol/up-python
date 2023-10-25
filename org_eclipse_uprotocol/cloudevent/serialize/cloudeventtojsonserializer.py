@@ -27,6 +27,9 @@ from org_eclipse_uprotocol.cloudevent.serialize.cloudeventserializer import Clou
 
 
 class CloudEventToJsonSerializer(CloudEventSerializer):
+    """
+    CloudEventSerializer to serialize and deserialize CloudEvents to JSON format.
+    """
 
     def serialize(self, ce: CloudEvent) -> bytes:
         return to_json(ce)

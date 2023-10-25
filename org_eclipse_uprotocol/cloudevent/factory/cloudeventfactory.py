@@ -29,12 +29,25 @@ from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventtype import UCloudEve
 from org_eclipse_uprotocol.uuid.factory.uuidfactory import Factories
 
 
+# A factory is a part of the software has methods to generate concrete objects, usually of the same type or
+# interface. CloudEvents is a specification for describing events in a common way. We will use CloudEvents to
+# formulate all kinds of  events (messages) that will be sent to and from devices. The CloudEvent factory knows how
+# to generate CloudEvents of the 4 core types: req.v1, res.v1, pub.v1, and file.v1
 class CloudEventFactory:
     PROTOBUF_CONTENT_TYPE = "application/x-protobuf"
 
     @staticmethod
     def request(application_uri_for_rpc: str, service_method_uri: str, request_id: str, proto_payload: Any,
                 attributes: UCloudEventAttributes) -> CloudEvent:
+        """
+        Create a CloudEvent for an event for the use case of: RPC Request message.
+        @param application_uri_for_rpc: The uri for the application requesting the RPC.
+        @param service_method_uri: The uri for the method to be called on the service Ex. :/body.access/1/rpc.UpdateDoor
+        @param request_id:The attribute id from the original request
+        @param proto_payload:Protobuf Any object with the Message command to be executed on the sink service.
+        @param attributes: Additional attributes such as ttl, hash, priority and token.
+        @return: Returns an  request CloudEvent.
+        """
         event_id = CloudEventFactory.generate_cloud_event_id()
         cloud_event = CloudEventFactory.build_base_cloud_event(event_id, application_uri_for_rpc,
 
@@ -48,6 +61,18 @@ class CloudEventFactory:
     @staticmethod
     def response(application_uri_for_rpc: str, service_method_uri: str, request_id: str, proto_payload: Any,
                  attributes: UCloudEventAttributes) -> CloudEvent:
+        """
+        Create a CloudEvent for an event for the use case of: RPC Response message.
+        @param application_uri_for_rpc: The destination of the response. The uri for the original application that
+        requested the RPC and this response is for.
+        @param service_method_uri: The uri for the method that was called on the service Ex.
+        :/body.access/1/rpc.UpdateDoor
+        @param request_id:The cloud event id from the original request cloud event that this response if for.
+        @param proto_payload: The protobuf serialized response message as defined by the application interface or the
+        google.rpc.Status message containing the details of an error.
+        @param attributes: Additional attributes such as ttl, hash and priority.
+        @return: Returns an  response CloudEvent.
+        """
         event_id = CloudEventFactory.generate_cloud_event_id()
         cloud_event = CloudEventFactory.build_base_cloud_event(event_id, service_method_uri,
 
@@ -61,6 +86,18 @@ class CloudEventFactory:
     @staticmethod
     def failed_response(application_uri_for_rpc: str, service_method_uri: str, request_id: str,
                         communication_status: int, attributes: UCloudEventAttributes) -> CloudEvent:
+        """
+        Create a CloudEvent for an event for the use case of: RPC Response message that failed.
+        @param application_uri_for_rpc: The destination of the response. The uri for the original application that
+        requested the RPC and this response is for.
+        @param service_method_uri: The uri for the method that was called on the service Ex.
+        :/body.access/1/rpc.UpdateDoor
+        @param request_id:The cloud event id from the original request cloud event that this response if for.
+        @param communication_status: A {@link Code} value that indicates of a platform communication error while
+        delivering this CloudEvent.
+        @param attributes:Additional attributes such as ttl, hash and priority.
+        @return:Returns an  response CloudEvent Response for the use case of RPC Response message that failed.
+        """
         event_id = CloudEventFactory.generate_cloud_event_id()
         # Create an Any message packing an Empty message
         empty_proto_payload = Any()
@@ -78,6 +115,13 @@ class CloudEventFactory:
 
     @staticmethod
     def publish(source: str, proto_payload: Any, attributes: UCloudEventAttributes) -> CloudEvent:
+        """
+        Create a CloudEvent for an event for the use case of: Publish generic message.
+        @param source:The  uri of the topic being published.
+        @param proto_payload:protobuf Any object with the Message to be published.
+        @param attributes:Additional attributes such as ttl, hash and priority.
+        @return:Returns a publish CloudEvent.
+        """
         event_id = CloudEventFactory.generate_cloud_event_id()
         cloud_event = CloudEventFactory.build_base_cloud_event(event_id, source, proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
@@ -86,6 +130,16 @@ class CloudEventFactory:
 
     @staticmethod
     def notification(source: str, sink: str, proto_payload: Any, attributes: UCloudEventAttributes) -> CloudEvent:
+        """
+        Create a CloudEvent for an event for the use case of: Publish a notification message. A published event
+        containing the sink (destination) is often referred to as a notification, it is an event sent to a specific
+        consumer.
+        @param source: The  uri of the topic being published.
+        @param sink:  The  uri of the destination of this notification.
+        @param proto_payload: protobuf Any object with the Message to be published.
+        @param attributes:  Additional attributes such as ttl, hash and priority.
+        @return: Returns a publish CloudEvent.
+        """
         event_id = CloudEventFactory.generate_cloud_event_id()
         cloud_event = CloudEventFactory.build_base_cloud_event(event_id, source, proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
@@ -95,13 +149,31 @@ class CloudEventFactory:
 
     @staticmethod
     def generate_cloud_event_id() -> str:
-        # uuid8
+        """
+        Generate a UUIDv8
+        @return:  Returns a UUIDv8 id.
+        """
         uuid_inst = Factories.UPROTOCOL.create()
         return str(uuid_inst)
 
     @staticmethod
     def build_base_cloud_event(id: str, source: str, proto_payload_bytes: bytes, proto_payload_schema: str,
                                attributes: UCloudEventAttributes, type) -> CloudEvent:
+        """
+        Base CloudEvent builder that is the same for all CloudEvent types.
+        
+        @param id:Event unique identifier.
+        @param source: Identifies who is sending this event in the format of a uProtocol URI that can be built from a
+        {@link UUri} object.
+        @param proto_payload_bytes:The serialized Event data with the content type of "application/x-protobuf".
+        @param proto_payload_schema:The schema of the proto payload bytes, for example you can use
+        <code>protoPayload.getTypeUrl()</code> on your service/app object.
+        @param attributes:Additional cloud event attributes that can be passed in. All attributes are optional and
+        will be added only if they were configured.
+        @param type: Type of the cloud event
+        @return:Returns a CloudEventBuilder that can be additionally configured and then by calling .build()
+        construct a CloudEvent ready to be serialized and sent to the transport layer.
+        """
         json_attributes = {"ttl": attributes.ttl, "priority": attributes.priority, "hash": attributes.hash,
                            "token": attributes.token, "id": id, "source": source, "type": type}
 

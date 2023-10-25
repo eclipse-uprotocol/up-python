@@ -26,8 +26,12 @@ from cloudevents.http import CloudEvent
 from org_eclipse_uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
 
 
-# To do - implementation is pending, convert cloud event to cloudevent proto
+# ToDo- convert cloud event to cloudevent proto
 class CloudEventToProtobufSerializer(CloudEventSerializer):
+    """
+    CloudEventSerializer to serialize and deserialize CloudEvents to protobuf format.
+    """
+
     def __init__(self):
         pass
 

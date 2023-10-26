@@ -32,15 +32,38 @@ from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
 
 
 class UriSerializer(ABC):
+    """
+    UUris are used in transport layers and hence need to be serialized.<br>Each transport supports different
+    serialization formats.<br>For more information, please refer to <a
+    href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">
+    https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc</a>
+    """
+
     @abstractmethod
     def deserialize(self, uri: T) -> UUri:
+        """
+        Deserialize from the format to a UUri.<br><br>
+        @param uri:serialized UUri.
+        @return:Returns a UUri object from the serialized format from the wire.
+        """
         pass
 
     @abstractmethod
     def serialize(self, uri: UUri) -> T:
+        """
+        Serialize from a UUri to a specific serialization format.<br><br>
+        @param uri:UUri object to be serialized to the format T.
+        @return:Returns the UUri in the transport serialized format.
+        """
         pass
 
     def build_resolved(self, long_uri: str, micro_uri: bytes) -> Optional[UUri]:
+        """
+        Build a fully resolved {@link UUri} from the serialized long format and the serializes micro format.<br><br>
+        @param long_uri:UUri serialized as a Sting.
+        @param micro_uri:UUri serialized as a byte[].
+        @return:Returns a UUri object serialized from one of the forms.
+        """
         if (not long_uri or long_uri.isspace()) and (not micro_uri or len(micro_uri) == 0):
             return Optional.of(UUri.empty())
         from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer

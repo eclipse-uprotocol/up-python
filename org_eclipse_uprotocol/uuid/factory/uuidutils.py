@@ -29,13 +29,21 @@ from org_eclipse_uprotocol.uuid.factory import UUID
 
 
 class Version(Enum):
-    VERSION_UNKNOWN = 0
-    VERSION_RANDOM_BASED = 4
-    VERSION_TIME_ORDERED = 6
-    VERSION_UPROTOCOL = 8
+    """
+    UUID Version
+    """
+    VERSION_UNKNOWN = 0  # An unknown version.
+    VERSION_RANDOM_BASED = 4  # The randomly or pseudo-randomly generated version specified in RFC-4122.
+    VERSION_TIME_ORDERED = 6  # The time-ordered version with gregorian epoch proposed by Peabody and Davis.
+    VERSION_UPROTOCOL = 8  # The custom or free-form version proposed by Peabody and Davis.
 
     @staticmethod
     def getVersion(value):
+        """
+        Get the Version from the passed integer representation of the version.<br><br>
+        @param value:The integer representation of the version.
+        @return:The Version object or Optional.empty() if the value is not a valid version.
+        """
         for version in Version:
             if version.value == value:
                 return version
@@ -43,12 +51,26 @@ class Version(Enum):
 
 
 class UUIDUtils:
+    """
+    UUID Utils class that provides utility methods for uProtocol IDs
+    """
+
     @staticmethod
     def toString(uuid_obj: UUID) -> str:
+        """
+        Convert the UUID to a String.
+        @param uuid_obj:UUID object
+        @return:String representation of the UUID or Optional.empty() if the UUID is null.
+        """
         return str(uuid_obj) if uuid_obj is not None else None
 
     @staticmethod
     def toBytes(uuid_obj: UUID) -> Optional[bytes]:
+        """
+        Convert the UUID to byte array.<br><br>
+        @param uuid_obj:UUID object
+        @return:The byte array or Optional.empty() if the UUID is null.
+        """
         if uuid_obj is None:
             return None
         uuid_bytes = uuid_obj.bytes
@@ -56,6 +78,12 @@ class UUIDUtils:
 
     @staticmethod
     def fromBytes(bytes_list: bytes) -> Optional[UUID]:
+        """
+        Convert the byte array to a UUID.<br><br>
+        @param bytes_list:The UUID in bytes format.
+        @return:UUIDv8 object built from the byte array or Optional.empty() if the byte array is null or not 16 bytes
+        long.
+        """
         if bytes_list is None or len(bytes_list) != 16:
             return None
         uuid_bytes = bytes(bytes_list)
@@ -63,6 +91,12 @@ class UUIDUtils:
 
     @staticmethod
     def fromString(string: str) -> Optional[UUID]:
+        """
+        Create a UUID from the passed string.<br><br>
+        @param string:the string representation of the uuid.
+        @return:The UUID object representation of the string or Optional.empty() if the string is null, empty,
+        or invalid.
+        """
         try:
             return uuid.UUID(string)
         except ValueError:
@@ -70,22 +104,42 @@ class UUIDUtils:
 
     @staticmethod
     def getVersion(uuid_obj: UUID) -> Optional[Version]:
+        """
+        Fetch the UUID version.<br><br>
+        @param uuid_obj:The UUID to fetch the version from.
+        @return: Return the UUID version from the UUID object or Optional.empty() if the uuid is null.
+        """
         if uuid_obj is None:
             return None
         return Version.getVersion(uuid_obj.version)
 
     @staticmethod
     def getVariant(uuid_obj: UUID) -> Optional[str]:
+        """
+        Fetch the Variant from the passed UUID.<br><br>
+        @param uuid_obj:The UUID to fetch the variant from.
+        @return:UUID variant or Empty if uuid is null.
+        """
         if uuid_obj is None:
             return None
         return uuid_obj.variant
 
     @staticmethod
     def isUProtocol(uuid_obj: UUID) -> bool:
+        """
+        Verify if version is a formal UUIDv8 uProtocol ID.<br><br>
+        @param uuid_obj:UUID object
+        @return:true if is a uProtocol UUID or false if uuid passed is null or the UUID is not uProtocol format.
+        """
         return UUIDUtils.getVersion(uuid_obj) == Version.VERSION_UPROTOCOL if uuid_obj is not None else False
 
     @staticmethod
     def isUuidv6(uuid_obj: UUID) -> bool:
+        """
+        Verify if version is UUIDv6<br><br>
+        @param uuid_obj:UUID object
+        @return:true if is UUID version 6 or false if uuid is null or not version 6
+        """
         if uuid_obj is None:
             return False
         return UUIDUtils.getVersion(uuid_obj) == Version.VERSION_TIME_ORDERED and UUIDUtils.getVariant(
@@ -93,10 +147,20 @@ class UUIDUtils:
 
     @staticmethod
     def isuuid(uuid_obj: UUID) -> bool:
+        """
+        Verify uuid is either v6 or v8<br><br>
+        @param uuid_obj: UUID object
+        @return:true if is UUID version 6 or 8
+        """
         return UUIDUtils.isUProtocol(uuid_obj) or UUIDUtils.isUuidv6(uuid_obj) if uuid_obj is not None else False
 
     @staticmethod
     def getTime(uuid: UUID):
+        """
+        Return the number of milliseconds since unix epoch from a passed UUID.<br><br>
+        @param uuid:passed uuid to fetch the time.
+        @return:number of milliseconds since unix epoch or empty if uuid is null.
+        """
         time = None
         version = UUIDUtils.getVersion(uuid)
         if uuid is None or version is None:

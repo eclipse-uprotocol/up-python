@@ -31,14 +31,19 @@ from org_eclipse_uprotocol.uri.serializer.uriserializer import UriSerializer
 
 
 class LongUriSerializer(UriSerializer):
-    # def __init__(self):
-    #     pass
-    #
-    # @staticmethod
-    # def instance():
-    #     return LongUriSerializer()
+    """
+    UUri Serializer that serializes a UUri to a long format string per
+    <a href=https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc>
+    https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc</a>
+    """
 
     def serialize(self, uri: UUri) -> str:
+        """
+        Support for serializing {@link UUri} objects into their String format.<br><br>
+        @param uri: UUri object to be serialized to the String format.
+        @return:Returns the String format of the supplied UUri that can be used as a sink or a source in a
+        uProtocol publish communication.
+        """
         if uri is None or uri.is_empty():
             return ""
 
@@ -75,6 +80,11 @@ class LongUriSerializer(UriSerializer):
 
     @staticmethod
     def build_software_entity_part_of_uri(entity: UEntity) -> str:
+        """
+        Create the service part of the uProtocol URI from an UEntity object.<br><br>
+        @param entity:Software Entity representing a service or an application.
+        @return: Returns the String representation of the UEntity in the uProtocol URI.
+        """
         sb = [entity.get_name().strip(), "/"]
 
         if entity.get_version():
@@ -84,6 +94,11 @@ class LongUriSerializer(UriSerializer):
 
     @staticmethod
     def build_authority_part_of_uri(authority: UAuthority) -> str:
+        """
+        Create the authority part of the uProtocol URI from an UAuthority object.<br><br>
+        @param authority:represents the deployment location of a specific  Software Entity in the Ultiverse.
+        @return:Returns the String representation of the  Authority in the uProtocol URI.
+        """
         if authority.is_local():
             return "/"
 
@@ -102,6 +117,11 @@ class LongUriSerializer(UriSerializer):
         return "".join(partial_uri)
 
     def deserialize(self, u_protocol_uri: str) -> UUri:
+        """
+        Deserialize a String into a UUri object.<br><br>
+        @param u_protocol_uri:A long format uProtocol URI.
+        @return:Returns an UUri data object.
+        """
         if u_protocol_uri is None or u_protocol_uri.strip() == "":
             return UUri.empty()
 
@@ -148,6 +168,11 @@ class LongUriSerializer(UriSerializer):
 
     @staticmethod
     def parse_from_string(resource_string: str) -> UResource:
+        """
+        Static factory method for creating a UResource using a string that contains name + instance + message.<br><br>
+        @param resource_string:String that contains the UResource information.
+        @return:Returns a UResource object.
+        """
         if resource_string is None:
             raise ValueError("Resource must have a command name.")
 

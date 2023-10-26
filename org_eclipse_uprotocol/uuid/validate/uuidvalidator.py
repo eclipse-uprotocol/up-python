@@ -43,6 +43,10 @@ class ValidationResult(namedtuple('ValidationResult', ['is_failure', 'message'])
 
 
 class UuidValidator:
+    """
+    UUID Validator class that validates UUIDs
+    """
+
     @staticmethod
     def get_validator(uuid: UUID):
         if UUIDUtils.isUuidv6(uuid):

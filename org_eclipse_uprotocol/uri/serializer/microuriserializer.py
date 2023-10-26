@@ -35,6 +35,9 @@ from org_eclipse_uprotocol.uri.serializer.uriserializer import UriSerializer
 
 
 class AddressType(Enum):
+    """
+    The type of address used for Micro URI.
+    """
     LOCAL = 0
     IPv4 = 1
     IPv6 = 2
@@ -51,12 +54,22 @@ class AddressType(Enum):
 
 
 class MicroUriSerializer(UriSerializer):
+    """
+    UUri Serializer that serializes a UUri to a byte[] (micro format) per <a
+    href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">
+    https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc</a>
+    """
     LOCAL_MICRO_URI_LENGTH = 8
     IPV4_MICRO_URI_LENGTH = 12
     IPV6_MICRO_URI_LENGTH = 24
     UP_VERSION = 0x1
 
     def serialize(self, uri: UUri) -> bytes:
+        """
+        Serialize a UUri into a byte[] following the Micro-URI specifications.<br><br>
+        @param uri:The UUri data object.
+        @return:Returns a byte[] representing the serialized UUri.
+        """
         if uri is None or uri.is_empty() or not uri.is_micro_form():
             return bytearray()
 
@@ -93,6 +106,11 @@ class MicroUriSerializer(UriSerializer):
         return maybe_address.packed if maybe_address else None
 
     def deserialize(self, micro_uri: bytes) -> UUri:
+        """
+        Deserialize a byte[] into a UUri object.<br><br>
+        @param micro_uri:A byte[] uProtocol micro URI.
+        @return:Returns an UUri data object from the serialized format of a microUri.
+        """
         if micro_uri is None or len(micro_uri) < self.LOCAL_MICRO_URI_LENGTH:
             return UUri.empty()
 
@@ -115,7 +133,8 @@ class MicroUriSerializer(UriSerializer):
         else:
             try:
                 inet_address = socket.inet_ntop(socket.AF_INET, micro_uri[
-                                                                index:index + 4]) if address_type == AddressType.IPv4 else socket.inet_ntop(
+                                                                index:index + 4]) if address_type == AddressType.IPv4\
+                    else socket.inet_ntop(
                     socket.AF_INET6, micro_uri[index:index + 16])
                 u_authority = UAuthority.micro_remote(ipaddress.ip_address(inet_address))
             except:

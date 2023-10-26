@@ -27,8 +27,17 @@ from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
 
 
 class UriValidator:
+    """
+    Class for validating Uris.
+    """
+
     @staticmethod
     def validate(uri: UUri) -> UStatus:
+        """
+        Validate a UUri to ensure that it has at least a name for the uEntity.<br><br>
+        @param uri:UUri to validate.
+        @return:Returns UStatus containing a success or a failure with the error message.
+        """
         if uri.is_empty():
             return UStatus.failed_with_msg_and_code("Uri is empty.", Code.INVALID_ARGUMENT)
 
@@ -39,6 +48,12 @@ class UriValidator:
 
     @staticmethod
     def validate_rpc_method(uri: UUri) -> UStatus:
+        """
+        Validate a UUri that is meant to be used as an RPC method URI. Used in Request sink values and Response
+        source values.<br><br>
+        @param uri:UUri to validate.
+        @return:Returns UStatus containing a success or a failure with the error message.
+        """
         status = UriValidator.validate(uri)
         if status.isFailed():
             return status
@@ -53,6 +68,12 @@ class UriValidator:
 
     @staticmethod
     def validate_rpc_response(uri: UUri) -> UStatus:
+        """
+        Validate a UUri that is meant to be used as an RPC response URI. Used in Request source values and
+        Response sink values.<br><br>
+        @param uri:UUri to validate.
+        @return:Returns UStatus containing a success or a failure with the error message.
+        """
         status = UriValidator.validate(uri)
         if status.isFailed():
             return status

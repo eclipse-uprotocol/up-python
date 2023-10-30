@@ -27,10 +27,17 @@ import socket
 from enum import Enum
 from typing import Optional
 
-from org_eclipse_uprotocol.uri.datamodel.uauthority import UAuthority
-from org_eclipse_uprotocol.uri.datamodel.uentity import UEntity
-from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
+from org_eclipse_uprotocol.proto.uri_pb2 import UResource
+from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
+
+
+
+from org_eclipse_uprotocol.uri.factory.uauthority_factory import UAuthorityFactory
+from org_eclipse_uprotocol.uri.factory.uentity_factory import UEntityFactory
+from org_eclipse_uprotocol.uri.factory.uresource_factory import UResourceFactory
+from org_eclipse_uprotocol.uri.factory.uuri_factory import UUriFactory
 from org_eclipse_uprotocol.uri.serializer.uriserializer import UriSerializer
 
 
@@ -70,12 +77,12 @@ class MicroUriSerializer(UriSerializer):
         @param uri:The UUri data object.
         @return:Returns a byte[] representing the serialized UUri.
         """
-        if uri is None or uri.is_empty() or not uri.is_micro_form():
+        if uri is None or UUriFactory.is_empty(uri) or not UUriFactory.is_micro_form(uri):
             return bytearray()
 
-        maybe_address = uri.get_u_authority().address
-        maybe_ue_id = uri.get_u_entity().id
-        maybe_uresource_id = uri.get_u_resource().id
+        maybe_address = uri.authority.ip
+        maybe_ue_id = uri.entity.id
+        maybe_uresource_id = uri.resource.id
 
         os = io.BytesIO()
         os.write(bytes([self.UP_VERSION]))
@@ -89,21 +96,21 @@ class MicroUriSerializer(UriSerializer):
 
         os.write(maybe_uresource_id.to_bytes(2, byteorder='big'))
 
-        maybe_uauthority_address_bytes = self.calculate_uauthority_bytes(uri.get_u_authority())
+        maybe_uauthority_address_bytes = self.calculate_uauthority_bytes(uri.authority)
         if maybe_uauthority_address_bytes:
             os.write(maybe_uauthority_address_bytes)
 
         os.write(maybe_ue_id.to_bytes(2, byteorder='big'))
 
-        version = uri.get_u_entity().get_version()
+        version = uri.entity.version_major
         os.write(version.to_bytes(1, byteorder='big') if version else b'\x00')
         os.write(b'\x00')  # Unused byte
 
         return os.getvalue()
 
     def calculate_uauthority_bytes(self, uauthority: UAuthority) -> Optional[bytes]:
-        maybe_address = uauthority.address
-        return maybe_address.packed if maybe_address else None
+        maybe_ip = uauthority.ip
+        return maybe_ip.packed if maybe_ip else None
 
     def deserialize(self, micro_uri: bytes) -> UUri:
         """
@@ -112,37 +119,37 @@ class MicroUriSerializer(UriSerializer):
         @return:Returns an UUri data object from the serialized format of a microUri.
         """
         if micro_uri is None or len(micro_uri) < self.LOCAL_MICRO_URI_LENGTH:
-            return UUri.empty()
+            return UUriFactory.empty()
 
         if micro_uri[0] != self.UP_VERSION:
-            return UUri.empty()
+            return UUriFactory.empty()
 
         uresource_id = int.from_bytes(micro_uri[2:4], byteorder='big')
         address_type = AddressType.from_value(micro_uri[1])
 
         if address_type == AddressType.LOCAL and len(micro_uri) != self.LOCAL_MICRO_URI_LENGTH:
-            return UUri.empty()
+            return UUriFactory.empty()
         elif address_type == AddressType.IPv4 and len(micro_uri) != self.IPV4_MICRO_URI_LENGTH:
-            return UUri.empty()
+            return UUriFactory.empty()
         elif address_type == AddressType.IPv6 and len(micro_uri) != self.IPV6_MICRO_URI_LENGTH:
-            return UUri.empty()
+            return UUriFactory.empty()
 
         index = 4
         if address_type == AddressType.LOCAL:
-            u_authority = UAuthority.local()
+            u_authority = UAuthorityFactory.local()
         else:
             try:
                 inet_address = socket.inet_ntop(socket.AF_INET, micro_uri[
                                                                 index:index + 4]) if address_type == AddressType.IPv4\
                     else socket.inet_ntop(
                     socket.AF_INET6, micro_uri[index:index + 16])
-                u_authority = UAuthority.micro_remote(ipaddress.ip_address(inet_address))
+                u_authority = UAuthorityFactory.micro_remote(socket.inet_aton(ipaddress.ip_address(inet_address)))
             except:
-                u_authority = UAuthority.local()
+                u_authority = UAuthorityFactory.local()
             index += 4 if address_type == AddressType.IPv4 else 16
 
         ue_id = int.from_bytes(micro_uri[index:index + 2], byteorder='big')
         ui_version = micro_uri[index + 2]
 
-        return UUri(u_authority, UEntity.micro_format_id_version(ue_id, ui_version if ui_version != 0 else None),
-                    UResource.micro_format(uresource_id))
+        return UUriFactory.create_uuri(u_authority, UEntityFactory.micro_format_id_version(ue_id, ui_version if ui_version != 0 else None),
+                    UResourceFactory.micro_format(uresource_id))

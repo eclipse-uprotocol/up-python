@@ -22,7 +22,7 @@
 
 from org_eclipse_uprotocol.transport.datamodel.umessagetype import UMessageType
 from org_eclipse_uprotocol.transport.datamodel.upriority import UPriority
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uuid.factory import UUID
 
 

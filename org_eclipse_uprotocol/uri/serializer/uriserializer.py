@@ -25,10 +25,11 @@ from abc import ABC, abstractmethod
 from re import T
 from typing import Optional
 
-from org_eclipse_uprotocol.uri.datamodel.uauthority import UAuthority
-from org_eclipse_uprotocol.uri.datamodel.uentity import UEntity
-from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
+from org_eclipse_uprotocol.uri.factory.uauthority_factory import UAuthorityFactory
+from org_eclipse_uprotocol.uri.factory.uentity_factory import UEntityFactory
+from org_eclipse_uprotocol.uri.factory.uresource_factory import UResourceFactory
+from org_eclipse_uprotocol.uri.factory.uuri_factory import UUriFactory
 
 
 class UriSerializer(ABC):
@@ -65,24 +66,24 @@ class UriSerializer(ABC):
         @return:Returns a UUri object serialized from one of the forms.
         """
         if (not long_uri or long_uri.isspace()) and (not micro_uri or len(micro_uri) == 0):
-            return Optional.of(UUri.empty())
+            return UUriFactory.empty()
         from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
         from org_eclipse_uprotocol.uri.serializer.microuriserializer import MicroUriSerializer
         long_u_uri = LongUriSerializer().deserialize(long_uri)
         micro_u_uri = MicroUriSerializer().deserialize(micro_uri)
 
-        u_authority = (UAuthority.local() if long_u_uri.get_u_authority().is_local() else UAuthority.resolved_remote(
-            long_u_uri.get_u_authority().device or None, long_u_uri.get_u_authority().domain or None,
-            micro_u_uri.get_u_authority().address or None))
+        u_authority = (UAuthorityFactory.local() if UAuthorityFactory.is_local(
+            long_u_uri.authority) else UAuthorityFactory.resolved_remote(long_u_uri.authority.name or None,
+                                                                         micro_u_uri.authority.ip or None))
 
-        u_entity = UEntity.resolved_format(long_u_uri.get_u_entity().get_name(),
-                                           long_u_uri.get_u_entity().get_version() or None,
-                                           micro_u_uri.get_u_entity().get_id() or None)
+        u_entity = UEntityFactory.resolved_format(long_u_uri.entity.name, long_u_uri.entity.version_major or None,
+                                                  long_u_uri.entity.version_minor or None,
+                                                  micro_u_uri.entity.id or None)
 
-        u_resource = UResource.resolved_format(long_u_uri.get_u_resource().get_name(),
-                                               long_u_uri.get_u_resource().get_instance() or None,
-                                               long_u_uri.get_u_resource().get_message() or None,
-                                               micro_u_uri.get_u_resource().get_id() or None)
+        u_resource = UResourceFactory.resolved_format(long_u_uri.resource.name,
+                                               long_u_uri.resource.instance or None,
+                                               long_u_uri.resource.message or None,
+                                               micro_u_uri.resource.id or None)
 
         u_uri = UUri(u_authority, u_entity, u_resource)
         return u_uri if u_uri.is_resolved() else None

@@ -22,8 +22,10 @@
 # -------------------------------------------------------------------------
 
 from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
-from org_eclipse_uprotocol.uri.datamodel.uresource import UResource
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
+
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
+from org_eclipse_uprotocol.uri.factory.uresource_factory import UResourceFactory
+from org_eclipse_uprotocol.uri.factory.uuri_factory import UUriFactory
 
 
 class UriValidator:
@@ -38,10 +40,10 @@ class UriValidator:
         @param uri:UUri to validate.
         @return:Returns UStatus containing a success or a failure with the error message.
         """
-        if uri.is_empty():
+        if UUriFactory.is_empty(uri):
             return UStatus.failed_with_msg_and_code("Uri is empty.", Code.INVALID_ARGUMENT)
 
-        if uri.get_u_entity().name.strip() == "":
+        if uri.entity.name.strip() == "":
             return UStatus.failed_with_msg_and_code("Uri is missing uSoftware Entity name.", Code.INVALID_ARGUMENT)
 
         return UStatus.ok()
@@ -58,8 +60,8 @@ class UriValidator:
         if status.isFailed():
             return status
 
-        u_resource = uri.get_u_resource()
-        if not u_resource.is_rpc_method():
+        u_resource = uri.resource
+        if not UResourceFactory.is_rpc_method(u_resource):
             return UStatus.failed_with_msg_and_code(
                 "Invalid RPC method uri. Uri should be the method to be called, or method from response.",
                 Code.INVALID_ARGUMENT)
@@ -78,8 +80,9 @@ class UriValidator:
         if status.isFailed():
             return status
 
-        u_resource = uri.get_u_resource()
-        if not (u_resource.is_rpc_method() and u_resource.instance == UResource.for_rpc_response().instance):
+        u_resource = uri.resource
+        if not (UResourceFactory.is_rpc_method(
+                u_resource) and u_resource.instance == UResourceFactory.for_rpc_response().instance):
             return UStatus.failed_with_msg_and_code("Invalid RPC response type.", Code.INVALID_ARGUMENT)
 
         return UStatus.ok()

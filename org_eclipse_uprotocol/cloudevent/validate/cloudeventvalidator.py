@@ -30,7 +30,7 @@ from google.rpc.status_pb2 import Status
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventtype import UCloudEventType
 from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from org_eclipse_uprotocol.cloudevent.validate.validationresult import ValidationResult
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 
 

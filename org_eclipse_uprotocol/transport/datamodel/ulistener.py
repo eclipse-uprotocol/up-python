@@ -25,7 +25,7 @@ from abc import ABC, abstractmethod
 from org_eclipse_uprotocol.transport.datamodel.uattributes import UAttributes
 from org_eclipse_uprotocol.transport.datamodel.upayload import UPayload
 from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus
-from org_eclipse_uprotocol.uri.datamodel.uuri import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 
 
 class UListener(ABC):

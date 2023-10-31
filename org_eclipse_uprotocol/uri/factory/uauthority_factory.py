@@ -44,7 +44,7 @@ class UAuthorityFactory:
         @return:Returns a local uAuthority that has no domain, device, or ip address information, indicating to
         uProtocol that the uAuthority part in the UUri is relative to the sender/receiver deployment environment.
         """
-        return UAuthority(isLocal=True)
+        return UAuthority()
 
     @staticmethod
     def long_remote(name: str) -> UAuthority:
@@ -59,7 +59,7 @@ class UAuthorityFactory:
         @return:Returns a uAuthority that contains the device and the domain and can only be serialized in long UUri
         format.
         """
-        return UAuthority(name=name, isLocal=False)
+        return UAuthority(name=name)
 
     @staticmethod
     def micro_remote(ip: bytes) -> UAuthority:
@@ -71,7 +71,7 @@ class UAuthorityFactory:
         @return:Returns a uAuthority that contains only the internet address of the device, and can only be
         serialized in micro UUri format.
         """
-        return UAuthority(ip=ip, isLocal=False)
+        return UAuthority(ip=ip)
 
     @staticmethod
     def empty() -> UAuthority:
@@ -91,7 +91,7 @@ class UAuthorityFactory:
         @return:Returns true if this uAuthority is remote, meaning it contains information for serialising a long
         UUri or a micro UUri.
         """
-        return not uauthority.isLocal
+        return not UAuthorityFactory.is_empty(uauthority)
 
     @staticmethod
     def is_local(uauthority: UAuthority) -> bool:
@@ -101,7 +101,7 @@ class UAuthorityFactory:
         @return:Returns true if this uAuthority is local, meaning does not contain a device/domain for long UUri or
         information for micro UUri.
         """
-        return UAuthorityFactory.is_empty(uauthority) and uauthority.isLocal
+        return UAuthorityFactory.is_empty(uauthority)
 
     @staticmethod
     def is_long_form(uauthority: UAuthority) -> bool:
@@ -110,7 +110,7 @@ class UAuthorityFactory:
         @param uauthority: uAuthority protobuf message
         @return:Returns true if the UAuthority can be used to serialize a UUri in long format.
         """
-        return uauthority.isLocal or not uauthority.name.strip() == ""
+        return not uauthority.name.strip() == ""
 
     @staticmethod
     def is_micro_form(uauthority: UAuthority) -> bool:
@@ -119,11 +119,11 @@ class UAuthorityFactory:
         @param uauthority: uAuthority protobuf message
         @return:Returns true if the uAuthority can be serialized a UUri in micro format.
         """
-        return uauthority.isLocal or len(uauthority.ip) != 0
+        return len(uauthority.ip) != 0
 
     @staticmethod
     def is_empty(uauthority: UAuthority) -> bool:
-        return all([uauthority.name.strip() == "", len(uauthority.ip) == 0])
+        return all([uauthority.name.strip() == "", len(uauthority.ip) == 0,len(uauthority.id) == 0])
 
     @staticmethod
     def resolved_remote(name: str, ip: bytes):

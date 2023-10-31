@@ -75,7 +75,7 @@ class UEntityFactory:
         be serialized to long micro UUri format.
         """
         entity = UEntity()
-        if identifier is not None or identifier != 0:
+        if identifier is not None and identifier != 0:
             entity.id = identifier
         return entity
 
@@ -91,11 +91,11 @@ class UEntityFactory:
         UUri format.
         """
         entity=UEntity()
-        if identifier is not None or identifier!=0:
+        if identifier is not None and identifier!=0:
             entity.id=identifier
-        if version_major is not None or version_major!=0:
+        if version_major is not None and version_major!=0:
             entity.version_major=version_major
-        if version_minor is not None or version_minor!=0:
+        if version_minor is not None and version_minor!=0:
             entity.version_minor=version_minor
         return entity
 

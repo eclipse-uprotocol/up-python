@@ -59,9 +59,9 @@ class UResourceFactory:
         @return:Returns a UResource that can be serialised into a long UUri.
         """
         resource = UResource(name=name if name else "")
-        if instance is not None or instance != "":
+        if instance is not None and instance != "":
             resource.instance = instance
-        if message is not None or message != "":
+        if message is not None and message != "":
             resource.message = message
         return resource
 
@@ -101,9 +101,9 @@ class UResourceFactory:
         @return:Returns a UResource used for an RPC request that could be serialised in long and micro format.
         """
         resource = UResource(name="rpc")
-        if method_name is not None or method_name != "":
+        if method_name is not None and method_name != "":
             resource.instance = method_name
-        if method_id is not None or method_id != 0:
+        if method_id is not None and method_id != 0:
             resource.id = method_id
         return resource
 
@@ -179,10 +179,10 @@ class UResourceFactory:
         micro UUri.
         """
         resource = UResource(name if name else "")
-        if instance is not None or instance != "":
+        if instance is not None and instance != "":
             resource.instance = instance
-        if message is not None or message != "":
+        if message is not None and message != "":
             resource.message = message
-        if identifier is not None or identifier != 0:
+        if identifier is not None and identifier != 0:
             resource.id = identifier
         return resource

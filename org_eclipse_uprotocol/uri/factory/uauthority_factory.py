@@ -21,8 +21,6 @@
 
 # -------------------------------------------------------------------------
 
-import ipaddress
-from typing import Optional
 from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
 
 
@@ -123,7 +121,7 @@ class UAuthorityFactory:
 
     @staticmethod
     def is_empty(uauthority: UAuthority) -> bool:
-        return all([uauthority.name.strip() == "", len(uauthority.ip) == 0,len(uauthority.id) == 0])
+        return all([uauthority.name.strip() == "", len(uauthority.ip) == 0, len(uauthority.id) == 0])
 
     @staticmethod
     def resolved_remote(name: str, ip: bytes):

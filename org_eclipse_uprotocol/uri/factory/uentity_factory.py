@@ -80,7 +80,7 @@ class UEntityFactory:
         return entity
 
     @staticmethod
-    def micro_format_id_version(identifier: int, version_major: int, version_minor:int):
+    def micro_format_id_version(identifier: int, version_major: int, version_minor: int):
         """
         Static factory method for creating a uE using the software entity identification number, that can be used to
         serialize micro UUris.<br><br>
@@ -90,13 +90,13 @@ class UEntityFactory:
         @return:Returns an UEntity with the name and the version of the service and can only be serialized to micro
         UUri format.
         """
-        entity=UEntity()
-        if identifier is not None and identifier!=0:
-            entity.id=identifier
-        if version_major is not None and version_major!=0:
-            entity.version_major=version_major
-        if version_minor is not None and version_minor!=0:
-            entity.version_minor=version_minor
+        entity = UEntity()
+        if identifier is not None and identifier != 0:
+            entity.id = identifier
+        if version_major is not None and version_major != 0:
+            entity.version_major = version_major
+        if version_minor is not None and version_minor != 0:
+            entity.version_minor = version_minor
         return entity
 
     @staticmethod

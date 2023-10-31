@@ -21,8 +21,8 @@
 
 # -------------------------------------------------------------------------
 
-from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
 from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
+from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
 from org_eclipse_uprotocol.proto.uri_pb2 import UResource
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uri.factory.uauthority_factory import UAuthorityFactory

@@ -122,7 +122,7 @@ class UResourceFactory:
         @param uresource: UResource protobuf message
         @return:Returns true if this resource specifies an RPC method call or RPC response.
         """
-        return uresource.name == "rpc"
+        return uresource.name == "rpc" and (uresource.instance.strip() != "" or uresource.id != 0)
 
     @staticmethod
     def empty():

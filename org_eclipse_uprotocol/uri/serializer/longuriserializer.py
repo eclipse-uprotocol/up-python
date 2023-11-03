@@ -23,19 +23,12 @@
 
 import re
 
-from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
-from org_eclipse_uprotocol.proto.uri_pb2 import UResource
 from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
-
-
-
-from org_eclipse_uprotocol.uri.factory.uauthority_factory import UAuthorityFactory
-from org_eclipse_uprotocol.uri.factory.uentity_factory import UEntityFactory
-from org_eclipse_uprotocol.uri.factory.uresource_factory import UResourceFactory
-from org_eclipse_uprotocol.uri.factory.uuri_factory import UUriFactory
-
+from org_eclipse_uprotocol.proto.uri_pb2 import UResource
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uri.serializer.uriserializer import UriSerializer
+from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 
 
 class LongUriSerializer(UriSerializer):
@@ -52,39 +45,35 @@ class LongUriSerializer(UriSerializer):
         @return:Returns the String format of the supplied UUri that can be used as a sink or a source in a
         uProtocol publish communication.
         """
-        if uri is None or UUriFactory.is_empty(uri):
+        if uri is None or UriValidator.is_empty(uri):
             return ""
 
         sb = []
 
-        sb.append(self.build_authority_part_of_uri(uri.authority))
+        if not UriValidator.is_authority_empty(uri.authority):
+            sb.append(self.build_authority_part_of_uri(uri.authority))
 
-        if not UAuthorityFactory.is_local(uri.authority):
-            sb.append("/")
-
-        if UEntityFactory.is_empty(uri.entity):
-            return "".join(sb)
+        sb.append("/")
 
         sb.append(self.build_software_entity_part_of_uri(uri.entity))
-
         sb.append(self.build_resource_part_of_uri(uri.resource))
 
         return re.sub('/+$', '', "".join(sb))
 
     @staticmethod
-    def build_resource_part_of_uri(res: UResource) -> str:
-        if UResourceFactory.is_empty(res):
+    def build_resource_part_of_uri(u_resource: UResource) -> str:
+
+        if UriValidator.is_resource_empty(u_resource):
             return ""
 
-        sb = ["/", res.name]
+        sb = "/" + u_resource.name
 
-        if res.instance:
-            sb.append("." + res.instance)
+        if u_resource.instance:
+            sb += "." + u_resource.instance
+        if u_resource.message:
+            sb += "#" + u_resource.message
 
-        if res.message:
-            sb.append("#" + res.message)
-
-        return "".join(sb)
+        return sb
 
     @staticmethod
     def build_software_entity_part_of_uri(entity: UEntity) -> str:
@@ -93,12 +82,13 @@ class LongUriSerializer(UriSerializer):
         @param entity:Software Entity representing a service or an application.
         @return: Returns the String representation of the UEntity in the uProtocol URI.
         """
-        sb = [entity.name.strip(), "/"]
+        sb = str(entity.name.strip())
+        sb += "/"
 
-        if entity.version_major:
-            sb.append(str(entity.version_major))
+        if entity.version_major > 0:
+            sb += str(entity.version_major)
 
-        return "".join(sb)
+        return sb
 
     @staticmethod
     def build_authority_part_of_uri(authority: UAuthority) -> str:
@@ -107,16 +97,14 @@ class LongUriSerializer(UriSerializer):
         @param authority:represents the deployment location of a specific  Software Entity in the Ultiverse.
         @return:Returns the String representation of the  Authority in the uProtocol URI.
         """
-        if UAuthorityFactory.is_local(authority):
-            return "/"
 
-        partial_uri = ["//"]
+        partial_uri = "//"
         maybe_name = authority.name
 
-        if maybe_name:
-            partial_uri.append(maybe_name)
+        if maybe_name is not None or maybe_name != "":
+            partial_uri += maybe_name
 
-        return "".join(partial_uri)
+        return partial_uri
 
     def deserialize(self, u_protocol_uri: str) -> UUri:
         """
@@ -125,57 +113,68 @@ class LongUriSerializer(UriSerializer):
         @return:Returns an UUri data object.
         """
         if u_protocol_uri is None or u_protocol_uri.strip() == "":
-            return UUri.empty()
-
-        uri = u_protocol_uri.split(":")[-1].replace('\\', '/')
+            return UUri()
+        uri = u_protocol_uri[u_protocol_uri.index(":") + 1:] if ":" in u_protocol_uri else u_protocol_uri.replace('\\',
+                                                                                                                  '/')
         is_local = not uri.startswith("//")
         uri_parts = uri.split("/")
         number_of_parts_in_uri = len(uri_parts)
 
         if number_of_parts_in_uri == 0 or number_of_parts_in_uri == 1:
-            if is_local:
-                return UUriFactory.empty()
-            else:
-                return UUriFactory.create_uuri(UAuthority.long_remote("", ""), UEntity.empty(), UResource.empty())
+            return UUri()
 
-        use_name = uri_parts[1]
+        use_name = ""
         use_version = ""
+        u_resource = None
+        u_authority = None
 
         if is_local:
-            auth = UAuthorityFactory.local()
+            use_name = uri_parts[1]
             if number_of_parts_in_uri > 2:
                 use_version = uri_parts[2]
-                res = self.parse_from_string(uri_parts[3]) if number_of_parts_in_uri > 3 else UResource.empty()
-            else:
-                res = UResourceFactory.empty()
-        else:
-            authority_parts = uri_parts[2].split(".")
-            device = authority_parts[0]
-            domain = ".".join(authority_parts[1:]) if len(authority_parts) > 1 else ""
-            auth = UAuthorityFactory.long_remote(device+domain)
+                if number_of_parts_in_uri > 3:
+                    u_resource = self.parse_from_string(uri_parts[3])
 
-            if number_of_parts_in_uri > 3:
+        else:
+            if uri_parts[2].strip() == "":
+                return UUri()
+            u_authority = UAuthority(name=uri_parts[2])
+            if len(uri_parts) > 3:
                 use_name = uri_parts[3]
                 if number_of_parts_in_uri > 4:
                     use_version = uri_parts[4]
-                    res = self.parse_from_string(uri_parts[5]) if number_of_parts_in_uri > 5 else UResource.empty()
-                else:
-                    res = UResourceFactory.empty()
+                    if number_of_parts_in_uri > 5:
+                        u_resource = self.parse_from_string(uri_parts[5])
             else:
-                return UUriFactory.create_uuri(auth, UEntity.empty(), UResource.empty())
+                return UUri(authority=u_authority)
 
-        use_version_int = int(use_version) if use_version.strip() else None
+        use_version_int = None
+        try:
+            if use_version.strip() != "":
+                use_version_int = int(use_version)
+        except ValueError:
+            return UUri()
 
-        return UUriFactory.create_uuri(auth, UEntityFactory.long_format(use_name,version_major= use_version_int), res)
+        u_entity_builder = UEntity(name=use_name)
+        if use_version_int is not None:
+            u_entity_builder.version_major = use_version_int
+
+        new_uri = UUri(entity=u_entity_builder)
+        if u_authority is not None:
+            new_uri.authority = u_authority
+        if u_resource is not None:
+            new_uri.resource = u_resource
+
+        return new_uri
 
     @staticmethod
     def parse_from_string(resource_string: str) -> UResource:
         """
-        Static factory method for creating a UResource using a string that contains name + instance + message.<br><br>
+        Static builder method for creating a UResource using a string that contains name + instance + message.<br><br>
         @param resource_string:String that contains the UResource information.
         @return:Returns a UResource object.
         """
-        if resource_string is None:
+        if resource_string is None or resource_string.strip() == "":
             raise ValueError("Resource must have a command name.")
 
         parts = resource_string.split("#")
@@ -186,4 +185,10 @@ class LongUriSerializer(UriSerializer):
         resource_instance = name_and_instance_parts[1] if len(name_and_instance_parts) > 1 else None
         resource_message = parts[1] if len(parts) > 1 else None
 
-        return UResourceFactory.long_format_instance_message(resource_name, resource_instance, resource_message)
+        u_resource = UResource(name=resource_name)
+        if resource_instance is not None:
+            u_resource.instance = resource_instance
+        if resource_message is not None:
+            u_resource.message = resource_message
+
+        return u_resource

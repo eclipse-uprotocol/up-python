@@ -26,10 +26,7 @@ from re import T
 from typing import Optional
 
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
-from org_eclipse_uprotocol.uri.factory.uauthority_factory import UAuthorityFactory
-from org_eclipse_uprotocol.uri.factory.uentity_factory import UEntityFactory
-from org_eclipse_uprotocol.uri.factory.uresource_factory import UResourceFactory
-from org_eclipse_uprotocol.uri.factory.uuri_factory import UUriFactory
+from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 
 
 class UriSerializer(ABC):
@@ -66,24 +63,22 @@ class UriSerializer(ABC):
         @return:Returns a UUri object serialized from one of the forms.
         """
         if (not long_uri or long_uri.isspace()) and (not micro_uri or len(micro_uri) == 0):
-            return UUriFactory.empty()
+            return UUri()
         from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
         from org_eclipse_uprotocol.uri.serializer.microuriserializer import MicroUriSerializer
         long_u_uri = LongUriSerializer().deserialize(long_uri)
         micro_u_uri = MicroUriSerializer().deserialize(micro_uri)
 
-        u_authority = (UAuthorityFactory.local() if UAuthorityFactory.is_local(
-            long_u_uri.authority) else UAuthorityFactory.resolved_remote(long_u_uri.authority.name or None,
-                                                                         micro_u_uri.authority.ip or None))
 
-        u_entity = UEntityFactory.resolved_format(long_u_uri.entity.name, long_u_uri.entity.version_major or None,
-                                                  long_u_uri.entity.version_minor or None,
-                                                  micro_u_uri.entity.id or None)
 
-        u_resource = UResourceFactory.resolved_format(long_u_uri.resource.name,
-                                               long_u_uri.resource.instance or None,
-                                               long_u_uri.resource.message or None,
-                                               micro_u_uri.resource.id or None)
+        u_authority=micro_u_uri.authority
+        u_authority.name=long_u_uri.authority.name
 
-        u_uri = UUri(u_authority, u_entity, u_resource)
-        return u_uri if u_uri.is_resolved() else None
+        u_entity= micro_u_uri.u_entity
+        u_entity.name =long_u_uri.entity.name
+
+        u_resource=long_u_uri.resource
+        u_resource.id=micro_u_uri.resource.id
+
+        u_uri = UUri(authority=u_authority, entity=u_entity,resource= u_resource)
+        return u_uri if UriValidator.is_resolved(u_uri) else None

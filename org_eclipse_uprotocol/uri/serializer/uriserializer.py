@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 
 # Copyright (c) 2023 General Motors GTO LLC
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -9,17 +9,21 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
+
 
 from abc import ABC, abstractmethod
 from re import T
@@ -69,16 +73,14 @@ class UriSerializer(ABC):
         long_u_uri = LongUriSerializer().deserialize(long_uri)
         micro_u_uri = MicroUriSerializer().deserialize(micro_uri)
 
+        u_authority = micro_u_uri.authority
+        u_authority.name = long_u_uri.authority.name
 
+        u_entity = micro_u_uri.u_entity
+        u_entity.name = long_u_uri.entity.name
 
-        u_authority=micro_u_uri.authority
-        u_authority.name=long_u_uri.authority.name
+        u_resource = long_u_uri.resource
+        u_resource.id = micro_u_uri.resource.id
 
-        u_entity= micro_u_uri.u_entity
-        u_entity.name =long_u_uri.entity.name
-
-        u_resource=long_u_uri.resource
-        u_resource.id=micro_u_uri.resource.id
-
-        u_uri = UUri(authority=u_authority, entity=u_entity,resource= u_resource)
+        u_uri = UUri(authority=u_authority, entity=u_entity, resource=u_resource)
         return u_uri if UriValidator.is_resolved(u_uri) else None

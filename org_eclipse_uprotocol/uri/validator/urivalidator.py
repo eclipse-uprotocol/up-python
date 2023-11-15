@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 
 # Copyright (c) 2023 General Motors GTO LLC
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -9,18 +9,23 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
+
+# -------------------------------------------------------------------------
+
 
 from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
-# -------------------------------------------------------------------------
 from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
 from org_eclipse_uprotocol.proto.uri_pb2 import UResource
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
@@ -79,8 +84,7 @@ class UriValidator:
             return status
 
         u_resource = uri.resource
-        if not (UriValidator.is_rpc_method(
-                u_resource) and u_resource.instance == UResource.for_rpc_response().instance):
+        if not UriValidator.is_rpc_response(uri):
             return UStatus.failed_with_msg_and_code("Invalid RPC response type.", Code.INVALID_ARGUMENT)
 
         return UStatus.ok()
@@ -132,9 +136,9 @@ class UriValidator:
         if uuri is None:
             raise ValueError("Uri cannot be None.")
 
-        resource = uuri.get_resource()
-        return UriValidator.is_rpc_method(uuri) and (
-                (uuri.resource.instance.strip() != "" and "response" in resource.Instance) or resource.get_id() != 0)
+        return UriValidator.is_rpc_method(uuri) and ((
+                                                                 uuri.resource.instance.strip() != "" and "response"
+                                                                 in uuri.resource.instance) or uuri.resource.id != 0)
 
     @staticmethod
     def is_micro_form(uuri: UUri) -> bool:
@@ -144,8 +148,8 @@ class UriValidator:
         @return:Returns true if this UUri can be serialized into a micro form UUri.
         """
         return not UriValidator.is_empty(uuri) and (
-                    UriValidator.is_authority_empty(uuri.authority) or len(uuri.authority.ip) != 0 or len(
-                uuri.authority.id) != 0) and uuri.entity.id != 0 and uuri.resource.id != 0
+                UriValidator.is_authority_empty(uuri.authority) or len(uuri.authority.ip) != 0 or len(
+            uuri.authority.id) != 0) and uuri.entity.id != 0 and uuri.resource.id != 0
 
     @staticmethod
     def is_long_form(uuri: UUri) -> bool:
@@ -155,8 +159,8 @@ class UriValidator:
         @return:Returns true if this UUri can be serialized into a long form UUri.
         """
         return (
-                    uuri.authority.name.strip() != "" and uuri.entity.name.strip() != "" and
-                    uuri.resource.name.strip() != "")
+                uuri.authority.name.strip() != "" and uuri.entity.name.strip() != "" and uuri.resource.name.strip()
+                != "")
 
     @staticmethod
     def is_remote(uuri: UUri) -> bool:

@@ -25,33 +25,33 @@
 # -------------------------------------------------------------------------
 
 
-from org_eclipse_uprotocol.proto.uri_pb2 import UResource
+from abc import ABC, abstractmethod
+from typing import TypeVar, Generic
+
+from org_eclipse_uprotocol.proto.uuid_pb2 import UUID
+
+T = TypeVar('T')
 
 
-class UResourceBuilder:
-    MAX_RPC_ID = 1000
+class UuidSerializer(ABC, Generic[T]):
+    """
+    UUID Serializer interface used to serialize/deserialize UUIDs to/from either Long (string) or micro (bytes) form
+    """
 
-    @staticmethod
-    def for_rpc_response():
-        return UResource(name="rpc", instance="response", id=0)
+    @abstractmethod
+    def deserialize(self, uuid: T) -> UUID:
+        """
+        Deserialize from the format to a UUID.
+        :param uuid: Serialized UUID.
+        :return: Returns a UUID object from the serialized format from the wire.
+        """
+        pass  # Implement your deserialization logic here
 
-    @staticmethod
-    def for_rpc_request(method, id=None):
-        uresource = UResource(name="rpc")
-        if method is not None:
-            uresource.instance = method
-        if id is not None:
-            uresource.id = id
-
-        return uresource
-
-    @staticmethod
-    def for_rpc_request_with_id(id):
-        return UResourceBuilder.for_rpc_request(None, id)
-
-    @staticmethod
-    def from_id(id):
-        if id is None:
-            raise ValueError("id cannot be None")
-
-        return UResourceBuilder.for_rpc_request(id) if id < UResourceBuilder.MAX_RPC_ID else UResource(id=id)
+    @abstractmethod
+    def serialize(self, uuid: UUID) -> T:
+        """
+        Serialize from a UUID to a specific serialization format.
+        :param uuid: UUID object to be serialized to the format T.
+        :return: Returns the UUID in the transport serialized format.
+        """
+        pass  # Implement your serialization logic here

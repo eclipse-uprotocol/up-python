@@ -5,7 +5,7 @@ import uuid
 from typing import Tuple
 
 
-class UUID(uuid.UUID):
+class PythonUUID(uuid.UUID):
     r"""UUID draft version objects"""
 
     def __init__(
@@ -76,7 +76,7 @@ _last_v7_timestamp = None
 _last_v8_timestamp = None
 
 
-def uuid6(clock_seq: int = None) -> UUID:
+def uuid6(clock_seq: int = None) -> PythonUUID:
     r"""UUID version 6 is a field-compatible version of UUIDv1, reordered for
     improved DB locality. It is expected that UUIDv6 will primarily be
     used in contexts where there are existing v1 UUIDs. Systems that do
@@ -102,10 +102,10 @@ def uuid6(clock_seq: int = None) -> UUID:
     uuid_int |= time_low_and_version << 64
     uuid_int |= (clock_seq & 0x3FFF) << 48
     uuid_int |= secrets.randbits(48)
-    return UUID(int=uuid_int, version=6)
+    return PythonUUID(int=uuid_int, version=6)
 
 
-def uuid7() -> UUID:
+def uuid7() -> PythonUUID:
     r"""UUID version 7 features a time-ordered value field derived from the
     widely implemented and well known Unix Epoch timestamp source, the
     number of milliseconds seconds since midnight 1 Jan 1970 UTC, leap
@@ -124,10 +124,10 @@ def uuid7() -> UUID:
     _last_v7_timestamp = timestamp_ms
     uuid_int = (timestamp_ms & 0xFFFFFFFFFFFF) << 80
     uuid_int |= secrets.randbits(76)
-    return UUID(int=uuid_int, version=7)
+    return PythonUUID(int=uuid_int, version=7)
 
 
-def uuid8() -> UUID:
+def uuid8() -> PythonUUID:
     r"""UUID version 8 features a time-ordered value field derived from the
     widely implemented and well known Unix Epoch timestamp source, the
     number of nanoseconds seconds since midnight 1 Jan 1970 UTC, leap
@@ -147,4 +147,4 @@ def uuid8() -> UUID:
     uuid_int |= subsec_a << 64
     uuid_int |= subsec_b << 54
     uuid_int |= secrets.randbits(54)
-    return UUID(int=uuid_int, version=8)
+    return PythonUUID(int=uuid_int, version=8)

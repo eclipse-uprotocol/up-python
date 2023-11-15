@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 
 # Copyright (c) 2023 General Motors GTO LLC
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -9,17 +9,21 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
+
 
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -27,9 +31,9 @@ from enum import Enum
 from cloudevents.http import CloudEvent
 from google.rpc.status_pb2 import Status
 
-from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventtype import UCloudEventType
 from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from org_eclipse_uprotocol.cloudevent.validate.validationresult import ValidationResult
+from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 
@@ -48,13 +52,15 @@ class CloudEventValidator(ABC):
         @return:Returns a CloudEventValidator according to the type attribute in the CloudEvent.
         """
         cloud_event_type = ce.get_attributes().get("type")
-        maybe_type = UCloudEventType(cloud_event_type)
-        if maybe_type not in UCloudEventType:
+
+        if cloud_event_type is None or not cloud_event_type:
             return Validators.PUBLISH.validator()
 
-        elif maybe_type == UCloudEventType.RESPONSE:
+        message_type = UCloudEvent.get_message_type(cloud_event_type)
+
+        if message_type == UMessageType.UMESSAGE_TYPE_RESPONSE:
             return Validators.RESPONSE.validator()
-        elif maybe_type == UCloudEventType.REQUEST:
+        elif message_type == UMessageType.UMESSAGE_TYPE_REQUEST:
             return Validators.REQUEST.validator()
         else:
             return Validators.PUBLISH.validator()
@@ -189,7 +195,7 @@ class CloudEventValidator(ABC):
         @param uri:String UriPart to validate.
         @return:Returns the ValidationResult containing a success or a failure with the error message.
         """
-        Uri = LongUriSerializer.deserialize(uri)
+        Uri = LongUriSerializer().deserialize(uri)
         return CloudEventValidator.validate_rpc_topic_uri_from_uuri(Uri)
 
     @staticmethod
@@ -220,7 +226,7 @@ class CloudEventValidator(ABC):
         @param uri: String UriPart to validate
         @return:Returns the ValidationResult containing a success or a failure with the error message.
         """
-        Uri = LongUriSerializer.deserialize(uri)
+        Uri = LongUriSerializer().deserialize(uri)
         validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(Uri)
         if validationResult.is_failure():
             return ValidationResult.failure(f"Invalid RPC method uri. {validationResult.get_message()}")

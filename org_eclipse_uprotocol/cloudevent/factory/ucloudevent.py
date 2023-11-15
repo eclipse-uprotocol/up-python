@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 
 # Copyright (c) 2023 General Motors GTO LLC
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -9,17 +9,21 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
+
 
 from datetime import datetime, timedelta
 
@@ -28,7 +32,9 @@ from google.protobuf import any_pb2
 from google.protobuf.message import DecodeError
 from google.rpc.code_pb2 import Code
 
+from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
+from org_eclipse_uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
 
 
 class UCloudEvent:
@@ -152,7 +158,7 @@ class UCloudEvent:
         @return:Return the timestamp from the UUIDV8 CloudEvent Id or an empty Optional if timestamp can't be extracted.
         """
         cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
-        uuid = UUIDUtils.fromString(cloud_event_id)
+        uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
 
         return UUIDUtils.getTime(uuid) if uuid is not None else None
 
@@ -166,7 +172,7 @@ class UCloudEvent:
         expiration.
         """
         maybe_ttl = UCloudEvent.get_ttl(ce)
-        if maybe_ttl is None or maybe_ttl <= 0:
+        if not maybe_ttl or maybe_ttl <= 0:
             return False
 
         cloud_event_creation_time = UCloudEvent.extract_string_value_from_attributes("time", ce)
@@ -187,12 +193,12 @@ class UCloudEvent:
         @return:Returns true if the CloudEvent was configured with a ttl &gt; 0 and UUIDv8 id to compare for expiration.
         """
         maybe_ttl = UCloudEvent.get_ttl(ce)
-        if maybe_ttl is None or maybe_ttl <= 0:
+        if not maybe_ttl or maybe_ttl <= 0:
             return False
         cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
 
         try:
-            uuid = UUIDUtils.fromString(cloud_event_id)
+            uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
             if uuid is None:
                 return False
             delta = datetime.utcnow().timestamp() - UUIDUtils.getTime(uuid).timestamp()
@@ -209,7 +215,7 @@ class UCloudEvent:
         @return: Returns true if the CloudEvent is valid.
         """
         cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
-        uuid = UUIDUtils.fromString(cloud_event_id)
+        uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
 
         return uuid is not None and UUIDUtils.isuuid(uuid)
 
@@ -288,3 +294,13 @@ class UCloudEvent:
         """
         value = UCloudEvent.extract_string_value_from_attributes(attr_name, ce)
         return int(value) if value is not None else None
+
+    @staticmethod
+    def get_event_type(type):
+        return {UMessageType.UMESSAGE_TYPE_PUBLISH: "pub.v1", UMessageType.UMESSAGE_TYPE_REQUEST: "req.v1",
+            UMessageType.UMESSAGE_TYPE_RESPONSE: "res.v1"}.get(type, "")
+
+    @staticmethod
+    def get_message_type(ce_type):
+        return {"pub.v1": UMessageType.UMESSAGE_TYPE_PUBLISH, "req.v1": UMessageType.UMESSAGE_TYPE_REQUEST,
+            "res.v1": UMessageType.UMESSAGE_TYPE_RESPONSE}.get(ce_type, UMessageType.UMESSAGE_TYPE_UNSPECIFIED)

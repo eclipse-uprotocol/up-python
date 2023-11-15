@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 
 # Copyright (c) 2023 General Motors GTO LLC
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -9,21 +9,24 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
 
 from typing import Optional
 
-from org_eclipse_uprotocol.transport.datamodel.upriority import UPriority
+from org_eclipse_uprotocol.proto.uattributes_pb2 import UPriority
 
 
 class UCloudEventAttributes:
@@ -31,7 +34,7 @@ class UCloudEventAttributes:
     Specifies the properties that can configure the UCloudEvent.
     """
 
-    def __init__(self, hash_value: str, priority: str, ttl: int, token: str):
+    def __init__(self, hash_value: str, priority: UPriority, ttl: int, token: str):
         """
         Construct the properties object.<br><br>
         @param hash_value: an HMAC generated on the data portion of the CloudEvent message using the device key.
@@ -67,9 +70,9 @@ class UCloudEventAttributes:
         An HMAC generated on the data portion of the CloudEvent message using the device key.<br><br>
         @return: Returns an Optional hash attribute.
         """
-        return None if not self.hash or self.hash.isspace() else self.hash
+        return self.hash if self.hash and self.hash.strip() else None
 
-    def priority(self) -> Optional[str]:
+    def priority(self) -> UPriority:
         """
         uProtocol Prioritization classifications defined at QoS in SDV-202.<br><br>
         @return: Returns an Optional priority attribute.
@@ -88,7 +91,7 @@ class UCloudEventAttributes:
         Oauth2 access token to perform the access request defined in the request message.<br><br>
         @return: Returns an Optional OAuth token attribute.
         """
-        return None if not self.token or self.token.isspace() else self.token
+        return self.token if self.token and self.token.strip() else None
 
     def __eq__(self, other):
         if self is other:
@@ -161,4 +164,11 @@ class UCloudEventAttributesBuilder:
         Construct the UCloudEventAttributes from the builder.<br><br>
         @return: Returns a constructed UProperty.
         """
-        return UCloudEventAttributes(self.hash, self.priority.qos_string, self.ttl, self.token)
+        return UCloudEventAttributes(self.hash, self.priority, self.ttl, self.token)
+
+
+if __name__ == "__main__":
+    # Example usage:
+    attributes = UCloudEventAttributesBuilder().with_hash("abc123").with_priority(UPriority.UPRIORITY_CS0).with_ttl(
+        1000).with_token("xyz456").build()
+    print(attributes)

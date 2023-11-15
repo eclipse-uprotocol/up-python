@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------
 
 # Copyright (c) 2023 General Motors GTO LLC
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -9,24 +9,27 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
+
 
 from abc import abstractmethod
 from datetime import datetime
 from enum import Enum
 
-from org_eclipse_uprotocol.transport.datamodel.uattributes import UAttributes
-from org_eclipse_uprotocol.transport.datamodel.umessagetype import UMessageType
+from org_eclipse_uprotocol.proto.uattributes_pb2 import UAttributes, UMessageType
 from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
@@ -54,9 +57,9 @@ class UAttributesValidator:
         """
         if attribute.type is None:
             return Validators.PUBLISH.validator()
-        elif attribute.type == UMessageType.RESPONSE:
+        elif attribute.type == UMessageType.UMESSAGE_TYPE_RESPONSE:
             return Validators.RESPONSE.validator()
-        elif attribute.type == UMessageType.REQUEST:
+        elif attribute.type == UMessageType.UMESSAGE_TYPE_REQUEST:
             return Validators.REQUEST.validator()
         else:
             return Validators.PUBLISH.validator()
@@ -115,7 +118,7 @@ class UAttributesValidator:
         @param attr:UAttributes object containing the permission level to validate.
         @return:Returns a UStatus indicating if the permissionLevel is valid or not.
         """
-        if attr.plevel and attr.plevel > 0:
+        if attr.permission_level and attr.permission_level > 0:
             return UStatus.ok()
         else:
             return UStatus.failed_with_msg_and_code("Invalid Permission Level", Code.INVALID_ARGUMENT)
@@ -208,8 +211,9 @@ class Publish(UAttributesValidator):
         @param attributes_value:UAttributes object containing the message type to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.type == UMessageType.PUBLISH else UStatus.failed_with_msg_and_code(
-            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT)
+        return UStatus.ok() if attributes_value.type == UMessageType.UMESSAGE_TYPE_PUBLISH else (
+            UStatus.failed_with_msg_and_code(
+            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT))
 
     def __str__(self):
         return "UAttributesValidator.Publish"
@@ -226,8 +230,9 @@ class Request(UAttributesValidator):
         @param attributes_value:UAttributes object containing the message type to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.type == UMessageType.REQUEST else UStatus.failed_with_msg_and_code(
-            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT)
+        return UStatus.ok() if attributes_value.type == UMessageType.UMESSAGE_TYPE_REQUEST else (
+            UStatus.failed_with_msg_and_code(
+            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT))
 
     def validate_sink(self, attributes_value: UAttributes) -> UStatus:
         """
@@ -264,8 +269,9 @@ class Response(UAttributesValidator):
         @param attributes_value:UAttributes object containing the message type to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.type == UMessageType.RESPONSE else UStatus.failed_with_msg_and_code(
-            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT)
+        return UStatus.ok() if attributes_value.type == UMessageType.UMESSAGE_TYPE_RESPONSE else (
+            UStatus.failed_with_msg_and_code(
+            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT))
 
     def validate_sink(self, attributes_value: UAttributes) -> UStatus:
         """

@@ -1,32 +1,39 @@
 # -------------------------------------------------------------------------
-# Copyright (c) 2023 General Motors GTO LLC
 
+# Copyright (c) 2023 General Motors GTO LLC
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
 # to you under the Apache License, Version 2.0 (the
-# "License") you may not use this file except in compliance
+# "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-
-#    http://www.apache.org/licenses/LICENSE-2.0
-
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# SPDX-FileType: SOURCE
+# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
+
 
 from cloudevents.http import CloudEvent
 from google.protobuf import empty_pb2
 from google.protobuf.any_pb2 import Any
 
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributes
-from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventtype import UCloudEventType
+from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
+from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
 from org_eclipse_uprotocol.uuid.factory.uuidfactory import Factories
+from org_eclipse_uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
 
 
 # A factory is a part of the software has methods to generate concrete objects, usually of the same type or
@@ -53,7 +60,8 @@ class CloudEventFactory:
 
                                                                proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
-                                                               UCloudEventType.REQUEST.type())
+                                                               UCloudEvent.get_event_type(
+                                                                   UMessageType.UMESSAGE_TYPE_REQUEST))
         cloud_event.__setitem__("sink", service_method_uri)
         cloud_event.__setitem__("reqid", request_id)
         return cloud_event
@@ -78,7 +86,8 @@ class CloudEventFactory:
 
                                                                proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
-                                                               UCloudEventType.RESPONSE.type())
+                                                               UCloudEvent.get_event_type(
+                                                                   UMessageType.UMESSAGE_TYPE_RESPONSE))
         cloud_event.__setitem__("sink", application_uri_for_rpc)
         cloud_event.__setitem__("reqid", request_id)
         return cloud_event
@@ -106,7 +115,8 @@ class CloudEventFactory:
 
                                                                empty_proto_payload.SerializeToString(),  # Empty payload
                                                                "google.protobuf.Empty", attributes,
-                                                               UCloudEventType.RESPONSE.type())
+                                                               UCloudEvent.get_event_type(
+                                                                   UMessageType.UMESSAGE_TYPE_RESPONSE))
         cloud_event.__setitem__("sink", application_uri_for_rpc)
         cloud_event.__setitem__("reqid", request_id)
         cloud_event.__setitem__("commstatus", communication_status)
@@ -125,7 +135,8 @@ class CloudEventFactory:
         event_id = CloudEventFactory.generate_cloud_event_id()
         cloud_event = CloudEventFactory.build_base_cloud_event(event_id, source, proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
-                                                               UCloudEventType.PUBLISH.type())
+                                                               UCloudEvent.get_event_type(
+                                                                   UMessageType.UMESSAGE_TYPE_PUBLISH))
         return cloud_event
 
     @staticmethod
@@ -143,7 +154,8 @@ class CloudEventFactory:
         event_id = CloudEventFactory.generate_cloud_event_id()
         cloud_event = CloudEventFactory.build_base_cloud_event(event_id, source, proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
-                                                               UCloudEventType.PUBLISH.type())
+                                                               UCloudEvent.get_event_type(
+                                                                   UMessageType.UMESSAGE_TYPE_PUBLISH))
         cloud_event.__setitem__("sink", sink)
         return cloud_event
 
@@ -154,7 +166,7 @@ class CloudEventFactory:
         @return:  Returns a UUIDv8 id.
         """
         uuid_inst = Factories.UPROTOCOL.create()
-        return str(uuid_inst)
+        return LongUuidSerializer.instance().serialize(uuid_inst)
 
     @staticmethod
     def build_base_cloud_event(id: str, source: str, proto_payload_bytes: bytes, proto_payload_schema: str,

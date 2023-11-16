@@ -163,5 +163,5 @@ class UriValidator:
                 != "")
 
     @staticmethod
-    def is_remote(uuri: UUri) -> bool:
-        return not UriValidator.is_authority_empty(uuri.authority)
+    def is_remote(authority: UAuthority) -> bool:
+        return not UriValidator.is_authority_empty(authority)

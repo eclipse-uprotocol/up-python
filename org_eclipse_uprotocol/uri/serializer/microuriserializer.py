@@ -189,6 +189,6 @@ class MicroUriSerializer(UriSerializer):
         uri = UUri(entity=UEntity(id=ue_id, version_major=ui_version), resource=UResourceBuilder.from_id(u_resource_id))
 
         if u_authority is not None:
-            uri.authority = u_authority
+            uri.authority.CopyFrom(u_authority)
 
         return uri

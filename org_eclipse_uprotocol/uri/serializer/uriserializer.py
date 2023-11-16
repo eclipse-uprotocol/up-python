@@ -28,8 +28,7 @@
 from abc import ABC, abstractmethod
 from re import T
 from typing import Optional
-
-from org_eclipse_uprotocol.proto.uri_pb2 import UUri
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri,UAuthority,UEntity,UResource
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 
 
@@ -72,14 +71,18 @@ class UriSerializer(ABC):
         from org_eclipse_uprotocol.uri.serializer.microuriserializer import MicroUriSerializer
         long_u_uri = LongUriSerializer().deserialize(long_uri)
         micro_u_uri = MicroUriSerializer().deserialize(micro_uri)
+        u_authority = UAuthority()
+        u_authority.CopyFrom(micro_u_uri.authority)
 
-        u_authority = micro_u_uri.authority
         u_authority.name = long_u_uri.authority.name
 
-        u_entity = micro_u_uri.u_entity
+        u_entity = UEntity()
+        u_entity.CopyFrom(micro_u_uri.entity)
+
         u_entity.name = long_u_uri.entity.name
 
-        u_resource = long_u_uri.resource
+        u_resource = UResource()
+        u_resource.CopyFrom(long_u_uri.resource)
         u_resource.id = micro_u_uri.resource.id
 
         u_uri = UUri(authority=u_authority, entity=u_entity, resource=u_resource)

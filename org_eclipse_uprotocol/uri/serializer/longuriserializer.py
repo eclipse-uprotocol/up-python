@@ -54,21 +54,22 @@ class LongUriSerializer(UriSerializer):
 
         sb = []
 
-        if not UriValidator.is_authority_empty(uri.authority):
+        if uri.HasField('authority'):
             sb.append(self.build_authority_part_of_uri(uri.authority))
 
         sb.append("/")
 
         sb.append(self.build_software_entity_part_of_uri(uri.entity))
-        sb.append(self.build_resource_part_of_uri(uri.resource))
+        sb.append(self.build_resource_part_of_uri(uri))
 
         return re.sub('/+$', '', "".join(sb))
 
     @staticmethod
-    def build_resource_part_of_uri(u_resource: UResource) -> str:
+    def build_resource_part_of_uri(uuri: UUri) -> str:
 
-        if UriValidator.is_resource_empty(u_resource):
+        if not uuri.HasField('resource'):
             return ""
+        u_resource = uuri.resource
 
         sb = "/" + u_resource.name
 
@@ -118,10 +119,11 @@ class LongUriSerializer(UriSerializer):
         """
         if u_protocol_uri is None or u_protocol_uri.strip() == "":
             return UUri()
-        uri = u_protocol_uri[u_protocol_uri.index(":") + 1:] if ":" in u_protocol_uri else u_protocol_uri.replace('\\',
-                                                                                                                  '/')
+        uri = u_protocol_uri[u_protocol_uri.index(":") + 1:] \
+            if ":" in u_protocol_uri else u_protocol_uri.replace('\\', '/')
+
         is_local = not uri.startswith("//")
-        uri_parts = uri.split("/")
+        uri_parts = LongUriSerializer.remove_empty(uri.split("/"))
         number_of_parts_in_uri = len(uri_parts)
 
         if number_of_parts_in_uri == 0 or number_of_parts_in_uri == 1:
@@ -165,9 +167,10 @@ class LongUriSerializer(UriSerializer):
 
         new_uri = UUri(entity=u_entity_builder)
         if u_authority is not None:
-            new_uri.authority = u_authority
+            new_uri.authority.CopyFrom(u_authority)
+
         if u_resource is not None:
-            new_uri.resource = u_resource
+            new_uri.resource.CopyFrom(u_resource)
 
         return new_uri
 
@@ -181,10 +184,10 @@ class LongUriSerializer(UriSerializer):
         if resource_string is None or resource_string.strip() == "":
             raise ValueError("Resource must have a command name.")
 
-        parts = resource_string.split("#")
+        parts = LongUriSerializer.remove_empty(resource_string.split("#"))
         name_and_instance = parts[0]
 
-        name_and_instance_parts = name_and_instance.split(".")
+        name_and_instance_parts = LongUriSerializer.remove_empty(name_and_instance.split("."))
         resource_name = name_and_instance_parts[0]
         resource_instance = name_and_instance_parts[1] if len(name_and_instance_parts) > 1 else None
         resource_message = parts[1] if len(parts) > 1 else None
@@ -196,3 +199,13 @@ class LongUriSerializer(UriSerializer):
             u_resource.message = resource_message
 
         return u_resource
+
+    @staticmethod
+    def remove_empty(parts):
+        result = parts[:]
+
+        # Iterate through the list in reverse and remove empty strings
+        while result and result[-1] == '':
+            result.pop()
+
+        return result

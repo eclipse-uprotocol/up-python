@@ -26,6 +26,7 @@
 
 
 import io
+import struct
 from enum import Enum
 
 from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
@@ -93,24 +94,24 @@ class MicroUriSerializer(UriSerializer):
         elif len(uri.authority.name) > 0:
             remote_case = "NAME"
         if remote_case == "REMOTE_NOT_SET":
-            type = AddressType.LOCAL
+            address_type = AddressType.LOCAL
         elif remote_case == "IP":
             length = len(uri.authority.ip)
             if length == 4:
-                type = AddressType.IPv4
+                address_type = AddressType.IPv4
             elif length == 16:
-                type = AddressType.IPv6
+                address_type = AddressType.IPv6
             else:
                 return bytearray()
         elif remote_case == "ID":
-            type = AddressType.ID
+            address_type = AddressType.ID
         else:
             return bytearray()
 
-        os.write(type.getValue())
+        os.write(address_type.value.to_bytes(1, 'big'))
 
         # URESOURCE_ID
-        os.write((maybe_uresource_id >> 8).to_bytes(2, 'big'))
+        os.write((maybe_uresource_id >> 8).to_bytes(1, 'big'))
         os.write((maybe_uresource_id & 0xFF).to_bytes(1, 'big'))
 
         # UENTITY_ID
@@ -123,15 +124,15 @@ class MicroUriSerializer(UriSerializer):
             signed_byte = unsigned_value - 256
         else:
             signed_byte = unsigned_value
-        os.write(uri.entity.version_major.to_bytes(1, byteorder='big'))
+        os.write(struct.pack('b', signed_byte))
         # UNUSED
         os.write(bytes([0]))
 
         # Populating the UAuthority
-        if type != AddressType.LOCAL:
+        if address_type != AddressType.LOCAL:
             # Write the ID length if the type is ID
-            if type == AddressType.ID:
-                os.write(len(uri.authority.id)).to_bytes(2, 'big')
+            if address_type == AddressType.ID:
+                os.write(len(uri.authority.id).to_bytes(1, 'big'))
 
             try:
                 if remote_case == "IP":
@@ -156,14 +157,14 @@ class MicroUriSerializer(UriSerializer):
             return UUri()
 
         u_resource_id = ((micro_uri[2] & 0xFF) << 8) | (micro_uri[3] & 0xFF)
-        type = AddressType.from_value(micro_uri[1])
+        addresstype = AddressType.from_value(micro_uri[1])
 
         # Validate Type is found
-        if type is None:
+        if addresstype is None:
             return UUri()
 
         # Validate that the micro_uri is the correct length for the type
-        address_type = type
+        address_type = addresstype
         if address_type == AddressType.LOCAL and len(micro_uri) != self.LOCAL_MICRO_URI_LENGTH:
             return UUri()
         elif address_type == AddressType.IPv4 and len(micro_uri) != self.IPV4_MICRO_URI_LENGTH:

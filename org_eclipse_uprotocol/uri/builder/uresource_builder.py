@@ -54,4 +54,4 @@ class UResourceBuilder:
         if id is None:
             raise ValueError("id cannot be None")
 
-        return UResourceBuilder.for_rpc_request(id) if id < UResourceBuilder.MAX_RPC_ID else UResource(id=id)
+        return UResourceBuilder.for_rpc_request_with_id(id) if id < UResourceBuilder.MAX_RPC_ID else UResource(id=id)

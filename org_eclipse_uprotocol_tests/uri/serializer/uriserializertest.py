@@ -40,6 +40,6 @@ class UriSerializerTest(unittest.TestCase):
         self.assertTrue(result)
         self.assertTrue(UriValidator.is_empty(result))
 
-#
-# if __name__ == '__main__':
-#     unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()

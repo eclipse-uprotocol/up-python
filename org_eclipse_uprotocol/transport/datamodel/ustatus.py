@@ -57,6 +57,18 @@ class Code(Enum):
     DATA_LOSS = google.rpc.code_pb2.DATA_LOSS
     UNSPECIFIED = -1
 
+    def __init__(self, value):
+        self._value_ = value
+
+    def value(self):
+        return self._value_
+    @staticmethod
+    def from_int( value: int):
+        for enum_value in Code:
+            if enum_value.value == value:
+                return enum_value
+        return None
+
 
 class UStatus(ABC):
     """

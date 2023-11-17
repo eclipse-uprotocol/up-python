@@ -32,10 +32,10 @@ from cloudevents.http import CloudEvent
 from google.rpc.status_pb2 import Status
 
 from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
-from org_eclipse_uprotocol.cloudevent.validate.validationresult import ValidationResult
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+from org_eclipse_uprotocol.validation.validationresult import ValidationResult
 
 
 class CloudEventValidator(ABC):

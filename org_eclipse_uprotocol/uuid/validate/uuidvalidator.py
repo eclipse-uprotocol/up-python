@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-
+from abc import ABC, abstractmethod
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -30,23 +30,14 @@ from enum import Enum
 
 from org_eclipse_uprotocol.proto.uuid_pb2 import UUID
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
+from org_eclipse_uprotocol.validation.validationresult import ValidationResult
 
 
 class UuidVariant(Enum):
     VARIANT_RFC_4122 = "RFC 4122"
 
 
-class ValidationResult(namedtuple('ValidationResult', ['is_failure', 'message'])):
-    @staticmethod
-    def success():
-        return ValidationResult(False, "")
-
-    @staticmethod
-    def failure(message):
-        return ValidationResult(True, message)
-
-
-class UuidValidator:
+class UuidValidator(ABC):
     """
     UUID Validator class that validates UUIDs
     """
@@ -68,6 +59,7 @@ class UuidValidator:
             return ValidationResult.success()
         return ValidationResult.failure(f"Invalid argument value: {error_message}")
 
+    @abstractmethod
     def validate_version(self, uuid: UUID) -> ValidationResult:
         raise NotImplementedError
 
@@ -75,6 +67,7 @@ class UuidValidator:
         time = UUIDUtils.getTime(uuid)
         return ValidationResult.success() if time > 0 else ValidationResult.failure("Invalid UUID Time")
 
+    @abstractmethod
     def validate_variant(self, uuid: UUID) -> ValidationResult:
         raise NotImplementedError
 
@@ -92,7 +85,7 @@ class UUIDv6Validator(UuidValidator):
         version = UUIDUtils.getVersion(uuid)
         return ValidationResult.success() if version and version == Version.VERSION_TIME_ORDERED else (
             ValidationResult.failure(
-            "Not a UUIDv6 Version"))
+                "Not a UUIDv6 Version"))
 
     def validate_variant(self, uuid: UUID) -> ValidationResult:
         variant = UUIDUtils.getVariant(uuid)
@@ -105,7 +98,7 @@ class UUIDv8Validator(UuidValidator):
         version = UUIDUtils.getVersion(uuid)
         return ValidationResult.success() if version and version == Version.VERSION_UPROTOCOL else (
             ValidationResult.failure(
-            "Invalid UUIDv8 Version"))
+                "Invalid UUIDv8 Version"))
 
     def validate_variant(self, uuid: UUID) -> ValidationResult:
         return ValidationResult.success()

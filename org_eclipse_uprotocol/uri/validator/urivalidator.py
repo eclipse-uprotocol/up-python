@@ -29,7 +29,7 @@ from org_eclipse_uprotocol.proto.uri_pb2 import UAuthority
 from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
 from org_eclipse_uprotocol.proto.uri_pb2 import UResource
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
-from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
+from org_eclipse_uprotocol.validation.validationresult import ValidationResult
 
 
 class UriValidator:
@@ -38,22 +38,25 @@ class UriValidator:
     """
 
     @staticmethod
-    def validate(uri: UUri) -> UStatus:
+    def validate(uri: UUri) -> ValidationResult:
         """
         Validate a UUri to ensure that it has at least a name for the uEntity.<br><br>
         @param uri:UUri to validate.
         @return:Returns UStatus containing a success or a failure with the error message.
         """
         if UriValidator.is_empty(uri):
-            return UStatus.failed_with_msg_and_code("Uri is empty.", Code.INVALID_ARGUMENT)
+            return ValidationResult.failure("Uri is empty.")
+
+        if uri.HasField('authority') and not UriValidator.is_remote(uri.authority):
+            return ValidationResult.failure("Uri is remote missing uAuthority.")
 
         if uri.entity.name.strip() == "":
-            return UStatus.failed_with_msg_and_code("Uri is missing uSoftware Entity name.", Code.INVALID_ARGUMENT)
+            return ValidationResult.failure("Uri is missing uSoftware Entity name.")
 
-        return UStatus.ok()
+        return ValidationResult.success()
 
     @staticmethod
-    def validate_rpc_method(uri: UUri) -> UStatus:
+    def validate_rpc_method(uri: UUri) -> ValidationResult:
         """
         Validate a UUri that is meant to be used as an RPC method URI. Used in Request sink values and Response
         source values.<br><br>
@@ -61,18 +64,17 @@ class UriValidator:
         @return:Returns UStatus containing a success or a failure with the error message.
         """
         status = UriValidator.validate(uri)
-        if status.isFailed():
+        if status.is_failure():
             return status
 
         if not UriValidator.is_rpc_method(uri):
-            return UStatus.failed_with_msg_and_code(
-                "Invalid RPC method uri. Uri should be the method to be called, or method from response.",
-                Code.INVALID_ARGUMENT)
+            return ValidationResult.failure(
+                "Invalid RPC method uri. Uri should be the method to be called, or method from response.")
 
-        return UStatus.ok()
+        return ValidationResult.success()
 
     @staticmethod
-    def validate_rpc_response(uri: UUri) -> UStatus:
+    def validate_rpc_response(uri: UUri) -> ValidationResult:
         """
         Validate a UUri that is meant to be used as an RPC response URI. Used in Request source values and
         Response sink values.<br><br>
@@ -80,49 +82,35 @@ class UriValidator:
         @return:Returns UStatus containing a success or a failure with the error message.
         """
         status = UriValidator.validate(uri)
-        if status.isFailed():
+        if status.is_failure():
             return status
 
-        u_resource = uri.resource
         if not UriValidator.is_rpc_response(uri):
-            return UStatus.failed_with_msg_and_code("Invalid RPC response type.", Code.INVALID_ARGUMENT)
+            return ValidationResult.failure("Invalid RPC response type.")
 
-        return UStatus.ok()
-
-    @staticmethod
-    def is_empty(uuri: UUri) -> bool:
-        """
-        Indicates that this  URI is an empty container and has no valuable information in building uProtocol sinks or
-        sources.<br><br>
-        @param uuri: An UUri proto message object
-        @return:Returns true if this  URI is an empty container and has no valuable information in building uProtocol
-        sinks or sources.
-        """
-        return (UriValidator.is_authority_empty(uuri.authority) and UriValidator.is_entity_empty(
-            uuri.entity) and UriValidator.is_resource_empty(uuri.resource))
+        return ValidationResult.success()
 
     @staticmethod
-    def is_authority_empty(authority: UAuthority) -> bool:
-        return all([authority.name.strip() == "", len(authority.ip) == 0, len(authority.id) == 0])
+    def is_empty(uri: UUri) -> bool:
+        if uri is None:
+            raise ValueError("Uri cannot be None.")
+        return not uri.HasField('authority') and not uri.HasField('entity') and not uri.HasField('resource')
+
 
     @staticmethod
-    def is_entity_empty(entity: UEntity) -> bool:
-        return all([entity.name.strip() == "", entity.version_major == 0, entity.id == 0, entity.version_minor == 0])
-
-    @staticmethod
-    def is_resource_empty(resource: UResource) -> bool:
-        return resource.name.strip() == "" or resource.name == "rpc" and not (
-                resource.instance.strip() != "" or resource.message.strip() != "" or resource.id != 0)
-
-    @staticmethod
-    def is_rpc_method(uuri: UUri) -> bool:
+    def is_rpc_method(uri: UUri) -> bool:
         """
         Returns true if this resource specifies an RPC method call or RPC response.<br><br>
+        @param uri:
+        @param uuri:
         @param uresource: UResource protobuf message
         @return:Returns true if this resource specifies an RPC method call or RPC response.
         """
-        return not UriValidator.is_empty(uuri) and uuri.resource.name == "rpc" and (
-                uuri.resource.instance.strip() != "" or uuri.resource.id != 0)
+        if uri is None:
+            raise ValueError("Uri cannot be None.")
+        return not UriValidator.is_empty(uri) and uri.resource.name == "rpc" and (
+                uri.resource.HasField('instance') and uri.resource.instance.strip() != "" or (
+                uri.resource.HasField('id') and uri.resource.id != 0))
 
     @staticmethod
     def is_resolved(uuri: UUri) -> bool:
@@ -136,9 +124,9 @@ class UriValidator:
         if uuri is None:
             raise ValueError("Uri cannot be None.")
 
-        return UriValidator.is_rpc_method(uuri) and ((
-                                                                 uuri.resource.instance.strip() != "" and "response"
-                                                                 in uuri.resource.instance) or uuri.resource.id != 0)
+        return UriValidator.is_rpc_method(uuri) and (
+                (uuri.resource.HasField('instance') and "response" in uuri.resource.instance) or (
+                uuri.resource.HasField('id') and uuri.resource.id != 0))
 
     @staticmethod
     def is_micro_form(uuri: UUri) -> bool:
@@ -147,9 +135,10 @@ class UriValidator:
         @param uuri: An UUri proto message object
         @return:Returns true if this UUri can be serialized into a micro form UUri.
         """
-        return not UriValidator.is_empty(uuri) and (
-                UriValidator.is_authority_empty(uuri.authority) or len(uuri.authority.ip) != 0 or len(
-            uuri.authority.id) != 0) and uuri.entity.id != 0 and uuri.resource.id != 0
+        if uuri is None:
+            raise ValueError("Uri cannot be None.")
+        return not UriValidator.is_empty(uuri) and uuri.entity.HasField('id') and uuri.resource.HasField('id') and (
+                not uuri.HasField('authority') or uuri.authority.HasField('ip') or uuri.authority.HasField('id'))
 
     @staticmethod
     def is_long_form(uuri: UUri) -> bool:
@@ -158,10 +147,13 @@ class UriValidator:
         @param uuri: An UUri proto message object
         @return:Returns true if this UUri can be serialized into a long form UUri.
         """
-        return (
-                uuri.authority.name.strip() != "" and uuri.entity.name.strip() != "" and uuri.resource.name.strip()
-                != "")
+        if uuri is None:
+            raise ValueError("Uri cannot be None.")
+        return not UriValidator.is_empty(uuri) and not (uuri.HasField('authority') and uuri.authority.HasField(
+            'name')) and not uuri.entity.name.strip() == '' and not uuri.resource.name.strip() == ''
 
     @staticmethod
     def is_remote(authority: UAuthority) -> bool:
-        return not UriValidator.is_authority_empty(authority)
+        if authority is None:
+            raise ValueError("Authority cannot be None.")
+        return not all([authority.name.strip() == "", len(authority.ip) == 0, len(authority.id) == 0])

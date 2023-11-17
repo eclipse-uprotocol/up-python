@@ -102,3 +102,8 @@ class Success(ValidationResult):
 
     def __str__(self):
         return "ValidationResult.Success()"
+
+    def __eq__(self, other):
+        if isinstance(other, Success):
+            return self.to_status() == other.to_status()
+        return False

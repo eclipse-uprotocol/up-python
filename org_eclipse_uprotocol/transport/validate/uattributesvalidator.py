@@ -33,6 +33,7 @@ from org_eclipse_uprotocol.proto.uattributes_pb2 import UAttributes, UMessageTyp
 from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
+from org_eclipse_uprotocol.validation.validationresult import ValidationResult
 
 
 class UAttributesValidator:
@@ -64,98 +65,7 @@ class UAttributesValidator:
         else:
             return Validators.PUBLISH.validator()
 
-    @staticmethod
-    def validate_id(attr: UAttributes) -> UStatus:
-        """
-        Validate the id attribute, it is required.<br><br>
-        @param attr:UAttributes object containing the id to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        attr_id = attr.id
-        if UUIDUtils.isuuid(attr_id):
-            return UStatus.ok()
-        else:
-            return UStatus.failed_with_msg_and_code("Invalid UUID [{}]".format(attr_id), Code.INVALID_ARGUMENT)
-
-    @staticmethod
-    def validate_priority(attr: UAttributes) -> UStatus:
-        """
-        Validate the UPriority since it is required.<br><br>
-        @param attr:UAttributes object containing the message priority to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        return UStatus.failed_with_msg_and_code("Priority is missing",
-                                                Code.INVALID_ARGUMENT) if attr.priority is None else UStatus.ok()
-
-    @staticmethod
-    def validate_ttl(attr: UAttributes) -> UStatus:
-        """
-        Validate the time to live configuration. If the UAttributes does not contain a time to live then the UStatus
-        is ok.<br><br>
-        @param attr:UAttributes object containing the message time to live configuration to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        if attr.ttl and attr.ttl <= 0:
-            return UStatus.failed_with_msg_and_code(f"Invalid TTL [{attr.ttl}]", Code.INVALID_ARGUMENT)
-        else:
-            return UStatus.ok()
-
-    @staticmethod
-    def validate_sink(attr: UAttributes) -> UStatus:
-        """
-        Validate the sink UriPart for the default case. If the UAttributes does not contain a sink then the UStatus
-        is ok.<br><br>
-        @param attr:UAttributes object containing the sink to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        return UriValidator.validate(attr.sink) if attr.sink else UStatus.ok()
-
-    @staticmethod
-    def validate_permission_level(attr: UAttributes) -> UStatus:
-        """
-        Validate the permissionLevel for the default case. If the UAttributes does not contain a permission level
-        then the UStatus is ok.<br><br>
-        @param attr:UAttributes object containing the permission level to validate.
-        @return:Returns a UStatus indicating if the permissionLevel is valid or not.
-        """
-        if attr.permission_level and attr.permission_level > 0:
-            return UStatus.ok()
-        else:
-            return UStatus.failed_with_msg_and_code("Invalid Permission Level", Code.INVALID_ARGUMENT)
-
-    @staticmethod
-    def validate_comm_status(attr: UAttributes) -> UStatus:
-        """
-        Validate the commStatus for the default case. If the UAttributes does not contain a comm status then the
-        UStatus is ok.<br><br>
-        @param attr:UAttributes object containing the comm status to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        return UStatus.ok() if attr.commstatus else UStatus.failed_with_msg_and_code(
-            "Invalid Communication Status Code", Code.INVALID_ARGUMENT)
-
-    @staticmethod
-    def validate_req_id(attr: UAttributes) -> UStatus:
-        """
-        Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
-        UStatus is ok.<br><br>
-        @param attr:Attributes object containing the request id to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        return UStatus.failed_with_msg_and_code("Invalid UUID",
-                                                Code.INVALID_ARGUMENT) if attr.reqid and not UUIDUtils.isuuid(
-            attr.reqid) else UStatus.ok()
-
-    @abstractmethod
-    def validate_type(self, attr: UAttributes):
-        """
-        Validate the UMessageType attribute, it is required.<br><br>
-        @param attr:UAttributes object containing the message type to validate.
-        @return:Returns a UStatus that is success or failed with a failure message.
-        """
-        raise NotImplementedError("Subclasses must implement this method.")
-
-    def validate(self, attributes: UAttributes):
+    def validate(self, attributes: UAttributes) -> ValidationResult:
         """
         Take a UAttributes object and run validations.<br><br>
         @param attributes:The UAttriubes to validate.
@@ -171,11 +81,12 @@ class UAttributesValidator:
                           status and status.getCode() == Code.INVALID_ARGUMENT]
 
         if error_messages:
-            return UStatus.failed_with_msg_and_code(",".join(error_messages), Code.INVALID_ARGUMENT)
+            return ValidationResult.failure(",".join(error_messages))
         else:
-            return UStatus.ok()
+            return ValidationResult.success()
 
-    def is_expired(self, u_attributes: UAttributes):
+    @staticmethod
+    def is_expired(u_attributes: UAttributes):
         """
         Indication if the Payload with these UAttributes is expired.<br><br>
         @param u_attributes:UAttributes with time to live value.
@@ -185,19 +96,110 @@ class UAttributesValidator:
         maybe_ttl = u_attributes.ttl
         maybe_time = UUIDUtils.getTime(u_attributes.id)
 
-        if maybe_time is None:
-            return UStatus.failed_with_msg_and_code("Invalid Time", Code.INVALID_ARGUMENT)
-
-        if maybe_ttl is None:
-            return UStatus.ok_with_ack_id("Not Expired")
-
         ttl = maybe_ttl
         if ttl <= 0:
-            return UStatus.ok_with_ack_id("Not Expired")
+            return ValidationResult.success()
         delta = int((datetime.now() - maybe_time).total_seconds() * 1000)
-        return UStatus.failed_with_msg_and_code("Payload is expired",
-                                                Code.DEADLINE_EXCEEDED) if delta >= ttl else UStatus.ok_with_ack_id(
-            "Not Expired")
+        return ValidationResult.failure("Payload is expired") if delta >= ttl else ValidationResult.success()
+
+    @staticmethod
+    def validate_id(attr: UAttributes) -> UStatus:
+        """
+        Validate the id attribute, it is required.<br><br>
+        @param attr:UAttributes object containing the id to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+        attr_id = attr.id
+        if UUIDUtils.isuuid(attr_id):
+            return ValidationResult.success()
+        else:
+            return UStatus.failed_with_msg_and_code("Invalid UUID [{}]".format(attr_id), Code.INVALID_ARGUMENT)
+
+    @staticmethod
+    def validate_priority(attr: UAttributes) -> UStatus:
+        """
+        Validate the UPriority since it is required.<br><br>
+        @param attr:UAttributes object containing the message priority to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+        return UStatus.failed_with_msg_and_code("Priority is missing",
+                                                Code.INVALID_ARGUMENT) if attr.priority is None else ValidationResult.success()
+
+    @staticmethod
+    def validate_ttl(attr: UAttributes) -> ValidationResult:
+        """
+        Validate the time to live configuration. If the UAttributes does not contain a time to live then the UStatus
+        is ok.<br><br>
+        @param attr:UAttributes object containing the message time to live configuration to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+        if attr.ttl and attr.ttl <= 0:
+            return ValidationResult.failure(f"Invalid TTL [{attr.ttl}]")
+        else:
+            return ValidationResult.success()
+
+    @staticmethod
+    def validate_sink(attr: UAttributes) -> ValidationResult:
+        """
+        Validate the sink UriPart for the default case. If the UAttributes does not contain a sink then the UStatus
+        is ok.<br><br>
+        @param attr:UAttributes object containing the sink to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+        return UriValidator.validate(attr.sink) if attr.sink else ValidationResult.success()
+
+    @staticmethod
+    def validate_permission_level(attr: UAttributes) -> ValidationResult:
+        """
+        Validate the permissionLevel for the default case. If the UAttributes does not contain a permission level
+        then the UStatus is ok.<br><br>
+        @param attr:UAttributes object containing the permission level to validate.
+        @return:Returns a UStatus indicating if the permissionLevel is valid or not.
+        """
+        if attr.permission_level and attr.permission_level > 0:
+            return ValidationResult.success()
+        else:
+            return ValidationResult.failure("Invalid Permission Level")
+
+    @staticmethod
+    def validate_comm_status(attr: UAttributes) -> ValidationResult:
+        """
+        Validate the commStatus for the default case. If the UAttributes does not contain a comm status then the
+        UStatus is ok.<br><br>
+        @param attr:UAttributes object containing the comm status to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+        if attr.HasField('commstatus'):
+            enum_value = Code.from_int(attr.commstatus)
+            if enum_value is None:
+                return ValidationResult.failure("Invalid Communication Status Code")
+
+        return ValidationResult.success()
+
+    @staticmethod
+    def validate_req_id(attr: UAttributes) -> ValidationResult:
+        """
+        Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
+        UStatus is ok.<br><br>
+        @param attr:Attributes object containing the request id to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+
+        if attr.HasField('reqid') and not UUIDUtils.isuuid(attr.reqid):
+            return ValidationResult.failure("Invalid UUID")
+        else:
+            ValidationResult.success()
+
+
+
+    @abstractmethod
+    def validate_type(self, attr: UAttributes):
+        """
+        Validate the UMessageType attribute, it is required.<br><br>
+        @param attr:UAttributes object containing the message type to validate.
+        @return:Returns a UStatus that is success or failed with a failure message.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
 
 
 class Publish(UAttributesValidator):
@@ -205,15 +207,15 @@ class Publish(UAttributesValidator):
      Implements validations for UAttributes that define a message that is meant for publishing state changes.
     """
 
-    def validate_type(self, attributes_value: UAttributes) -> UStatus:
+    def validate_type(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validates that attributes for a message meant to publish state changes has the correct type.<br><br>
         @param attributes_value:UAttributes object containing the message type to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.type == UMessageType.UMESSAGE_TYPE_PUBLISH else (
-            UStatus.failed_with_msg_and_code(
-            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT))
+        return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_PUBLISH else (
+            ValidationResult.failure(
+                f"Wrong Attribute Type [{attributes_value.type}]"))
 
     def __str__(self):
         return "UAttributesValidator.Publish"
@@ -224,17 +226,17 @@ class Request(UAttributesValidator):
     Implements validations for UAttributes that define a message that is meant for an RPC request.
     """
 
-    def validate_type(self, attributes_value: UAttributes) -> UStatus:
+    def validate_type(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validates that attributes for a message meant for an RPC request has the correct type.<br><br>
         @param attributes_value:UAttributes object containing the message type to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.type == UMessageType.UMESSAGE_TYPE_REQUEST else (
-            UStatus.failed_with_msg_and_code(
-            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT))
+        return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_REQUEST else (
+           ValidationResult.failure(
+                f"Wrong Attribute Type [{attributes_value.type}]"))
 
-    def validate_sink(self, attributes_value: UAttributes) -> UStatus:
+    def validate_sink(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validates that attributes for a message meant for an RPC request has a destination sink.<br><br> In the case
         of an RPC request, the sink is required.
@@ -242,17 +244,15 @@ class Request(UAttributesValidator):
         @return:Returns a UStatus that is success or failed with a failure message.
         """
         return UriValidator.validate_rpc_response(
-            attributes_value.sink) if attributes_value.sink else UStatus.failed_with_msg_and_code("Missing Sink",
-                                                                                                  Code.INVALID_ARGUMENT)
+            attributes_value.sink) if attributes_value.sink else ValidationResult.failure("Missing Sink")
 
-    def validate_ttl(self, attributes_value: UAttributes) -> UStatus:
+    def validate_ttl(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validate the time to live configuration.<br>In the case of an RPC request, the time to live is required.<br><br>
         @param attributes_value:UAttributes object containing the time to live to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.ttl and attributes_value.ttl > 0 else UStatus.failed_with_msg_and_code(
-            "Missing TTL", Code.INVALID_ARGUMENT)
+        return ValidationResult.success() if attributes_value.ttl and attributes_value.ttl > 0 else ValidationResult.failure("Missing TTL")
 
     def __str__(self):
         return "UAttributesValidator.Request"
@@ -263,17 +263,17 @@ class Response(UAttributesValidator):
     Implements validations for UAttributes that define a message that is meant for an RPC response.
     """
 
-    def validate_type(self, attributes_value: UAttributes) -> UStatus:
+    def validate_type(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validates that attributes for a message meant for an RPC response has the correct type.<br><br>
         @param attributes_value:UAttributes object containing the message type to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.type == UMessageType.UMESSAGE_TYPE_RESPONSE else (
-            UStatus.failed_with_msg_and_code(
-            f"Wrong Attribute Type [{attributes_value.type}]", Code.INVALID_ARGUMENT))
+        return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_RESPONSE else (
+            ValidationResult.failure(
+                f"Wrong Attribute Type [{attributes_value.type}]"))
 
-    def validate_sink(self, attributes_value: UAttributes) -> UStatus:
+    def validate_sink(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validates that attributes for a message meant for an RPC response has a destination sink.<br>In the case of
         an RPC response, the sink is required.<br><br>
@@ -281,18 +281,16 @@ class Response(UAttributesValidator):
         @return:Returns a UStatus that is success or failed with a failure message.
         """
         return UriValidator.validate_rpc_method(
-            attributes_value.sink) if attributes_value.sink else UStatus.failed_with_msg_and_code("Missing Sink",
-                                                                                                  Code.INVALID_ARGUMENT)
+            attributes_value.sink) if attributes_value.sink else ValidationResult.failure("Missing Sink")
 
-    def validate_req_id(self, attributes_value: UAttributes) -> UStatus:
+    def validate_req_id(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validate the correlationId. n the case of an RPC response, the correlation id is required.<br><br>
         @param attributes_value:UAttributes object containing the correlation id to validate.
         @return:Returns a UStatus that is success or failed with a failure message.
         """
-        return UStatus.ok() if attributes_value.reqid and UUIDUtils.isuuid(
-            attributes_value.reqid) else UStatus.failed_with_msg_and_code("Missing correlationId",
-                                                                          Code.INVALID_ARGUMENT)
+        return ValidationResult.success() if attributes_value.reqid and UUIDUtils.isuuid(
+            attributes_value.reqid) else ValidationResult.failure("Missing correlationId")
 
     def __str__(self):
         return "UAttributesValidator.Response"

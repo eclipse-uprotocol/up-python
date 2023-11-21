@@ -29,7 +29,7 @@ from abc import ABC, abstractmethod
 
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UAttributes
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
-from org_eclipse_uprotocol.transport.datamodel.upayload import UPayload
+from org_eclipse_uprotocol.proto.upayload_pb2 import UPayload
 from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus
 
 

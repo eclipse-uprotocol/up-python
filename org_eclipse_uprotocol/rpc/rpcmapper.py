@@ -32,6 +32,7 @@ from google.rpc.code_pb2 import Code
 from google.rpc.status_pb2 import Status
 
 from org_eclipse_uprotocol.rpc.rpcresult import RpcResult
+from org_eclipse_uprotocol.proto.upayload_pb2 import UPayload
 
 
 class RpcMapper:
@@ -61,7 +62,7 @@ class RpcMapper:
 
             try:
                 any_message = any_pb2.Any()
-                any_message.ParseFromString(payload.data)
+                any_message.ParseFromString(payload.value)
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     return RpcMapper.unpack_payload(any_message, expected_cls)
             except Exception as e:
@@ -98,7 +99,7 @@ class RpcMapper:
 
             try:
                 any_message = any_pb2.Any()
-                any_message.ParseFromString(payload.data)
+                any_message.ParseFromString(payload.value)
 
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     if expected_cls == Status:

@@ -53,6 +53,35 @@ class UCloudEvent:
         return UCloudEvent.extract_string_value_from_attributes("source", ce)
 
     @staticmethod
+    def get_type(ce: CloudEvent) -> str:
+        """
+        Extract the type from a cloud event. The source is a mandatory attribute. The CloudEvent constructor does
+        not allow creating a cloud event without a type.<br><br>
+        @param ce:CloudEvent with source to be extracted.
+        @return:Returns the String value of a CloudEvent type attribute.
+        """
+        return UCloudEvent.extract_string_value_from_attributes("type", ce)
+
+    @staticmethod
+    def get_id(ce: CloudEvent) -> str:
+        """
+        Extract the id from a cloud event. The id is a mandatory attribute. The CloudEvent constructor does
+        not allow creating a cloud event without an id.<br><br>
+        @param ce:CloudEvent with source to be extracted.
+        @return:Returns the String value of a CloudEvent id attribute.
+        """
+        return UCloudEvent.extract_string_value_from_attributes("id", ce)
+
+    @staticmethod
+    def get_specversion(ce: CloudEvent) -> str:
+        """
+        Extract the specversion from a cloud event. <br><br>
+        @param ce:CloudEvent with source to be extracted.
+        @return:Returns the String value of a CloudEvent spec version attribute.
+        """
+        return UCloudEvent.extract_string_value_from_attributes("specversion", ce)
+
+    @staticmethod
     def get_sink(ce: CloudEvent) -> str:
         """
         Extract the sink from a cloud event. The sink attribute is optional.<br><br>
@@ -228,12 +257,8 @@ class UCloudEvent:
         @return:Extracts the payload from a CloudEvent as a Protobuf Any object.
         """
         data = ce.get_data()
-        if data is None:
-            return any_pb2.Any()
-        try:
-            return any_pb2.Any().FromString(data)
-        except DecodeError:
-            return any_pb2.Any()
+        return data
+
 
     @staticmethod
     def unpack(ce: CloudEvent, clazz):

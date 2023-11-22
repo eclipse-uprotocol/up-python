@@ -26,7 +26,7 @@
 
 
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UAttributes, UPriority, UMessageType
-from org_eclipse_uprotocol.proto.uri_pb2 import *
+from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.proto.uuid_pb2 import UUID
 from org_eclipse_uprotocol.uuid.factory.uuidfactory import *
 
@@ -59,7 +59,7 @@ class UAttributesBuilder:
         @return Returns the UAttributesBuilder with the configured priority.
         """
         if priority is None:
-            raise ValueError("Uri cannot be None.")
+            raise ValueError("UPriority cannot be None.")
         return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority)
 
     @staticmethod

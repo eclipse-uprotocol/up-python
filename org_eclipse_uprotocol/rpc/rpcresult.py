@@ -28,8 +28,8 @@
 from abc import ABC, abstractmethod
 from typing import Callable, TypeVar, Union
 
-from google.rpc.code_pb2 import Code
-from google.rpc.status_pb2 import Status
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UCode
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UStatus
 
 T = TypeVar('T')
 
@@ -37,7 +37,7 @@ T = TypeVar('T')
 class RpcResult(ABC):
     """
     Wrapper class for RPC Stub calls. It contains a Success with the type of the RPC call, or a failure with the
-    Status returned by the failed call.
+    UStatus returned by the failed call.
     """
 
     @abstractmethod
@@ -65,7 +65,7 @@ class RpcResult(ABC):
         pass
 
     @abstractmethod
-    def failureValue(self) -> Status:
+    def failureValue(self) -> UStatus:
         pass
 
     @abstractmethod
@@ -75,7 +75,7 @@ class RpcResult(ABC):
     def success(value: T) -> 'RpcResult':
         return Success(value)
 
-    def failure(value: Union[Status, Exception, None] = None, code: Code = Code.UNKNOWN,
+    def failure(value: Union[UStatus, Exception, None] = None, code: UCode = UCode.UNKNOWN,
                 message: str = '') -> 'RpcResult':
         return Failure(value, code, message)
 
@@ -111,11 +111,11 @@ class Success(RpcResult):
 
     def filter(self, f: Callable[[T], bool]) -> RpcResult:
         try:
-            return self if f(self.successValue()) else self.failure(Code.FAILED_PRECONDITION, "filtered out")
+            return self if f(self.successValue()) else self.failure(UCode.FAILED_PRECONDITION, "filtered out")
         except Exception as e:
             return self.failure(e)
 
-    def failureValue(self) -> Status:
+    def failureValue(self) -> UStatus:
         raise ValueError("Method failureValue() called on a Success instance")
 
     def successValue(self) -> T:
@@ -127,13 +127,13 @@ class Success(RpcResult):
 
 class Failure(RpcResult):
 
-    def __init__(self, value: Union[Status, Exception, None] = None, code: Code = Code.UNKNOWN, message: str = ''):
-        if isinstance(value, Status):
+    def __init__(self, value: Union[UStatus, Exception, None] = None, code: UCode = UCode.UNKNOWN, message: str = ''):
+        if isinstance(value, UStatus):
             self.value = value
         elif isinstance(value, Exception):
-            self.value = Status(code=code, message=str(value))
+            self.value = UStatus(code=code, message=str(value))
         else:
-            self.value = Status(code=code, message=message)
+            self.value = UStatus(code=code, message=message)
 
     def isSuccess(self) -> bool:
         return False
@@ -153,7 +153,7 @@ class Failure(RpcResult):
     def filter(self, f: Callable[[T], bool]) -> RpcResult:
         return self.failure(self)
 
-    def failureValue(self) -> Status:
+    def failureValue(self) -> UStatus:
         return self.value
 
     def successValue(self) -> T:

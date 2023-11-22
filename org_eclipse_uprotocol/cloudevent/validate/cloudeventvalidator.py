@@ -29,7 +29,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from cloudevents.http import CloudEvent
-from google.rpc.status_pb2 import Status
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UStatus
 
 from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
@@ -40,8 +40,8 @@ from org_eclipse_uprotocol.validation.validationresult import ValidationResult
 
 class CloudEventValidator(ABC):
     """
-    Validates a CloudEvent using google.grpc.Status<br>
-    <a href="https://grpc.github.io/grpc/core/md_doc_statuscodes.html">google.grpc.Status</a>
+    Validates a CloudEvent using google.grpc.UStatus<br>
+    <a href="https://grpc.github.io/grpc/core/md_doc_statuscodes.html">google.grpc.UStatus</a>
     """
 
     @staticmethod
@@ -65,12 +65,12 @@ class CloudEventValidator(ABC):
         else:
             return Validators.PUBLISH.validator()
 
-    def validate(self, ce: CloudEvent) -> Status:
+    def validate(self, ce: CloudEvent) -> UStatus:
         """
         Validate the CloudEvent. A CloudEventValidator instance is obtained according to the type attribute on the
         CloudEvent.<br><br>
         @param ce:The CloudEvent to validate.
-        @return:Returns a google.rpc.Status with success or a google.rpc.Status with failure containing all the
+        @return:Returns a UStatus with success or a UStatus with failure containing all the
         errors that were found.
         """
         validation_results = [self.validate_version(ce), self.validate_id(ce), self.validate_source(ce),

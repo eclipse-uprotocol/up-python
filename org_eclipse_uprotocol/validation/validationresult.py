@@ -27,21 +27,21 @@
 
 from abc import ABC, abstractmethod
 
-from google.rpc.code_pb2 import Code
-from google.rpc.status_pb2 import Status
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UCode, UStatus
+
 
 
 class ValidationResult(ABC):
     """
-    Class wrapping a ValidationResult of success or failure wrapping the value of a google.rpc.Status.
+    Class wrapping a ValidationResult of success or failure wrapping the value of a UStatus.
     """
-    STATUS_SUCCESS = Status(code=Code.OK, message="OK")
+    STATUS_SUCCESS = UStatus(code=UCode.OK, message="OK")
 
     def __init__(self):
         pass
 
     @abstractmethod
-    def to_status(self) -> Status:
+    def to_status(self) -> UStatus:
         pass
 
     @abstractmethod
@@ -73,8 +73,8 @@ class Failure(ValidationResult):
         super().__init__()
         self.message = message if message else "Validation Failed."
 
-    def to_status(self) -> Status:
-        return Status(code=3, message=self.message)
+    def to_status(self) -> UStatus:
+        return UStatus(code=3, message=self.message)
 
     def is_success(self) -> bool:
         return False
@@ -88,10 +88,10 @@ class Failure(ValidationResult):
 
 class Success(ValidationResult):
     """
-     Implementation for success, wrapping a google.rpc.Status with Code 0 for success.
+     Implementation for success, wrapping a UStatus with UCode 0 for success.
     """
 
-    def to_status(self) -> Status:
+    def to_status(self) -> UStatus:
         return ValidationResult.STATUS_SUCCESS
 
     def is_success(self) -> bool:

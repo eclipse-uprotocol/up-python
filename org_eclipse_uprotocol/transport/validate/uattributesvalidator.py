@@ -30,7 +30,7 @@ from datetime import datetime
 from enum import Enum
 
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UAttributes, UMessageType
-from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus, Code
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UCode, UStatus
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
 from org_eclipse_uprotocol.validation.validationresult import ValidationResult
@@ -78,7 +78,7 @@ class UAttributesValidator:
                           self.validate_permission_level(attributes), self.validate_req_id(attributes)]
 
         error_messages = [status.msg() for status in error_messages if
-                          status and status.getCode() == Code.INVALID_ARGUMENT]
+                          status and status.getCode() == UCode.INVALID_ARGUMENT]
 
         if error_messages:
             return ValidationResult.failure(",".join(error_messages))
@@ -113,7 +113,7 @@ class UAttributesValidator:
         if UUIDUtils.isuuid(attr_id):
             return ValidationResult.success()
         else:
-            return UStatus.failed_with_msg_and_code("Invalid UUID [{}]".format(attr_id), Code.INVALID_ARGUMENT)
+            return UStatus.failed_with_msg_and_code("Invalid UUID [{}]".format(attr_id), UCode.INVALID_ARGUMENT)
 
     @staticmethod
     def validate_priority(attr: UAttributes) -> UStatus:
@@ -123,7 +123,7 @@ class UAttributesValidator:
         @return:Returns a UStatus that is success or failed with a failure message.
         """
         return UStatus.failed_with_msg_and_code("Priority is missing",
-                                                Code.INVALID_ARGUMENT) if attr.priority is None else ValidationResult.success()
+                                                UCode.INVALID_ARGUMENT) if attr.priority is None else ValidationResult.success()
 
     @staticmethod
     def validate_ttl(attr: UAttributes) -> ValidationResult:
@@ -170,7 +170,7 @@ class UAttributesValidator:
         @return:Returns a UStatus that is success or failed with a failure message.
         """
         if attr.HasField('commstatus'):
-            enum_value = Code.from_int(attr.commstatus)
+            enum_value = UCode.Name(attr.commstatus)
             if enum_value is None:
                 return ValidationResult.failure("Invalid Communication Status Code")
 

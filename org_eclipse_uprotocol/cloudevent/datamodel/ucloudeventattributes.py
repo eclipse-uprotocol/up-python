@@ -27,6 +27,7 @@
 from typing import Optional
 
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UPriority
+from org_eclipse_uprotocol.proto.uattributes_pb2 import UPriority
 
 
 class UCloudEventAttributes:
@@ -63,30 +64,30 @@ class UCloudEventAttributes:
         @return: Returns true if this attributes container is an empty container and has no valuable information in
         building a CloudEvent.
         """
-        return not any((self.hash, self.priority, self.ttl, self.token))
+        return (self.hash is None or self.hash.isspace()) and (self.ttl is None) and (self.token is None or self.token.isspace())and (self.priority is None or self.priority.isspace())
 
-    def hash(self) -> Optional[str]:
+    def get_hash(self) -> str:
         """
         An HMAC generated on the data portion of the CloudEvent message using the device key.<br><br>
         @return: Returns an Optional hash attribute.
         """
         return self.hash if self.hash and self.hash.strip() else None
 
-    def priority(self) -> UPriority:
+    def get_priority(self) -> UPriority:
         """
         uProtocol Prioritization classifications defined at QoS in SDV-202.<br><br>
         @return: Returns an Optional priority attribute.
         """
         return self.priority
 
-    def ttl(self) -> Optional[int]:
+    def get_ttl(self) -> int:
         """
         How long this event should live for after it was generated (in milliseconds).<br><br>
         @return: Returns an Optional time to live attribute.
         """
         return self.ttl
 
-    def token(self) -> Optional[str]:
+    def get_token(self) -> str:
         """
         Oauth2 access token to perform the access request defined in the request message.<br><br>
         @return: Returns an Optional OAuth token attribute.
@@ -136,7 +137,7 @@ class UCloudEventAttributesBuilder:
         @param priority: priority uProtocol Prioritization classifications defined at QoS in SDV-202.
         @return: Returns the UCloudEventAttributesBuilder with the configured priority.
         """
-        self.priority = priority
+        self.priority = UPriority.Name(priority)
         return self
 
     def with_ttl(self, ttl: int):

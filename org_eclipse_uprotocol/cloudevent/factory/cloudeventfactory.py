@@ -61,9 +61,11 @@ class CloudEventFactory:
                                                                proto_payload.SerializeToString(),
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
                                                                UCloudEvent.get_event_type(
-                                                                   UMessageType.UMESSAGE_TYPE_REQUEST))
+                                                                   UMessageType.UMESSAGE_TYPE_REQUEST)
+                                                               )
         cloud_event.__setitem__("sink", service_method_uri)
         cloud_event.__setitem__("reqid", request_id)
+
         return cloud_event
 
     @staticmethod
@@ -77,7 +79,7 @@ class CloudEventFactory:
         :/body.access/1/rpc.UpdateDoor
         @param request_id:The cloud event id from the original request cloud event that this response if for.
         @param proto_payload: The protobuf serialized response message as defined by the application interface or the
-        google.rpc.Status message containing the details of an error.
+        UStatus message containing the details of an error.
         @param attributes: Additional attributes such as ttl, hash and priority.
         @return: Returns an  response CloudEvent.
         """
@@ -90,6 +92,7 @@ class CloudEventFactory:
                                                                    UMessageType.UMESSAGE_TYPE_RESPONSE))
         cloud_event.__setitem__("sink", application_uri_for_rpc)
         cloud_event.__setitem__("reqid", request_id)
+
         return cloud_event
 
     @staticmethod
@@ -116,7 +119,8 @@ class CloudEventFactory:
                                                                empty_proto_payload.SerializeToString(),  # Empty payload
                                                                "google.protobuf.Empty", attributes,
                                                                UCloudEvent.get_event_type(
-                                                                   UMessageType.UMESSAGE_TYPE_RESPONSE))
+                                                                   UMessageType.UMESSAGE_TYPE_RESPONSE)
+                                                               )
         cloud_event.__setitem__("sink", application_uri_for_rpc)
         cloud_event.__setitem__("reqid", request_id)
         cloud_event.__setitem__("commstatus", communication_status)
@@ -137,6 +141,7 @@ class CloudEventFactory:
                                                                proto_payload.DESCRIPTOR.full_name, attributes,
                                                                UCloudEvent.get_event_type(
                                                                    UMessageType.UMESSAGE_TYPE_PUBLISH))
+
         return cloud_event
 
     @staticmethod
@@ -157,6 +162,7 @@ class CloudEventFactory:
                                                                UCloudEvent.get_event_type(
                                                                    UMessageType.UMESSAGE_TYPE_PUBLISH))
         cloud_event.__setitem__("sink", sink)
+
         return cloud_event
 
     @staticmethod
@@ -186,8 +192,15 @@ class CloudEventFactory:
         @return:Returns a CloudEventBuilder that can be additionally configured and then by calling .build()
         construct a CloudEvent ready to be serialized and sent to the transport layer.
         """
-        json_attributes = {"ttl": attributes.ttl, "priority": attributes.priority, "hash": attributes.hash,
-                           "token": attributes.token, "id": id, "source": source, "type": type}
+        json_attributes = {"id": id, "source": source, "type": type}
+        if attributes.get_hash() is not None:
+            json_attributes['hash'] = attributes.get_hash()
+        if attributes.get_ttl() is not None:
+            json_attributes['ttl'] = attributes.get_ttl()
+        if attributes.get_priority() is not None:
+            json_attributes['priority'] = attributes.get_priority()
+        if attributes.get_token() is not None:
+            json_attributes['token'] = attributes.get_token()
 
         cloud_event = CloudEvent(json_attributes, proto_payload_bytes)
 

@@ -30,8 +30,7 @@ from datetime import datetime, timedelta
 from cloudevents.http import CloudEvent
 from google.protobuf import any_pb2
 from google.protobuf.message import DecodeError
-from google.rpc.code_pb2 import Code
-
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UCode
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
 from org_eclipse_uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
@@ -51,6 +50,26 @@ class UCloudEvent:
         @return:Returns the String value of a CloudEvent source attribute.
         """
         return UCloudEvent.extract_string_value_from_attributes("source", ce)
+
+    @staticmethod
+    def get_data_content_type(ce: CloudEvent) -> str:
+        """
+        Extract the source from a cloud event. The source is a mandatory attribute. The CloudEvent constructor does
+        not allow creating a cloud event without a source.<br><br>
+        @param ce:CloudEvent with source to be extracted.
+        @return:Returns the String value of a CloudEvent source attribute.
+        """
+        return UCloudEvent.extract_string_value_from_attributes("datacontenttype", ce)
+
+    @staticmethod
+    def get_data_schema(ce: CloudEvent) -> str:
+        """
+        Extract the source from a cloud event. The source is a mandatory attribute. The CloudEvent constructor does
+        not allow creating a cloud event without a source.<br><br>
+        @param ce:CloudEvent with source to be extracted.
+        @return:Returns the String value of a CloudEvent source attribute.
+        """
+        return UCloudEvent.extract_string_value_from_attributes("dataschema", ce)
 
     @staticmethod
     def get_type(ce: CloudEvent) -> str:
@@ -149,13 +168,13 @@ class UCloudEvent:
         Extract the integer value of the communication status attribute from a cloud event. The communication status
         attribute is optional. If there was a platform communication error that occurred while delivering this
         cloudEvent, it will be indicated in this attribute. If the attribute does not exist, it is assumed that
-        everything was Code.OK_VALUE.<br><br>
+        everything was UCode.OK_VALUE.<br><br>
         @param ce: CloudEvent with the platformError to be extracted.
-        @return: Returns a {@link Code} value that indicates of a platform communication error while delivering this
-        CloudEvent or Code.OK_VALUE.
+        @return: Returns a {@link UCode} value that indicates of a platform communication error while delivering this
+        CloudEvent or UCode.OK_VALUE.
         """
         comm_status = UCloudEvent.extract_string_value_from_attributes("commstatus", ce)
-        return int(comm_status) if comm_status is not None else Code.OK
+        return int(comm_status) if comm_status is not None else UCode.OK
 
     @staticmethod
     def has_communication_status_problem(ce: CloudEvent) -> bool:
@@ -171,7 +190,7 @@ class UCloudEvent:
         """
         Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.<br><br>
         @param ce:CloudEvent that the platform delivery error will be added.
-        @param communication_status:the platform delivery error Code to add to the CloudEvent.
+        @param communication_status:the platform delivery error UCode to add to the CloudEvent.
         @return:Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.
         """
         if communication_status is None:
@@ -257,8 +276,12 @@ class UCloudEvent:
         @return:Extracts the payload from a CloudEvent as a Protobuf Any object.
         """
         data = ce.get_data()
-        return data
-
+        if data is None:
+            return any_pb2.Any()
+        try:
+            return any_pb2.Any().FromString(data)
+        except DecodeError:
+            return any_pb2.Any()
 
     @staticmethod
     def unpack(ce: CloudEvent, clazz):

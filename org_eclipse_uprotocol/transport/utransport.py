@@ -30,10 +30,9 @@ from abc import ABC, abstractmethod
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UAttributes
 from org_eclipse_uprotocol.proto.uri_pb2 import UEntity
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
-from org_eclipse_uprotocol.transport.datamodel.ulistener import UListener
+from org_eclipse_uprotocol.transport.ulistener import UListener
 from org_eclipse_uprotocol.proto.upayload_pb2 import UPayload
-from org_eclipse_uprotocol.transport.datamodel.ustatus import UStatus
-
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UStatus
 
 class UTransport(ABC):
     """

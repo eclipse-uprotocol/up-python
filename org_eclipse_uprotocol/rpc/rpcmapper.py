@@ -28,8 +28,8 @@
 from concurrent.futures import Future
 
 from google.protobuf import any_pb2
-from google.rpc.code_pb2 import Code
-from google.rpc.status_pb2 import Status
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UCode
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UStatus
 
 from org_eclipse_uprotocol.rpc.rpcresult import RpcResult
 from org_eclipse_uprotocol.proto.upayload_pb2 import UPayload
@@ -66,7 +66,7 @@ class RpcMapper:
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     return RpcMapper.unpack_payload(any_message, expected_cls)
             except Exception as e:
-                raise RuntimeError(f"{str(e)} [{Status.__name__}]") from e
+                raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e
 
             raise RuntimeError(f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]")
 
@@ -83,11 +83,11 @@ class RpcMapper:
     def map_response_to_result(response_future: Future, expected_cls):
         """
         Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing an RpcResult
-        containing the declared expected return type T, or a Status containing any errors.<br><br>
+        containing the declared expected return type T, or a UStatus containing any errors.<br><br>
         @param response_future:CompletableFuture&lt;Any&gt; response from Link.
         @param expected_cls:The class name of the declared expected return type of the RPC method.
         @return:Returns a CompletableFuture containing an RpcResult containing the declared expected return type T,
-        or a Status containing any errors.
+        or a UStatus containing any errors.
         """
 
         def handle_response(payload, exception=None):
@@ -102,15 +102,15 @@ class RpcMapper:
                 any_message.ParseFromString(payload.value)
 
                 if any_message.Is(expected_cls.DESCRIPTOR):
-                    if expected_cls == Status:
+                    if expected_cls == UStatus:
                         return RpcMapper.calculate_status_result(any_message)
                     else:
                         return RpcResult.success(RpcMapper.unpack_payload(any_message, expected_cls))
 
-                if any_message.Is(Status.DESCRIPTOR):
+                if any_message.Is(UStatus.DESCRIPTOR):
                     return RpcMapper.calculate_status_result(any_message)
             except Exception as e:
-                raise RuntimeError(f"{str(e)} [{Status.__name__}]") from e
+                raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e
 
             raise RuntimeError(f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]")
 
@@ -125,8 +125,8 @@ class RpcMapper:
 
     @staticmethod
     def calculate_status_result(payload):
-        status = RpcMapper.unpack_payload(payload, Status)
-        return RpcResult.success(status) if status.code == Code.OK else RpcResult.failure(status)
+        status = RpcMapper.unpack_payload(payload, UStatus)
+        return RpcResult.success(status) if status.code == UCode.OK else RpcResult.failure(status)
 
     @staticmethod
     def unpack_payload(payload, expected_cls):
@@ -142,4 +142,4 @@ class RpcMapper:
             payload.Unpack(expected_cls)
             return expected_cls
         except Exception as e:
-            raise RuntimeError(f"{str(e)} [{Status.__name__}]") from e
+            raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e

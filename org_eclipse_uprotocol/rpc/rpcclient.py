@@ -51,7 +51,7 @@ class RpcClient(ABC):
 
         @param topic: topic of the method to be invoked (i.e. the name of the API we are calling).
         @param payload:The request message to be sent to the server.
-        @param attributes:etadata for the method invocation (i.e. priority, timeout, etc.)
+        @param attributes: metadata for the method invocation (i.e. priority, timeout, etc.)
         @return: Returns the CompletableFuture with the result or exception.
         """
         pass

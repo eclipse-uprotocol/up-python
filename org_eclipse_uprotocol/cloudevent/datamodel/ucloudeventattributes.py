@@ -35,11 +35,11 @@ class UCloudEventAttributes:
     Specifies the properties that can configure the UCloudEvent.
     """
 
-    def __init__(self, hash_value: str, priority: UPriority, ttl: int, token: str):
+    def __init__(self, priority: UPriority, hash_value: str = None, ttl: int = None, token: str = None):
         """
         Construct the properties object.<br><br>
         @param hash_value: an HMAC generated on the data portion of the CloudEvent message using the device key.
-        @param priority: uProtocol Prioritization classifications defined at QoS in SDV-202.
+        @param priority: uProtocol Prioritization classifications.
         @param ttl: How long this event should live for after it was generated (in milliseconds). Events without this
         attribute (or value is 0) MUST NOT timeout.
         @param token: Oauth2 access token to perform the access request defined in the request message.
@@ -64,7 +64,8 @@ class UCloudEventAttributes:
         @return: Returns true if this attributes container is an empty container and has no valuable information in
         building a CloudEvent.
         """
-        return (self.hash is None or self.hash.isspace()) and (self.ttl is None) and (self.token is None or self.token.isspace())and (self.priority is None or self.priority.isspace())
+        return (self.hash is None or self.hash.isspace()) and (self.ttl is None) and (
+                    self.token is None or self.token.isspace()) and (self.priority is None or self.priority.isspace())
 
     def get_hash(self) -> str:
         """
@@ -75,7 +76,7 @@ class UCloudEventAttributes:
 
     def get_priority(self) -> UPriority:
         """
-        uProtocol Prioritization classifications defined at QoS in SDV-202.<br><br>
+        uProtocol Prioritization classifications.<br><br>
         @return: Returns an Optional priority attribute.
         """
         return self.priority
@@ -133,8 +134,8 @@ class UCloudEventAttributesBuilder:
 
     def with_priority(self, priority: UPriority):
         """
-        Add a uProtocol Prioritization classifications defined at QoS in SDV-202.<br><br>
-        @param priority: priority uProtocol Prioritization classifications defined at QoS in SDV-202.
+        Add a uProtocol Prioritization classifications.<br><br>
+        @param priority: priority uProtocol Prioritization classifications.
         @return: Returns the UCloudEventAttributesBuilder with the configured priority.
         """
         self.priority = UPriority.Name(priority)
@@ -165,7 +166,7 @@ class UCloudEventAttributesBuilder:
         Construct the UCloudEventAttributes from the builder.<br><br>
         @return: Returns a constructed UProperty.
         """
-        return UCloudEventAttributes(self.hash, self.priority, self.ttl, self.token)
+        return UCloudEventAttributes(self.priority, self.hash, self.ttl, self.token)
 
 
 if __name__ == "__main__":

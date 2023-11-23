@@ -28,14 +28,15 @@
 import base64
 from builtins import str
 
+from org_eclipse_uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
 
-class Base64ProtobufSerializer:
+
+class Base64ProtobufSerializer(CloudEventSerializer):
     """
     Helper for serializing Base64 protobuf data.
     """
 
-    @staticmethod
-    def deserialize(proto_bytes: bytes) -> str:
+    def deserialize(self, proto_bytes: bytes) -> str:
         """
         Deserialize a base64 protobuf payload into a Base64 String.<br><br>
 
@@ -46,8 +47,7 @@ class Base64ProtobufSerializer:
             return ""
         return base64.b64encode(proto_bytes).decode('utf-8')  # return base64.b64decode(proto_bytes).decode('utf-8')
 
-    @staticmethod
-    def serialize(string_to_serialize: str) -> bytes:
+    def serialize(self, string_to_serialize: str) -> bytes:
         """
         Serialize a String into Base64 format.<br><br>
         @param string_to_serialize:String to serialize.

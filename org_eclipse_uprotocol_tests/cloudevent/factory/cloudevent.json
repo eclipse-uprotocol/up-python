@@ -1,0 +1,99 @@
+[
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoidGVzdG1lIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJwdWIudjEiLCJwcmlvcml0eSI6IlVQUklPUklUWV9DUzEiLCJ0dGwiOjMsImhhc2giOiJzb21laGFzaCIsInRva2VuIjoic29tZU9BdXRoVG9rZW4iLCJkYXRhX2Jhc2U2NCI6IkNqQjBlWEJsTG1kdmIyZHNaV0Z3YVhNdVkyOXRMMmx2TG1Oc2IzVmtaWFpsYm5SekxuWXhMa05zYjNWa1JYWmxiblFTTVFvRmFHVnNiRzhTRTJoMGRIQnpPaTh2WlhoaGJYQnNaUzVqYjIwYUF6RXVNQ0lNWlhoaGJYQnNaUzVrWlcxdlFnQT0ifQ==",
+    "id": "testme",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "pub.v1",
+    "priority": "UPRIORITY_CS1",
+    "ttl": 3,
+    "hash": "somehash",
+    "token": "someOAuthToken",
+    "test_detail": "test_create_base_cloud_event"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoidGVzdG1lIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJwdWIudjEiLCJkYXRhY29udGVudHR5cGUiOiJhcHBsaWNhdGlvbi94LXByb3RvYnVmIiwiZGF0YXNjaGVtYSI6InR5cGUuZ29vZ2xlYXBpcy5jb20vaW8uY2xvdWRldmVudHMudjEuQ2xvdWRFdmVudCIsInByaW9yaXR5IjoiVVBSSU9SSVRZX0NTMSIsInR0bCI6MywiaGFzaCI6InNvbWVoYXNoIiwidG9rZW4iOiJzb21lT0F1dGhUb2tlbiIsImRhdGFfYmFzZTY0IjoiQ2pCMGVYQmxMbWR2YjJkc1pXRndhWE11WTI5dEwybHZMbU5zYjNWa1pYWmxiblJ6TG5ZeExrTnNiM1ZrUlhabGJuUVNNUW9GYUdWc2JHOFNFMmgwZEhCek9pOHZaWGhoYlhCc1pTNWpiMjBhQXpFdU1DSU1aWGhoYlhCc1pTNWtaVzF2UWdBPSJ9",
+    "id": "testme",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "pub.v1",
+    "priority": "UPRIORITY_CS1",
+    "ttl": 3,
+    "hash": "somehash",
+    "token": "someOAuthToken",
+    "dataschema": "type.googleapis.com/io.cloudevents.v1.CloudEvent",
+    "datacontenttype": "application/x-protobuf",
+    "test_detail": "test_create_base_cloud_event_with_datacontenttype_and_schema"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoidGVzdG1lIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJwdWIudjEiLCJkYXRhX2Jhc2U2NCI6IkNqQjBlWEJsTG1kdmIyZHNaV0Z3YVhNdVkyOXRMMmx2TG1Oc2IzVmtaWFpsYm5SekxuWXhMa05zYjNWa1JYWmxiblFTTVFvRmFHVnNiRzhTRTJoMGRIQnpPaTh2WlhoaGJYQnNaUzVqYjIwYUF6RXVNQ0lNWlhoaGJYQnNaUzVrWlcxdlFnQT0ifQ==",
+    "id": "testme",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "pub.v1",
+    "test_detail": "test_create_base_cloud_event_without_attributes"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoiMDE4YmY5YjYtNWMxYy04MDAwLTk4MmYtOGM3MTI1NjQ2OWNjIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJwdWIudjEiLCJwcmlvcml0eSI6IlVQUklPUklUWV9DUzEiLCJ0dGwiOjMsImhhc2giOiJzb21laGFzaCIsImRhdGFfYmFzZTY0IjoiQ2pCMGVYQmxMbWR2YjJkc1pXRndhWE11WTI5dEwybHZMbU5zYjNWa1pYWmxiblJ6TG5ZeExrTnNiM1ZrUlhabGJuUVNNUW9GYUdWc2JHOFNFMmgwZEhCek9pOHZaWGhoYlhCc1pTNWpiMjBhQXpFdU1DSU1aWGhoYlhCc1pTNWtaVzF2UWdBPSJ9",
+    "id": "018bf9b6-5c1c-8000-982f-8c71256469cc",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "pub.v1",
+    "priority": "UPRIORITY_CS1",
+    "ttl": 3,
+    "hash": "somehash",
+    "test_detail": "test_create_publish_cloud_event"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoiMDE4YmY5YjktNWFkOS04MDAwLTgzZTUtNmE0ODQxNzNkNjlmIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJwdWIudjEiLCJzaW5rIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInByaW9yaXR5IjoiVVBSSU9SSVRZX0NTMiIsInR0bCI6MywiaGFzaCI6InNvbWVoYXNoIiwiZGF0YV9iYXNlNjQiOiJDakIwZVhCbExtZHZiMmRzWldGd2FYTXVZMjl0TDJsdkxtTnNiM1ZrWlhabGJuUnpMbll4TGtOc2IzVmtSWFpsYm5RU01Rb0ZhR1ZzYkc4U0UyaDBkSEJ6T2k4dlpYaGhiWEJzWlM1amIyMGFBekV1TUNJTVpYaGhiWEJzWlM1a1pXMXZRZ0E9In0=",
+    "id": "018bf9b9-5ad9-8000-83e5-6a484173d69f",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "pub.v1",
+    "priority": "UPRIORITY_CS2",
+    "ttl": 3,
+    "hash": "somehash",
+    "sink": "/body.access//door.front_left#Door",
+    "test_detail": "test_create_notification_cloud_event"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoiMDE4YmY5YmItMzFiZC04MDAwLWJkMGEtNjViNjNlZWNlMmJkIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJyZXEudjEiLCJzaW5rIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInByaW9yaXR5IjoiVVBSSU9SSVRZX0NTMiIsInR0bCI6MywiaGFzaCI6InNvbWVoYXNoIiwidG9rZW4iOiJzb21lT0F1dGhUb2tlbiIsImRhdGFfYmFzZTY0IjoiQ2pCMGVYQmxMbWR2YjJkc1pXRndhWE11WTI5dEwybHZMbU5zYjNWa1pYWmxiblJ6TG5ZeExrTnNiM1ZrUlhabGJuUVNNUW9GYUdWc2JHOFNFMmgwZEhCek9pOHZaWGhoYlhCc1pTNWpiMjBhQXpFdU1DSU1aWGhoYlhCc1pTNWtaVzF2UWdBPSJ9",
+    "id": "018bf9bb-31bd-8000-bd0a-65b63eece2bd",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "req.v1",
+    "priority": "UPRIORITY_CS2",
+    "ttl": 3,
+    "hash": "somehash",
+    "token": "someOAuthToken",
+    "test_detail": "test_create_request_cloud_event_from_local_use"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoiMDE4YmY5YmQtM2EzYi04MDAwLWE4Y2ItZTk1NTY4MWU4NTMwIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJyZXMudjEiLCJzaW5rIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInByaW9yaXR5IjoiVVBSSU9SSVRZX0NTMiIsInR0bCI6MywiaGFzaCI6InNvbWVoYXNoIiwicmVxaWQiOiJyZXF1ZXN0SWRGcm9tUmVxdWVzdENsb3VkRXZlbnQiLCJkYXRhX2Jhc2U2NCI6IkNqQjBlWEJsTG1kdmIyZHNaV0Z3YVhNdVkyOXRMMmx2TG1Oc2IzVmtaWFpsYm5SekxuWXhMa05zYjNWa1JYWmxiblFTTVFvRmFHVnNiRzhTRTJoMGRIQnpPaTh2WlhoaGJYQnNaUzVqYjIwYUF6RXVNQ0lNWlhoaGJYQnNaUzVrWlcxdlFnQT0ifQ==",
+    "id": "018bf9bd-3a3b-8000-a8cb-e955681e8530",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "res.v1",
+    "priority": "UPRIORITY_CS2",
+    "ttl": 3,
+    "hash": "somehash",
+    "reqid": "requestIdFromRequestCloudEvent",
+    "sink": "/body.access//door.front_left#Door",
+    "test_detail": "test_create_response_cloud_event_originating_from_local_use"
+  },
+  {
+    "serialized_ce": "eyJzcGVjdmVyc2lvbiI6IjEuMCIsImlkIjoiMDE4YmY5YmYtMjdlNC04MDAwLThkZDAtMjYyNzdjNzg3OTBlIiwic291cmNlIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsInR5cGUiOiJyZXMudjEiLCJzaW5rIjoiL2JvZHkuYWNjZXNzLy9kb29yLmZyb250X2xlZnQjRG9vciIsImNvbW1zdGF0dXMiOjMsInByaW9yaXR5IjoiVVBSSU9SSVRZX0NTMiIsInR0bCI6MywiaGFzaCI6InNvbWVoYXNoIiwicmVxaWQiOiJyZXF1ZXN0SWRGcm9tUmVxdWVzdENsb3VkRXZlbnQiLCJkYXRhX2Jhc2U2NCI6IkNpbDBlWEJsTG1kdmIyZHNaV0Z3YVhNdVkyOXRMMmR2YjJkc1pTNXdjbTkwYjJKMVppNUZiWEIwZVE9PSJ9",
+    "id": "018bf9bf-27e4-8000-8dd0-26277c78790e",
+    "specversion": "1.0",
+    "source": "/body.access//door.front_left#Door",
+    "type": "res.v1",
+    "priority": "UPRIORITY_CS2",
+    "ttl": 3,
+    "hash": "somehash",
+    "reqid": "requestIdFromRequestCloudEvent",
+    "sink": "/body.access//door.front_left#Door",
+    "commstatus": 3,
+    "test_detail": "test_create_a_failed_response_cloud_event"
+  }
+
+]

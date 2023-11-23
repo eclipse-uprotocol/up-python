@@ -1,5 +1,6 @@
 # -------------------------------------------------------------------------
-
+import json
+import os
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -33,12 +34,24 @@ from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventattributes import UCl
     UCloudEventAttributes
 from org_eclipse_uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
+from org_eclipse_uprotocol.cloudevent.serialize.base64protobufserializer import Base64ProtobufSerializer
+from org_eclipse_uprotocol.cloudevent.serialize.cloudeventtojsonserializer import CloudEventToJsonSerializer
 from org_eclipse_uprotocol.proto.cloudevents_pb2 import CloudEvent
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
 from org_eclipse_uprotocol.proto.ustatus_pb2 import UCode
 
 from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+
+
+def get_json_object():
+    current_directory = os.getcwd()
+    json_file_path = os.path.join(current_directory, "cloudevent.json")
+
+    with open(json_file_path, 'r') as json_file:
+        json_data = json.load(json_file)
+
+    return json_data
 
 
 def build_uri_for_test():
@@ -58,6 +71,35 @@ def build_proto_payload_for_test():
 
 class CloudEventFactoryTest(unittest.TestCase):
     DATA_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE
+
+    def test_all_cloud_events_from_json(self):
+        # Access the "validUris" array
+        cloudevents = get_json_object()
+        for ce_json in cloudevents:
+            bytes_ce = Base64ProtobufSerializer().serialize(ce_json['serialized_ce'])
+            cloudevent = CloudEventToJsonSerializer().deserialize(bytes_ce)
+            self.assertEqual(UCloudEvent.get_id(cloudevent), ce_json['id'])
+            self.assertEqual(UCloudEvent.get_specversion(cloudevent), ce_json['specversion'])
+            if 'source' in ce_json:
+                self.assertEqual(UCloudEvent.get_source(cloudevent), ce_json['source'])
+            if 'sink' in ce_json:
+                self.assertEqual(UCloudEvent.get_sink(cloudevent), ce_json['sink'])
+            if 'type' in ce_json:
+                self.assertEqual(UCloudEvent.get_type(cloudevent), ce_json['type'])
+            if 'priority' in ce_json:
+                self.assertEqual(UCloudEvent.get_priority(cloudevent), ce_json['priority'])
+            if 'ttl' in ce_json:
+                self.assertEqual(UCloudEvent.get_ttl(cloudevent), ce_json['ttl'])
+            if 'hash' in ce_json:
+                self.assertEqual(UCloudEvent.get_hash(cloudevent), ce_json['hash'])
+            if 'token' in ce_json:
+                self.assertEqual(UCloudEvent.get_token(cloudevent), ce_json['token'])
+            if 'dataschema' in ce_json:
+                self.assertEqual(UCloudEvent.get_data_schema(cloudevent), ce_json['dataschema'])
+            if 'datacontenttype' in ce_json:
+                self.assertEqual(UCloudEvent.get_data_content_type(cloudevent), ce_json['datacontenttype'])
+            if 'commstatus' in ce_json:
+                self.assertEqual(UCloudEvent.get_communication_status(cloudevent), ce_json['commstatus'])
 
     def test_create_base_cloud_event(self):
         source = build_uri_for_test()

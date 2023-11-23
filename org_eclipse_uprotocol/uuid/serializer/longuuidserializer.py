@@ -60,5 +60,8 @@ class LongUuidSerializer(UuidSerializer):
         :param uuid: UUID object to be serialized to a string.
         :return: Returns the UUID in the string serialized format.
         """
-        pythonuuid = UUIDUtils.create_pythonuuid_from_msb_lsb(uuid.msb, uuid.lsb)
+        if uuid is None:
+            return ''
+
+        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
         return str(pythonuuid) if uuid else ''

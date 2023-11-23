@@ -1,5 +1,8 @@
 # -------------------------------------------------------------------------
-
+import hashlib
+import random
+import struct
+from datetime import datetime
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -35,7 +38,7 @@ from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils
 class UUIDFactory:
     def create(self, instant=None):
         if instant is None:
-            instant = int(time.time() * 1000)  # Current time in milliseconds
+            instant = datetime.now()
         return self._create(instant)
 
     def _create(self, instant):
@@ -45,17 +48,28 @@ class UUIDFactory:
 class UUIDv6Factory(UUIDFactory):
 
     def _create(self, instant) -> UUID:
-        python_uuid = uuid6(instant)
+
+        python_uuid = uuid6()
         msb, lsb = UUIDUtils.get_msb_lsb(python_uuid)
         return UUID(msb=msb, lsb=lsb)
 
 
 class UUIDv8Factory(UUIDFactory):
-
+    MAX_COUNT = 0xfff
+    _lsb = (random.getrandbits(63) & 0x3fffffffffffffff) | 0x8000000000000000
+    UUIDV8_VERSION = 8
+    _msb = UUIDV8_VERSION << 12
     def _create(self, instant) -> UUID:
-        python_uuid = uuid8()
-        msb, lsb = UUIDUtils.get_msb_lsb(python_uuid)
-        return UUID(msb=msb, lsb=lsb)
+        time = int(instant.timestamp() * 1000) if instant else int(datetime.now().timestamp() * 1000)
+
+        if time == (self._msb >> 16):
+            if (self._msb & 0xFFF) < self.MAX_COUNT:
+                self._msb += 1
+        else:
+            self._msb = (time << 16) | (8 << 12)
+
+        return UUID(msb=self._msb, lsb=self._lsb)
+        # return UUID(msb=msb, lsb=lsb)
 
 
 class Factories():

@@ -60,7 +60,7 @@ class MicroUuidSerializer(UuidSerializer):
         :return: Returns the UUID in the bytes serialized format.
         """
         if uuid is None:
-            return b'\x00' * 16  # Return 16 zero bytes for a None UUID
-        pythonuuid = UUIDUtils.create_pythonuuid_from_msb_lsb(uuid.msb, uuid.lsb)
+            return bytearray()
+        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
         msb, lsb = divmod(pythonuuid.int, 2 ** 64)
         return struct.pack('>QQ', msb, lsb)

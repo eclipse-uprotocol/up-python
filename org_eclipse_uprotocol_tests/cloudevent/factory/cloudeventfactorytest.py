@@ -1,6 +1,5 @@
 # -------------------------------------------------------------------------
-import json
-import os
+
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -27,9 +26,9 @@ import os
 
 
 import unittest
-
+import json
+import os
 from google.protobuf import any_pb2
-
 from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributesBuilder, \
     UCloudEventAttributes
 from org_eclipse_uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
@@ -73,7 +72,6 @@ class CloudEventFactoryTest(unittest.TestCase):
     DATA_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE
 
     def test_all_cloud_events_from_json(self):
-        # Access the "validUris" array
         cloudevents = get_json_object()
         for ce_json in cloudevents:
             bytes_ce = Base64ProtobufSerializer().serialize(ce_json['serialized_ce'])

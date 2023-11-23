@@ -31,6 +31,7 @@ from enum import Enum
 from org_eclipse_uprotocol.proto.uuid_pb2 import UUID
 from org_eclipse_uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
 from org_eclipse_uprotocol.validation.validationresult import ValidationResult
+from org_eclipse_uprotocol.proto.ustatus_pb2 import UStatus, UCode
 
 
 class UuidVariant(Enum):
@@ -51,13 +52,13 @@ class UuidValidator(ABC):
         else:
             return Validators.UNKNOWN.validator()
 
-    def validate(self, uuid: UUID) -> ValidationResult:
+    def validate(self, uuid: UUID) -> UStatus:
         error_messages = [self.validate_version(uuid), self.validate_variant(uuid), self.validate_time(uuid)]
-        error_messages = [result.message for result in error_messages if result.is_failure]
-        error_message = ", ".join(error_messages)
+        error_messages = [result.get_message() for result in error_messages if result.is_failure()]
+        error_message = ",".join(error_messages)
         if not error_message:
-            return ValidationResult.success()
-        return ValidationResult.failure(f"Invalid argument value: {error_message}")
+            return ValidationResult.success().to_status()
+        return UStatus(code=UCode.INVALID_ARGUMENT, message=error_message)
 
     @abstractmethod
     def validate_version(self, uuid: UUID) -> ValidationResult:
@@ -65,7 +66,7 @@ class UuidValidator(ABC):
 
     def validate_time(self, uuid: UUID) -> ValidationResult:
         time = UUIDUtils.getTime(uuid)
-        return ValidationResult.success() if time > 0 else ValidationResult.failure("Invalid UUID Time")
+        return ValidationResult.success() if (time is not None and time > 0 )else ValidationResult.failure("Invalid UUID Time")
 
     @abstractmethod
     def validate_variant(self, uuid: UUID) -> ValidationResult:

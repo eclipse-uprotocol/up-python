@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-
+import time
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -73,7 +73,7 @@ class UAttributesValidator:
         for invalid configurations.
         """
         error_messages = [self.validate_type(attributes),
-                           self.validate_ttl(attributes),
+                          self.validate_ttl(attributes),
                           self.validate_sink(attributes), self.validate_comm_status(attributes),
                           self.validate_permission_level(attributes), self.validate_req_id(attributes)]
 
@@ -99,15 +99,14 @@ class UAttributesValidator:
         ttl = maybe_ttl
         if ttl <= 0:
             return ValidationResult.success()
-        delta = int((datetime.now() - maybe_time).total_seconds() * 1000)
+        delta = int(time.time() * 1000)- maybe_time
         return ValidationResult.failure("Payload is expired") if delta >= ttl else ValidationResult.success()
-
-
 
     @staticmethod
     def validate_ttl(attr: UAttributes) -> ValidationResult:
         """
-        Validate the time to live configuration. If the UAttributes does not contain a time to live then the  ValidationResult
+        Validate the time to live configuration. If the UAttributes does not contain a time to live then the
+        ValidationResult
         is ok.<br><br>
         @param attr:UAttributes object containing the message time to live configuration to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
@@ -120,7 +119,8 @@ class UAttributesValidator:
     @staticmethod
     def validate_sink(attr: UAttributes) -> ValidationResult:
         """
-        Validate the sink UriPart for the default case. If the UAttributes does not contain a sink then the  ValidationResult
+        Validate the sink UriPart for the default case. If the UAttributes does not contain a sink then the
+        ValidationResult
         is ok.<br><br>
         @param attr:UAttributes object containing the sink to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
@@ -149,8 +149,9 @@ class UAttributesValidator:
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
         if attr.HasField('commstatus'):
-            enum_value = UCode.Name(attr.commstatus)
-            if enum_value is None:
+            try:
+                UCode.Name(attr.commstatus)
+            except ValueError:
                 return ValidationResult.failure("Invalid Communication Status Code")
 
         return ValidationResult.success()
@@ -168,8 +169,6 @@ class UAttributesValidator:
             return ValidationResult.failure("Invalid UUID")
         else:
             return ValidationResult.success()
-
-
 
     @abstractmethod
     def validate_type(self, attr: UAttributes):
@@ -194,7 +193,7 @@ class Publish(UAttributesValidator):
         """
         return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_PUBLISH else (
             ValidationResult.failure(
-                f"Wrong Attribute Type [{attributes_value.type}]"))
+                f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"))
 
     def __str__(self):
         return "UAttributesValidator.Publish"
@@ -212,8 +211,8 @@ class Request(UAttributesValidator):
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
         return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_REQUEST else (
-           ValidationResult.failure(
-                f"Wrong Attribute Type [{attributes_value.type}]"))
+            ValidationResult.failure(
+                f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"))
 
     def validate_sink(self, attributes_value: UAttributes) -> ValidationResult:
         """
@@ -223,7 +222,7 @@ class Request(UAttributesValidator):
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
         return UriValidator.validate_rpc_response(
-            attributes_value.sink) if attributes_value.sink else ValidationResult.failure("Missing Sink")
+            attributes_value.sink) if attributes_value.HasField('sink') else ValidationResult.failure("Missing Sink")
 
     def validate_ttl(self, attributes_value: UAttributes) -> ValidationResult:
         """
@@ -231,7 +230,12 @@ class Request(UAttributesValidator):
         @param attributes_value:UAttributes object containing the time to live to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
-        return ValidationResult.success() if attributes_value.ttl and attributes_value.ttl > 0 else ValidationResult.failure("Missing TTL")
+        if not attributes_value.HasField('ttl'):
+            return ValidationResult.failure("Missing TTL")
+        if attributes_value.ttl <= 0:
+            return ValidationResult.failure(f"Invalid TTL [{attributes_value.ttl}]")
+
+        return ValidationResult.success()
 
     def __str__(self):
         return "UAttributesValidator.Request"
@@ -250,7 +254,7 @@ class Response(UAttributesValidator):
         """
         return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_RESPONSE else (
             ValidationResult.failure(
-                f"Wrong Attribute Type [{attributes_value.type}]"))
+                f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"))
 
     def validate_sink(self, attributes_value: UAttributes) -> ValidationResult:
         """
@@ -259,8 +263,11 @@ class Response(UAttributesValidator):
         @param attributes_value:UAttributes object containing the sink to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
-        return UriValidator.validate_rpc_method(
-            attributes_value.sink) if attributes_value.sink else ValidationResult.failure("Missing Sink")
+        result = UriValidator.validate_rpc_method(attributes_value.sink)
+        if result.is_success():
+            return result
+        else:
+            return ValidationResult.failure("Missing Sink")
 
     def validate_req_id(self, attributes_value: UAttributes) -> ValidationResult:
         """

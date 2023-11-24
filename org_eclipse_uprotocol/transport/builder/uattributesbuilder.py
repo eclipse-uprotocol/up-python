@@ -42,7 +42,7 @@ class UAttributesBuilder:
 
     def __init__(self, id: UUID, type: UMessageType, priority: UPriority):
         self.id = id
-        self.type = type
+        self.type = UMessageType.Name(type)
         self.priority = priority
         self.ttl = None
         self.token = None
@@ -183,29 +183,7 @@ class UAttributesBuilder:
         """
         attributes = UAttributes(id=self.id, type=self.type, priority=self.priority)
         if self.sink is not None:
-            if self.sink.HasField('authority'):
-                if self.sink.authority.HasField('id'):
-                    attributes.sink.authority.id = self.sink.authority.id
-                if self.sink.authority.HasField('name'):
-                    attributes.sink.authority.name = self.sink.authority.name
-                if self.sink.authority.HasField('ip'):
-                    attributes.sink.authority.ip = self.sink.authority.ip
-            if self.sink.HasField('entity'):
-                attributes.sink.entity.name = self.sink.entity.name
-                if self.sink.entity.HasField('id'):
-                    attributes.sink.entity.id = self.sink.entity.id
-                if self.sink.entity.HasField('version_major'):
-                    attributes.sink.entity.version_major = self.sink.entity.version_major
-                if self.sink.entity.HasField('version_minor'):
-                    attributes.sink.entity.version_minor = self.sink.entity.version_minor
-            if self.sink.HasField('resource'):
-                attributes.sink.resource.name = self.sink.resource.name
-                if self.sink.resource.HasField('id'):
-                    attributes.sink.resource.id = self.sink.resource.id
-                if self.sink.resource.HasField('instance'):
-                    attributes.sink.resource.instance = self.sink.resource.instance
-                if self.sink.resource.HasField('message'):
-                    attributes.sink.resource.message = self.sink.resource.message
+            attributes.sink.CopyFrom(self.sink)
         if self.ttl is not None:
             attributes.ttl = self.ttl
         if self.plevel is not None:
@@ -213,7 +191,7 @@ class UAttributesBuilder:
         if self.commstatus is not None:
             attributes.commstatus = self.commstatus
         if self.reqid is not None:
-            attributes.reqid = self.reqid
+            attributes.reqid.CopyFrom(self.reqid)
         if self.token != None:
             attributes.token = self.token
         return attributes

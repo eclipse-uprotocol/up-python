@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-
+#
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -21,7 +21,7 @@
 # SPDX-FileType: SOURCE
 # SPDX-FileCopyrightText: 2023 General Motors GTO LLC
 # SPDX-License-Identifier: Apache-2.0
-
+#
 # -------------------------------------------------------------------------
 
 
@@ -34,24 +34,20 @@ class CallOptions:
     Default timeout of a call in milliseconds.
     """
 
+
     def __init__(self, timeout=TIMEOUT_DEFAULT, token=""):
         self.mTimeout = timeout
         self.mToken = token if token else ""
 
-    @classmethod
-    def default(cls):
-        return cls()
 
-    @property
-    def timeout(self):
+    def get_timeout(self):
         """
         Get a timeout.<br><br>
         @return:  A timeout in milliseconds.
         """
         return self.mTimeout
 
-    @property
-    def token(self):
+    def get_token(self):
         """
         Get an OAuth2 access token.<br><br>
         @return: An Optional OAuth2 access token.
@@ -75,7 +71,7 @@ class CallOptionsBuilder:
     Builder for constructing <code>CallOptions</code>.
     """
     TIMEOUT_DEFAULT = 10000
-
+    DEFAULT= CallOptions(TIMEOUT_DEFAULT,'')
     def __init__(self):
         self.mTimeout = self.TIMEOUT_DEFAULT
         self.mToken = ""

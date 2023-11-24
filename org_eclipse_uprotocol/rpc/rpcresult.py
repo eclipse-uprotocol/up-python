@@ -49,7 +49,7 @@ class RpcResult(ABC):
         pass
 
     @abstractmethod
-    def getOrElse(self, default_value: T) -> T:
+    def getOrElse(self, default_value: Callable[[], T]) -> T:
         pass
 
     @abstractmethod
@@ -72,13 +72,16 @@ class RpcResult(ABC):
     def successValue(self) -> T:
         pass
 
+    @staticmethod
     def success(value: T) -> 'RpcResult':
         return Success(value)
 
-    def failure(value: Union[UStatus, Exception, None] = None, code: UCode = UCode.UNKNOWN,
+    @staticmethod
+    def failure(value: Union[UStatus,'Failure', Exception,] = None, code: UCode = UCode.UNKNOWN,
                 message: str = '') -> 'RpcResult':
         return Failure(value, code, message)
 
+    @staticmethod
     def flatten(result: 'RpcResult') -> 'RpcResult':
         return result.flatMap(lambda x: x)
 
@@ -94,12 +97,12 @@ class Success(RpcResult):
     def isFailure(self) -> bool:
         return False
 
-    def getOrElse(self, default_value: T) -> T:
+    def getOrElse(self, default_value: Callable[[], T]) -> T:
         return self.successValue()
 
     def map(self, f: Callable[[T], T]) -> RpcResult:
         try:
-            return self.success()
+            return self.success(f(self.successValue()))
         except Exception as e:
             return self.failure(e)
 
@@ -111,7 +114,7 @@ class Success(RpcResult):
 
     def filter(self, f: Callable[[T], bool]) -> RpcResult:
         try:
-            return self if f(self.successValue()) else self.failure(UCode.FAILED_PRECONDITION, "filtered out")
+            return self if f(self.successValue()) else self.failure(code=UCode.FAILED_PRECONDITION, message="filtered out")
         except Exception as e:
             return self.failure(e)
 
@@ -127,11 +130,13 @@ class Success(RpcResult):
 
 class Failure(RpcResult):
 
-    def __init__(self, value: Union[UStatus, Exception, None] = None, code: UCode = UCode.UNKNOWN, message: str = ''):
+    def __init__(self, value: Union[UStatus,'Failure', Exception, None] = None, code: UCode = UCode.UNKNOWN, message: str = ''):
         if isinstance(value, UStatus):
             self.value = value
         elif isinstance(value, Exception):
             self.value = UStatus(code=code, message=str(value))
+        elif isinstance(value, Failure):
+            self.value = value.failureValue()
         else:
             self.value = UStatus(code=code, message=message)
 
@@ -141,7 +146,9 @@ class Failure(RpcResult):
     def isFailure(self) -> bool:
         return True
 
-    def getOrElse(self, default_value: T) -> T:
+    def getOrElse(self, default_value: Callable[[], T]) -> T:
+        if callable(default_value):
+            return default_value()
         return default_value
 
     def map(self, f: Callable[[T], T]) -> RpcResult:

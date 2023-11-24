@@ -33,7 +33,7 @@ from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerial
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 
 
-class LongUriSerializerTest(unittest.TestCase):
+class TestLongUriSerializer(unittest.TestCase):
 
     def test_using_the_serializers(self):
         uri = UUri(entity=UEntity(name="hartley"), resource=UResourceBuilder.for_rpc_request("raise"))

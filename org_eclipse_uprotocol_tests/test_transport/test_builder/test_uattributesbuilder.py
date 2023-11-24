@@ -43,7 +43,7 @@ def get_uuid():
     return Factories.UPROTOCOL.create()
 
 
-class UAttributesBuilderTest(unittest.TestCase):
+class TestUAttributesBuilder(unittest.TestCase):
 
     def test_publish(self):
         builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1)

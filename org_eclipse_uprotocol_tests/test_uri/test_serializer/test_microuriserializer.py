@@ -33,7 +33,7 @@ from org_eclipse_uprotocol.uri.serializer.microuriserializer import MicroUriSeri
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 
 
-class MicroUriSerializerTest(unittest.TestCase):
+class TestMicroUriSerializer(unittest.TestCase):
 
     def test_empty(self):
         bytes_uuri = MicroUriSerializer().serialize(UUri())

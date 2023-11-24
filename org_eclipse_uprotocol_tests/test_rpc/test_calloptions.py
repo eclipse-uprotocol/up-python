@@ -30,7 +30,7 @@ import unittest
 from org_eclipse_uprotocol.rpc.calloptions import CallOptions, CallOptionsBuilder
 
 
-class CallOptionsTest(unittest.TestCase):
+class TestCallOptions(unittest.TestCase):
 
     def test_hash_code_equals(self):
         call_options = CallOptionsBuilder().build()

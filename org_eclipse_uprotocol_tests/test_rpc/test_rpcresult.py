@@ -39,7 +39,7 @@ def multiply_by_2(x):
     return RpcResult.success(x * 2)
 
 
-class RpcResultTest(unittest.TestCase):
+class TestRpcResult(unittest.TestCase):
 
     def test_isSuccess_on_Success(self):
         result = RpcResult.success(2)

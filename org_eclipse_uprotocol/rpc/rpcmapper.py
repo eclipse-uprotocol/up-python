@@ -139,7 +139,9 @@ class RpcMapper:
         object.
         """
         try:
-            payload.Unpack(expected_cls)
-            return expected_cls
+            value=expected_cls()
+            value.ParseFromString(payload.value)
+            # payload.Unpack(expected_cls)
+            return value
         except Exception as e:
             raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e

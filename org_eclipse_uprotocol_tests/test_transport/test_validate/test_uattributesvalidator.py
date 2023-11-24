@@ -45,7 +45,7 @@ def build_sink():
                 resource=UResourceBuilder.for_rpc_response())
 
 
-class UAttributesValidatorTest(unittest.TestCase):
+class TestUAttributesValidator(unittest.TestCase):
 
     def test_fetching_validator_for_valid_types(self):
         publish = UAttributesValidator.get_validator(UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).build())

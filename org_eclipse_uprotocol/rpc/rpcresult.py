@@ -102,6 +102,7 @@ class Success(RpcResult):
 
     def map(self, f: Callable[[T], T]) -> RpcResult:
         try:
+
             return self.success(f(self.successValue()))
         except Exception as e:
             return self.failure(e)

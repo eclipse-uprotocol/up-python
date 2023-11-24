@@ -33,7 +33,7 @@ from org_eclipse_uprotocol.uri.serializer.microuriserializer import MicroUriSeri
 from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 
 
-class UriSerializerTest(unittest.TestCase):
+class TestUriSerializer(unittest.TestCase):
 
     def test_build_resolved_valid_long_micro_uri(self):
         long_uuri = UUri(authority=UAuthority(name="testauth"), entity=UEntity(name="neelam"),

@@ -32,7 +32,7 @@ from org_eclipse_uprotocol.cloudevent.datamodel.ucloudeventattributes import UCl
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UPriority
 
 
-class UCloudEventAttributesTest(unittest.TestCase):
+class TestUCloudEventAttributes(unittest.TestCase):
 
 
     def test_to_string(self):

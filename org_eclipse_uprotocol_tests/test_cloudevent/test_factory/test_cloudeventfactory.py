@@ -68,7 +68,7 @@ def build_proto_payload_for_test():
     return any_obj
 
 
-class CloudEventFactoryTest(unittest.TestCase):
+class TestCloudEventFactory(unittest.TestCase):
     DATA_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE
 
     def test_all_cloud_events_from_json(self):

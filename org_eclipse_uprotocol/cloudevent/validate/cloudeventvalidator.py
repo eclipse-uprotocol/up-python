@@ -29,20 +29,16 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from cloudevents.http import CloudEvent
-from org_eclipse_uprotocol.proto.ustatus_pb2 import UStatus
 
 from org_eclipse_uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from org_eclipse_uprotocol.proto.uattributes_pb2 import UMessageType
 from org_eclipse_uprotocol.proto.uri_pb2 import UUri
 from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+from org_eclipse_uprotocol.uri.validator.urivalidator import UriValidator
 from org_eclipse_uprotocol.validation.validationresult import ValidationResult
 
 
 class CloudEventValidator(ABC):
-    """
-    Validates a CloudEvent using google.grpc.UStatus<br>
-    <a href="https://grpc.github.io/grpc/core/md_doc_statuscodes.html">google.grpc.UStatus</a>
-    """
 
     @staticmethod
     def get_validator(ce: CloudEvent):
@@ -65,27 +61,28 @@ class CloudEventValidator(ABC):
         else:
             return Validators.PUBLISH.validator()
 
-    def validate(self, ce: CloudEvent) -> UStatus:
+    def validate(self, ce: CloudEvent) -> ValidationResult:
         """
         Validate the CloudEvent. A CloudEventValidator instance is obtained according to the type attribute on the
         CloudEvent.<br><br>
         @param ce:The CloudEvent to validate.
-        @return:Returns a UStatus with success or a UStatus with failure containing all the
+        @return:Returns a ValidationResult with success or a ValidationResult with failure containing all the
         errors that were found.
         """
         validation_results = [self.validate_version(ce), self.validate_id(ce), self.validate_source(ce),
                               self.validate_type(ce), self.validate_sink(ce)]
 
         error_messages = [result.get_message() for result in validation_results if not result.is_success()]
-        error_message = ", ".join(error_messages)
+        error_message = ",".join(error_messages)
 
         if not error_message:
-            return ValidationResult.success().to_status()
+            return ValidationResult.success()
         else:
-            return ValidationResult.failure(", ".join(error_messages))
+            return ValidationResult.failure(",".join(error_messages))
 
-    def validate_version(self, ce: CloudEvent) -> ValidationResult:
-        return self.validate_version_spec(ce.get_attributes().get("specversion"))
+    @staticmethod
+    def validate_version(ce: CloudEvent) -> ValidationResult:
+        return CloudEventValidator.validate_version_spec(ce.get_attributes().get("specversion"))
 
     @staticmethod
     def validate_version_spec(version) -> ValidationResult:
@@ -94,7 +91,8 @@ class CloudEventValidator(ABC):
         else:
             return ValidationResult.failure(f"Invalid CloudEvent version [{version}]. CloudEvent version must be 1.0.")
 
-    def validate_id(self, ce: CloudEvent) -> ValidationResult:
+    @staticmethod
+    def validate_id(ce: CloudEvent) -> ValidationResult:
         id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         return (ValidationResult.success() if UCloudEvent.is_cloud_event_id(ce) else ValidationResult.failure(
             f"Invalid CloudEvent Id [{id}]. CloudEvent Id must be of type UUIDv8."))
@@ -145,15 +143,8 @@ class CloudEventValidator(ABC):
 
     @staticmethod
     def validate_u_entity_uri_from_UURI(uri: UUri) -> ValidationResult:
-        u_authority = uri.get_u_authority()
-        if u_authority.is_marked_remote:
-            if not u_authority.device:
-                return ValidationResult.failure("Uri is configured to be remote and is missing uAuthority device name.")
+        return UriValidator.validate(uri)
 
-        if not uri.get_u_entity().name:
-            return ValidationResult.failure("Uri is missing uSoftware Entity name.")
-
-        return ValidationResult.success()
 
     @staticmethod
     def validate_topic_uri(uri: str) -> ValidationResult:
@@ -175,15 +166,15 @@ class CloudEventValidator(ABC):
         @return:Returns the ValidationResult containing a success or a failure with the error message.
         """
         validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(uri)
-        if validationResult.is_success():
+        if validationResult.is_failure():
             return validationResult
 
-        u_resource = uri.get_u_resource()
+        u_resource = uri.resource
         if not u_resource.name:
-            return ValidationResult.failure("Uri is missing uResource name.")
+            return ValidationResult.failure("UriPart is missing uResource name.")
 
         if not u_resource.message:
-            return ValidationResult.failure("Uri is missing Message information.")
+            return ValidationResult.failure("UriPart is missing Message information.")
 
         return ValidationResult.success()
 
@@ -211,10 +202,10 @@ class CloudEventValidator(ABC):
             return ValidationResult.failure(
                 f"Invalid RPC uri application response topic. {validationResult.get_message()}")
 
-        u_resource = uri.get_u_resource()
+        u_resource = uri.resource
         topic = f"{u_resource.name}.{u_resource.instance}" if u_resource.instance else f"{u_resource.name}"
         if topic != "rpc.response":
-            return ValidationResult.failure("Invalid RPC uri application response topic. Uri is missing rpc.response.")
+            return ValidationResult.failure("Invalid RPC uri application response topic. UriPart is missing rpc.response.")
 
         return ValidationResult.success()
 
@@ -226,15 +217,14 @@ class CloudEventValidator(ABC):
         @param uri: String UriPart to validate
         @return:Returns the ValidationResult containing a success or a failure with the error message.
         """
-        Uri = LongUriSerializer().deserialize(uri)
-        validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(Uri)
+        uuri = LongUriSerializer().deserialize(uri)
+        validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(uuri)
         if validationResult.is_failure():
             return ValidationResult.failure(f"Invalid RPC method uri. {validationResult.get_message()}")
 
-        u_resource = Uri.get_u_resource()
-        if not u_resource.is_rpc_method:
+        if not UriValidator.is_rpc_method(uuri):
             return ValidationResult.failure(
-                "Invalid RPC method uri. Uri should be the method to be called, or method from response.")
+                "Invalid RPC method uri. UriPart should be the method to be called, or method from response.")
 
         return ValidationResult.success()
 

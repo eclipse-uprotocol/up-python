@@ -177,15 +177,65 @@ class TestRpc(unittest.TestCase):
 
     def test_compose_that_returns_status(self):
         rpc_response = RpcMapper.map_response_to_result(
-            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()), Int32Value)
+            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            Int32Value)
         mapped = rpc_response.map(lambda x: x.value + 5)
         self.assertTrue(rpc_response.isFailure())
         self.assertEquals(UCode.INVALID_ARGUMENT, mapped.failureValue().code)
         self.assertEquals("boom", mapped.failureValue().message)
 
+    def test_compose_with_failure(self):
+        rpc_response = RpcMapper.map_response_to_result(
+            ThatCompletesWithAnException().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            Int32Value)
+        mapped = rpc_response.map(lambda x: x.value + 5)
+        self.assertTrue(rpc_response.isFailure())
+        status = UStatus(code=UCode.UNKNOWN, message="Boom")
+        self.assertEquals(status, mapped.failureValue())
 
+    def test_success_invoke_method_happy_flow_using_mapResponseToRpcResponse(self):
+        rpc_response = RpcMapper.map_response_to_result(
+            HappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            CloudEvent)
+        self.assertTrue(rpc_response.isSuccess())
+        self.assertEquals(build_cloud_event(), rpc_response.successValue())
 
+    def test_fail_invoke_method_when_invoke_method_returns_a_status_using_mapResponseToRpcResponse(self):
+        rpc_response = RpcMapper.map_response_to_result(
+            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            CloudEvent)
+        self.assertTrue(rpc_response.isFailure())
+        self.assertEquals(UCode.INVALID_ARGUMENT, rpc_response.failureValue().code)
+        self.assertEquals("boom", rpc_response.failureValue().message)
 
+    def test_fail_invoke_method_when_invoke_method_threw_an_exception_using_mapResponseToRpcResponse(self):
+        rpc_response = RpcMapper.map_response_to_result(
+            ThatCompletesWithAnException().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            CloudEvent)
+        self.assertTrue(rpc_response.isFailure())
+        self.assertEquals(UCode.UNKNOWN, rpc_response.failureValue().code)
+        self.assertEquals("Boom", rpc_response.failureValue().message)
+
+    def test_fail_invoke_method_when_invoke_method_returns_a_bad_proto_using_mapResponseToRpcResponse(self):
+        rpc_response = RpcMapper.map_response_to_result(
+            ThatReturnsTheWrongProto().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            CloudEvent)
+        self.assertTrue(rpc_response.isFailure())
+        self.assertEquals(UCode.UNKNOWN, rpc_response.failureValue().code)
+        self.assertEquals("Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. Expected [io.cloudevents.v1.CloudEvent]", rpc_response.failureValue().message)
+
+    def test_success_invoke_method_happy_flow_using_mapResponse(self):
+        rpc_response = RpcMapper.map_response(
+            HappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            CloudEvent)
+        self.assertEquals(build_cloud_event(), rpc_response)
+
+    def test_fail_invoke_method_when_invoke_method_returns_a_status_using_mapResponse(self):
+        rpc_response = RpcMapper.map_response(
+            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            CloudEvent)
+
+        self.assertFalse(rpc_response)
 
 
 

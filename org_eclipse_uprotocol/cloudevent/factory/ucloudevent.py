@@ -249,7 +249,7 @@ class UCloudEvent:
             uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
             if uuid is None:
                 return False
-            delta = datetime.utcnow().timestamp() - UUIDUtils.getTime(uuid).timestamp()
+            delta = datetime.utcnow().timestamp() - UUIDUtils.getTime(uuid)
         except ValueError:
             # Invalid UUID, handle accordingly
             delta = 0
@@ -295,7 +295,10 @@ class UCloudEvent:
         @return:  Returns a {@link Message} payload of the class type that is provided.
         """
         try:
-            return UCloudEvent.get_payload(ce).Unpack(clazz)
+            any_obj=UCloudEvent.get_payload(ce)
+            value = clazz()
+            value.ParseFromString(any_obj.value)
+            return value
         except DecodeError:
             return None
 

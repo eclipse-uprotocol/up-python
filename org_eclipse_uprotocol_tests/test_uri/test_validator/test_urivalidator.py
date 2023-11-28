@@ -349,7 +349,7 @@ class TestUriValidator(unittest.TestCase):
     @staticmethod
     def get_json_object():
         current_directory = os.getcwd()
-        json_file_path = os.path.join(current_directory, "uris.json")
+        json_file_path = os.path.join(current_directory,"org_eclipse_uprotocol_tests","test_uri","test_validator", "uris.json")
 
         with open(json_file_path, 'r') as json_file:
             json_data = json.load(json_file)

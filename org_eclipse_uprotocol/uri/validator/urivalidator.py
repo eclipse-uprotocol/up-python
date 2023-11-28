@@ -102,8 +102,6 @@ class UriValidator:
         """
         Returns true if this resource specifies an RPC method call or RPC response.<br><br>
         @param uri:
-        @param uuri:
-        @param uresource: UResource protobuf message
         @return:Returns true if this resource specifies an RPC method call or RPC response.
         """
         if uri is None:

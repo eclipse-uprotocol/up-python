@@ -45,7 +45,7 @@ from org_eclipse_uprotocol.uri.serializer.longuriserializer import LongUriSerial
 
 def get_json_object():
     current_directory = os.getcwd()
-    json_file_path = os.path.join(current_directory, "cloudevent.json")
+    json_file_path = os.path.join(current_directory, "org_eclipse_uprotocol_tests","test_cloudevent","test_factory","cloudevent.json")
 
     with open(json_file_path, 'r') as json_file:
         json_data = json.load(json_file)

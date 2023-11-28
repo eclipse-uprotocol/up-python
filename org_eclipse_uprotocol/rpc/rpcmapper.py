@@ -77,6 +77,7 @@ class RpcMapper:
             result = handle_response(payload, exception)
 
         response_future.add_done_callback(callbackwrapper)
+
         return result
 
     @staticmethod
@@ -90,12 +91,15 @@ class RpcMapper:
         or a UStatus containing any errors.
         """
 
-        def handle_response(payload, exception=None):
-            if exception:
-                raise exception
+        def handle_response(payload):
+            if payload.exception():
+                exception = payload.exception()
+                return RpcResult.failure(value=exception, message=str(exception))
+
             payload = payload.result()
             if not payload:
-                raise RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
+                exception = RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
+                return RpcResult.failure(value=exception, message=str(exception))
 
             try:
                 any_message = any_pb2.Any()
@@ -110,15 +114,18 @@ class RpcMapper:
                 if any_message.Is(UStatus.DESCRIPTOR):
                     return RpcMapper.calculate_status_result(any_message)
             except Exception as e:
-                raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e
+                exception = RuntimeError(f"{str(e)} [{UStatus.__name__}]")
+                return RpcResult.failure(value=exception, message=str(exception))
 
-            raise RuntimeError(f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]")
+            exception = RuntimeError(
+                f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.DESCRIPTOR.full_name}]")
+            return RpcResult.failure(value=exception, message=str(exception))
 
         result = None  # Initialize result
 
-        def callback_wrapper(payload, exception=None):
+        def callback_wrapper(payload):
             nonlocal result
-            result = handle_response(payload, exception)
+            result = handle_response(payload)
 
         response_future.add_done_callback(callback_wrapper)
         return result
@@ -139,7 +146,7 @@ class RpcMapper:
         object.
         """
         try:
-            value=expected_cls()
+            value = expected_cls()
             value.ParseFromString(payload.value)
             # payload.Unpack(expected_cls)
             return value

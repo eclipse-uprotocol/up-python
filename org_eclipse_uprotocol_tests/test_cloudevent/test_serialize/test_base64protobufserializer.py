@@ -39,10 +39,10 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         ce = CloudEventFactory.build_base_cloud_event("hello", "http://localhost", bytearray(), "",
                                                       UCloudEventAttributesBuilder().build(), "example.vertx")
         ce.__delitem__("time")
-        bytes_data = CloudEventSerializers.JSON.serializer().serialize(ce)
+        bytes_data = CloudEventSerializers.PROTOBUF.serializer().serialize(ce)
         payload = Base64ProtobufSerializer().deserialize(bytes_data)
         self.assertEquals(
-            "eyJzcGVjdmVyc2lvbiI6ICIxLjAiLCAiaWQiOiAiaGVsbG8iLCAic291cmNlIjogImh0dHA6Ly9sb2NhbGhvc3QiLCAidHlwZSI6ICJleGFtcGxlLnZlcnR4IiwgImRhdGFfYmFzZTY0IjogIiJ9",
+            "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4",
             payload)
 
     def test_deserialize_bytes_to_string_when_bytes_is_null(self):

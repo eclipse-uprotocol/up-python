@@ -39,7 +39,7 @@ from org_eclipse_uprotocol.uuid.serializer.longuuidserializer import LongUuidSer
 # A factory is a part of the software has methods to generate concrete objects, usually of the same type or
 # interface. CloudEvents is a specification for describing events in a common way. We will use CloudEvents to
 # formulate all kinds of  events (messages) that will be sent to and from devices. The CloudEvent factory knows how
-# to generate CloudEvents of the 4 core types: req.v1, res.v1, pub.v1, and file.v1
+# to generate CloudEvents of the 4 core types: req.v1, res.v1 and pub.v1
 class CloudEventFactory:
     PROTOBUF_CONTENT_TYPE = "application/x-protobuf"
 

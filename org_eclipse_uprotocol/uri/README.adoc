@@ -1,0 +1,45 @@
+= uProtocol URI (UUri)
+:toc:
+:sectnums:
+
+
+== Overview
+
+The following folder contains everything but the data model for UUri (builders, serializers, validators, etc...) per https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
+The data model is defined in https://github.com/eclipse-uprotocol/uprotocol-core-api/blob/main/src/main/proto/uri.proto[uri.proto] and included as a dependency for this project.
+
+IMPORTANT: For more details about the data model, various formats (object, long, micro) and their uses, please refer to  https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
+
+
+== Using the SDK
+
+When building UUri, you can choose to populate it with only names, only numbers, or both (resolved). When you should use each is described the best practice section of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
+
+=== Building an RPC Method
+[,python]
+----
+uri: UUri = UUri(
+            authority=UAuthority(name="MyDevice", ip=bytes(socket.inet_pton(socket.AF_INET, "192.168.1.100")),
+                                 id=bytes.fromhex("3GTU2NEC8HG403825")),
+            entity=UEntity(name="HartleyService", id=10203, version_major=1),
+            resource=UResourceBuilder.for_rpc_request("Raise", 10))
+----
+
+=== Validating
+[,python]
+----
+status : ValidationResult = UriValidator.validate_rpc_method(uuri)
+assertTrue(status.is_success());
+----
+
+=== Serializing & Deserializing
+[,python]
+----
+        uri = .../* UUri example above */
+        micro = MicroUriSerializer().serialize(uri)
+        long = LongUriSerializer().serialize(uri)
+        deserialized_micro_uuri = MicroUriSerializer().deserialize(uri)
+        deserialized_long_uuri = LongUriSerializer().deserialize(uri)
+        uri2 = UriSerializer.build_resolved(long, micro)
+
+----

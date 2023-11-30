@@ -56,9 +56,11 @@ The SDK is broken up into different packages that are described in <<sdk-package
 | link:org_eclipse_uprotocol/uri/README.adoc[`*uuri*`]
 | Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network
 
-
 | link:org_eclipse_uprotocol/uuid/README.adoc[`*uuid*`]
 | Identifier used to uniquely identify (and timestamp) messages that are sent
+
+| link:org_eclipse_uprotocol/rpc/README.adoc[`*rpc*`]
+| Interface to build client and service stubs for uServices. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/rpcclient.adoc[RpcClient interface]
 
 | link:org_eclipse_uprotocol/transport/README.adoc[`*utransport*`]
 | Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/ulink.adoc[ulink] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)

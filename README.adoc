@@ -53,19 +53,19 @@ The SDK is broken up into different packages that are described in <<sdk-package
 
 | Package | Purpose
 
-| link:org_eclipse_uprotocol/uri/README.adoc[`*uuri*`]
+| link:uprotocol/uri/README.adoc[`*uuri*`]
 | Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network
 
-| link:org_eclipse_uprotocol/uuid/README.adoc[`*uuid*`]
+| link:uprotocol/uuid/README.adoc[`*uuid*`]
 | Identifier used to uniquely identify (and timestamp) messages that are sent
 
-| link:org_eclipse_uprotocol/rpc/README.adoc[`*rpc*`]
+| link:uprotocol/rpc/README.adoc[`*rpc*`]
 | Interface to build client and service stubs for uServices. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/rpcclient.adoc[RpcClient interface]
 
-| link:org_eclipse_uprotocol/transport/README.adoc[`*utransport*`]
+| link:uprotocol/transport/README.adoc[`*utransport*`]
 | Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/ulink.adoc[ulink] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
 
-| link:org_eclipse_uprotocol/cloudevent/README.adoc[`*cloudevent*`]
+| link:uprotocol/cloudevent/README.adoc[`*cloudevent*`]
 | Common way to represent uProtocol messages using CloudEvent data model used by some transports (ex. MQTT, HTTP, etc…​)
 
 |===

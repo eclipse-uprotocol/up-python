@@ -103,8 +103,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("type", "res.v1")
         validator = Validators.PUBLISH.validator()
         status = validator.validate_type(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
                           status.message)
 
     def test_notification_cloud_event_type(self):
@@ -112,8 +112,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("type", "res.v1")
         validator = Validators.NOTIFICATION.validator()
         status = validator.validate_type(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
                           status.message)
 
     def test_get_a_request_cloud_event_validator(self):
@@ -129,8 +129,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("type", "pub.v1")
         validator = Validators.REQUEST.validator()
         status = validator.validate_type(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent type [pub.v1]. CloudEvent of type Request must have a type of 'req.v1'",
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent type [pub.v1]. CloudEvent of type Request must have a type of 'req.v1'",
                           status.message)
 
     def test_get_a_response_cloud_event_validator(self):
@@ -146,8 +146,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("type", "pub.v1")
         validator = Validators.RESPONSE.validator()
         status = validator.validate_type(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent type [pub.v1]. CloudEvent of type Response must have a type of 'res.v1'",
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent type [pub.v1]. CloudEvent of type Response must have a type of 'res.v1'",
                           status.message)
 
     def test_get_a_publish_cloud_event_validator_when_cloud_event_type_is_unknown(self):
@@ -173,8 +173,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("specversion", "0.3")
         cloud_event.__setitem__("id", str_uuid)
         status = CloudEventValidator.validate_version(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent version [0.3]. CloudEvent version must be 1.0.", status.message)
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent version [0.3]. CloudEvent version must be 1.0.", status.message)
 
     def test_validate_cloud_event_id_when_valid(self):
         uuid = Factories.UPROTOCOL.create()
@@ -191,8 +191,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "pub.v1")
         status = CloudEventValidator.validate_id(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent Id [" + str_uuid + "]. CloudEvent Id must be of type UUIDv8.",
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent Id [" + str_uuid + "]. CloudEvent Id must be of type UUIDv8.",
                           status.message)
 
     def test_validate_cloud_event_id_when_not_valid(self):
@@ -200,8 +200,8 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("id", "testme")
         cloud_event.__setitem__("type", "pub.v1")
         status = CloudEventValidator.validate_id(cloud_event).to_status()
-        self.assertEquals(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEquals("Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.", status.message)
+        self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
+        self.assertEqual("Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.", status.message)
 
     def test_publish_type_cloudevent_is_valid_when_everything_is_valid_local(self):
         uuid = Factories.UPROTOCOL.create()
@@ -212,7 +212,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(ValidationResult.success(), result)
+        self.assertEqual(ValidationResult.success(), result)
 
     def test_publish_type_cloudevent_is_valid_when_everything_is_valid_remote(self):
         uuid = Factories.UPROTOCOL.create()
@@ -223,7 +223,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/door.front_left#Door")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(ValidationResult.success(), result)
+        self.assertEqual(ValidationResult.success(), result)
 
     def test_publish_type_cloudevent_is_valid_when_everything_is_valid_remote_with_a_sink(self):
         uuid = Factories.UPROTOCOL.create()
@@ -235,7 +235,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("sink", "//bo.cloud/petapp")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(ValidationResult.success(), result)
+        self.assertEqual(ValidationResult.success(), result)
 
     def test_publish_type_cloudevent_is_not_valid_when_remote_with_invalid_sink(self):
         uuid = Factories.UPROTOCOL.create()
@@ -247,7 +247,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("sink", "//bo.cloud")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals("Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
+        self.assertEqual("Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
                           result.get_message())
 
     def test_publish_type_cloudevent_is_not_valid_when_source_is_empty(self):
@@ -258,7 +258,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "/")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", result.get_message())
+        self.assertEqual("Invalid Publish type CloudEvent source [/]. Uri is empty.", result.get_message())
 
     def test_publish_type_cloudevent_is_not_valid_when_source_is_missing_authority(self):
         cloud_event = build_base_cloud_event_for_test()
@@ -267,7 +267,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "/body.access")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
             "CloudEvent source [/body.access]. UriPart is missing uResource name.",
             result.get_message())
@@ -279,7 +279,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "/body.access/1/door.front_left")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
             "CloudEvent source [/body.access/1/door.front_left]. UriPart is missing Message information.",
             result.get_message())
@@ -294,7 +294,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("sink", "//bo.cloud/petapp")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(ValidationResult.success(), result)
+        self.assertEqual(ValidationResult.success(), result)
 
     def test_notification_type_cloudevent_is_not_valid_missing_sink(self):
         uuid = Factories.UPROTOCOL.create()
@@ -305,7 +305,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.",
+        self.assertEqual("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.",
                           result.get_message())
 
     def test_notification_type_cloudevent_is_not_valid_invalid_sink(self):
@@ -318,7 +318,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
             result.get_message())
 
@@ -332,7 +332,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//bo.cloud/petapp//rpc.response")
         validator = Validators.REQUEST.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(ValidationResult.success(), result)
+        self.assertEqual(ValidationResult.success(), result)
 
     def test_request_type_cloudevent_is_not_valid_invalid_source(self):
         uuid = Factories.UPROTOCOL.create()
@@ -344,7 +344,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//bo.cloud/petapp//dog")
         validator = Validators.REQUEST.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Request CloudEvent source [//bo.cloud/petapp//dog]. " + "Invalid RPC uri application " +
             "response topic. UriPart is missing rpc.response.",
             result.get_message())
@@ -358,7 +358,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//bo.cloud/petapp//rpc.response")
         validator = Validators.REQUEST.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.",
             result.get_message())
 
@@ -372,7 +372,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("sink", "//VCU.myvin/body.access/1/UpdateDoor")
         validator = Validators.REQUEST.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Request CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC method " +
             "uri. UriPart should be the method to be called, or method from response.",
             result.get_message())
@@ -387,7 +387,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(ValidationResult.success(), result)
+        self.assertEqual(ValidationResult.success(), result)
 
     def test_response_type_cloudevent_is_not_valid_invalid_source(self):
         uuid = Factories.UPROTOCOL.create()
@@ -399,7 +399,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
             "method uri. UriPart should be the method to be called, or method from response.",
             result.get_message())
@@ -413,7 +413,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
             "method uri. UriPart should be the method to be called, or method from response.," + "Invalid" + " CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.",
             result.get_message())
@@ -428,7 +428,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("source", "//VCU.myvin")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Response CloudEvent source [//VCU.myvin]. Invalid RPC method uri. Uri is missing " +
             "uSoftware Entity name.,Invalid RPC Response CloudEvent sink [//bo.cloud]. Invalid RPC uri " +
             "application response topic. Uri is missing uSoftware Entity name.",
@@ -444,7 +444,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("sink", "//VCU.myvin/body.access/1/UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
-        self.assertEquals(
+        self.assertEqual(
             "Invalid RPC Response CloudEvent source [//bo.cloud/petapp/1/dog]. Invalid RPC method uri. UriPart " +
             "should be the method to be called, or method from response.," + "Invalid RPC Response " + "CloudEvent "
                                                                                                        "sink ["

@@ -41,17 +41,17 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         ce.__delitem__("time")
         bytes_data = CloudEventSerializers.PROTOBUF.serializer().serialize(ce)
         payload = Base64ProtobufSerializer().deserialize(bytes_data)
-        self.assertEquals(
+        self.assertEqual(
             "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4",
             payload)
 
     def test_deserialize_bytes_to_string_when_bytes_is_null(self):
         payload = Base64ProtobufSerializer().deserialize(None)
-        self.assertEquals("", payload)
+        self.assertEqual("", payload)
 
     def test_deserialize_bytes_to_string_when_bytes_is_empty(self):
         payload = Base64ProtobufSerializer().deserialize(bytearray())
-        self.assertEquals("", payload)
+        self.assertEqual("", payload)
 
     def test_serialize_string_into_bytes(self):
         json_str = "eyJzcGVjdmVyc2lvbiI6ICIxLjAiLCAiaWQiOiAiaGVsbG8iLCAic291cmNlIjogImh0dHA6Ly9sb2NhbGhvc3QiLCAidHlwZSI6ICJleGFtcGxlLnZlcnR4IiwgImRhdGFfYmFzZTY0IjogIiJ9"
@@ -62,15 +62,15 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         ce.__delitem__("time")
 
         bytes_data = CloudEventSerializers.JSON.serializer().serialize(ce)
-        self.assertEquals(bytes_json, bytes_data)
+        self.assertEqual(bytes_json, bytes_data)
 
     def test_serialize_string_into_bytes_when_string_is_null(self):
         bytes_data = Base64ProtobufSerializer().serialize(None)
-        self.assertEquals(bytearray(), bytes_data)
+        self.assertEqual(bytearray(), bytes_data)
 
     def test_serialize_string_into_bytes_when_string_is_empty(self):
         bytes_data = Base64ProtobufSerializer().serialize('')
-        self.assertEquals(bytearray(), bytes_data)
+        self.assertEqual(bytearray(), bytes_data)
 
 
 if __name__ == '__main__':

@@ -74,7 +74,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
                     '"type": "pub.v1", "datacontenttype": "application/x-protobuf", "dataschema": '
                     '"type.googleapis.com/io.cloudevents.v1.CloudEvent", "data_base64": '
                     '"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLnYxLkNsb3VkRXZlbnQSPQoFaGVsbG8SE2h0dHBzOi8vZXhhbXBsZS5jb20aAzEuMCIMZXhhbXBsZS5kZW1vKgoKA3R0bBIDGgEzQgA=", "ttl": 3, "priority": "UPRIORITY_CS1"}')
-        self.assertEquals(expected, json_str)
+        self.assertEqual(expected, json_str)
 
     def test_serialize_and_deserialize_cloud_event_to_json(self):
         proto_payload = build_proto_payload_for_test()
@@ -95,7 +95,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         deserialized_data = serializer.deserialize(serialized_data)
         deserialized_data.__delitem__("time")
 
-        self.assertEquals(cloud_event, deserialized_data)
+        self.assertEqual(cloud_event, deserialized_data)
 
     def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(self):
         proto_payload = build_proto_payload_for_test()
@@ -115,15 +115,15 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         serialized_data1 = serializer.serialize(cloud_event1)
         cloud_event2 = serializer.deserialize(serialized_data1)
         cloud_event2.__delitem__("time")
-        self.assertEquals(cloud_event2, cloud_event1)
+        self.assertEqual(cloud_event2, cloud_event1)
         serialized_data2 = serializer.serialize(cloud_event2)
-        self.assertEquals(serialized_data1, serialized_data2)
+        self.assertEqual(serialized_data1, serialized_data2)
         cloud_event3 = serializer.deserialize(serialized_data2)
         cloud_event3.__delitem__("time")
 
         payload1 = UCloudEvent.unpack(cloud_event3, CloudEvent)
-        self.assertEquals(cloud_event2, cloud_event3)
+        self.assertEqual(cloud_event2, cloud_event3)
         payload2 = CloudEvent()
         payload2.ParseFromString(proto_payload.value)
-        self.assertEquals(payload1, payload2)
-        self.assertEquals(cloud_event1, cloud_event3)
+        self.assertEqual(payload1, payload2)
+        self.assertEqual(cloud_event1, cloud_event3)

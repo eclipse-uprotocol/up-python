@@ -43,7 +43,7 @@ class RpcMapper:
     """
 
     @staticmethod
-    def map_response(response_future: Future, expected_cls):
+    def map_response(payload_future: Future, expected_cls):
         """
          Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the
          declared expected return type of the RPC method or an exception.<br><br>
@@ -52,33 +52,31 @@ class RpcMapper:
         @return:Returns a CompletableFuture containing the declared expected return type of the RPC method or an
         exception.
         """
+        response_future: Future = Future()
 
-        def handle_response(payload, exception):
-            if exception:
-                raise exception
+        def handle_response(payload):
+            nonlocal response_future
             payload = payload.result()
             if not payload:
-                raise RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
+                response_future.set_exception(
+                    RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}"))
 
             try:
                 any_message = any_pb2.Any()
                 any_message.ParseFromString(payload.value)
                 if any_message.Is(expected_cls.DESCRIPTOR):
-                    return RpcMapper.unpack_payload(any_message, expected_cls)
+                    response_future.set_result(RpcMapper.unpack_payload(any_message, expected_cls))
+                else:
+                    response_future.set_exception(
+                        RuntimeError(
+                            f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"))
+
             except Exception as e:
-                raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e
+                response_future.set_exception(RuntimeError(f"{str(e)} [{UStatus.__name__}]"))
 
-            raise RuntimeError(f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]")
+        payload_future.add_done_callback(handle_response)
 
-        result = None  # Initialize result
-
-        def callbackwrapper(payload, exception=None):
-            nonlocal result
-            result = handle_response(payload, exception)
-
-        response_future.add_done_callback(callbackwrapper)
-
-        return result
+        return response_future
 
     @staticmethod
     def map_response_to_result(response_future: Future, expected_cls):

@@ -71,3 +71,16 @@ The SDK is broken up into different packages that are described in <<sdk-package
 |===
 
 NOTE: Please visit the READMEs in <<sdk-packages>> for examples of how to use the different data types and their factories, validators, and serializers.
+
+
+=== Cleaning Up
+
+Clean up by running the command:
+`python clean_project.py`
+
+=== Running the Tests
+
+Requires coverage to be installed first, that can be done by running `pip install coverage`
+
+then you run:
+`python -m coverage run --source tests/ -m unittest discover`

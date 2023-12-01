@@ -34,7 +34,6 @@ from uprotocol.proto.uattributes_pb2 import UPriority
 
 class TestUCloudEventAttributes(unittest.TestCase):
 
-
     def test_to_string(self):
         u_cloud_event_attributes = UCloudEventAttributesBuilder().with_hash("somehash").with_priority(
             UPriority.UPRIORITY_CS1).with_ttl(3).with_token("someOAuthToken").build()

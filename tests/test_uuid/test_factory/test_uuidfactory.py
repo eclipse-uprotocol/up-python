@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-
+#
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -21,7 +21,7 @@
 # SPDX-FileType: SOURCE
 # SPDX-FileCopyrightText: 2023 General Motors GTO LLC
 # SPDX-License-Identifier: Apache-2.0
-
+#
 # -------------------------------------------------------------------------
 
 
@@ -275,9 +275,8 @@ class TestUUIDFactory(unittest.TestCase):
         for _ in range(max_count):
             uuidv6_list.append(Factories.UUIDV6.create())
         v6_diff = datetime.utcnow() - start
-
-        print(
-            f"UUIDv8: [{v8_diff.total_seconds() / max_count}s] UUIDv6: [{v6_diff.total_seconds() / max_count}s]")
+        # print(
+        #     f"UUIDv8: [{v8_diff.total_seconds() / max_count}s] UUIDv6: [{v6_diff.total_seconds() / max_count}s]")
 
 
 if __name__ == '__main__':

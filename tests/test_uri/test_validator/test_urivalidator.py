@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-
+#
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -21,7 +21,7 @@
 # SPDX-FileType: SOURCE
 # SPDX-FileCopyrightText: 2023 General Motors GTO LLC
 # SPDX-License-Identifier: Apache-2.0
-
+#
 # -------------------------------------------------------------------------
 
 
@@ -320,7 +320,6 @@ class TestUriValidator(unittest.TestCase):
         invalid_rpc_uris = self.get_json_object()["invalidRpcUris"]
         for invalid_rpc_uri in invalid_rpc_uris:
             uuri = LongUriSerializer().deserialize(invalid_rpc_uri["uri"])
-            print(invalid_rpc_uri['uri'])
             status = UriValidator.validate_rpc_method(uuri)
             self.assertTrue(status.is_failure())
             self.assertEqual(status.get_message(), invalid_rpc_uri["status_message"])

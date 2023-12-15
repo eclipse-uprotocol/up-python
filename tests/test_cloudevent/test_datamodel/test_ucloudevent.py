@@ -1,12 +1,5 @@
-import time
-import unittest
-
-from google.protobuf import any_pb2
-
-from uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributesBuilder
-from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 # -------------------------------------------------------------------------
-
+#
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -28,7 +21,7 @@ from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 # SPDX-FileType: SOURCE
 # SPDX-FileCopyrightText: 2023 General Motors GTO LLC
 # SPDX-License-Identifier: Apache-2.0
-
+#
 # -------------------------------------------------------------------------
 
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
@@ -39,7 +32,13 @@ from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
+import time
+import unittest
 
+from google.protobuf import any_pb2
+
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributesBuilder
+from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 
 def build_uri_for_test():
     uri = UUri(entity=UEntity(name="body.access"),
@@ -142,7 +141,7 @@ class TestUCloudEvent(unittest.TestCase):
 
     def test_cloudevent_has_platform_error_when_platform_error_exists(self):
         cloud_event = build_cloud_event_for_test()
-        cloud_event.__setitem__("commstatus", UCode.ABORTED_VALUE)
+        cloud_event.__setitem__("commstatus", UCode.ABORTED)
         self.assertEquals(10, UCloudEvent.get_communication_status(cloud_event))
 
     def test_cloudevent_has_platform_error_when_platform_error_does_not_exist(self):
@@ -212,6 +211,12 @@ class TestUCloudEvent(unittest.TestCase):
         cloud_event1 = UCloudEvent.fromMessage(u_message)
         self.assertIsNotNone(cloud_event1)
         self.assertEquals(cloud_event, cloud_event1)
+        self.assertEquals(cloud_event.get_data(), cloud_event1.get_data())
+        self.assertEquals(UCloudEvent.get_source(cloud_event), UCloudEvent.get_source(cloud_event1))
+        self.assertEquals(UCloudEvent.get_specversion(cloud_event), UCloudEvent.get_specversion(cloud_event1))
+        self.assertEquals(UCloudEvent.get_priority(cloud_event), UCloudEvent.get_priority(cloud_event1))
+        self.assertEquals(UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1))
+        self.assertEquals(UCloudEvent.get_type(cloud_event), UCloudEvent.get_type(cloud_event1))
 
     def test_to_from_message_from_request_cloudevent(self):
         # additional attributes
@@ -236,6 +241,14 @@ class TestUCloudEvent(unittest.TestCase):
 
         cloud_event1 = UCloudEvent.fromMessage(result)
         self.assertEquals(cloud_event, cloud_event1)
+        self.assertEquals(cloud_event.get_data(), cloud_event1.get_data())
+        self.assertEquals(UCloudEvent.get_source(cloud_event), UCloudEvent.get_source(cloud_event1))
+        self.assertEquals(UCloudEvent.get_sink(cloud_event), UCloudEvent.get_sink(cloud_event1))
+        self.assertEquals(UCloudEvent.get_specversion(cloud_event), UCloudEvent.get_specversion(cloud_event1))
+        self.assertEquals(UCloudEvent.get_priority(cloud_event), UCloudEvent.get_priority(cloud_event1))
+        self.assertEquals(UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1))
+        self.assertEquals(UCloudEvent.get_type(cloud_event), UCloudEvent.get_type(cloud_event1))
+        self.assertEquals(UCloudEvent.get_request_id(cloud_event), UCloudEvent.get_request_id(cloud_event1))
 
     def test_to_from_message_from_request_cloudevent_without_attributes(self):
         # additional attributes

@@ -11,9 +11,9 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
-import uattributes_pb2 as uattributes__pb2
-import upayload_pb2 as upayload__pb2
-import uri_pb2 as uri__pb2
+import uprotocol.proto.uattributes_pb2 as uattributes__pb2
+import uprotocol.proto.upayload_pb2 as upayload__pb2
+import uprotocol.proto.uri_pb2 as uri__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eumessage.proto\x12\x0cuprotocol.v1\x1a\x11uattributes.proto\x1a\x0eupayload.proto\x1a\turi.proto\"\x86\x01\n\x08UMessage\x12\"\n\x06source\x18\x01 \x01(\x0b\x32\x12.uprotocol.v1.UUri\x12-\n\nattributes\x18\x02 \x01(\x0b\x32\x19.uprotocol.v1.UAttributes\x12\'\n\x07payload\x18\x03 \x01(\x0b\x32\x16.uprotocol.v1.UPayloadB+\n\x18org.eclipse.uprotocol.v1B\rUMessageProtoP\x01\x62\x06proto3')

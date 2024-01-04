@@ -26,9 +26,8 @@ import time
 
 
 from abc import abstractmethod
-from datetime import datetime
 from enum import Enum
-
+from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.proto.uattributes_pb2 import UAttributes, UMessageType
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.uri.validator.urivalidator import UriValidator
@@ -221,7 +220,7 @@ class Request(UAttributesValidator):
         @param attributes_value:UAttributes object containing the sink to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
-        return UriValidator.validate_rpc_response(
+        return UriValidator.validate_rpc_method(
             attributes_value.sink) if attributes_value.HasField('sink') else ValidationResult.failure("Missing Sink")
 
     def validate_ttl(self, attributes_value: UAttributes) -> ValidationResult:
@@ -263,11 +262,11 @@ class Response(UAttributesValidator):
         @param attributes_value:UAttributes object containing the sink to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
-        result = UriValidator.validate_rpc_method(attributes_value.sink)
-        if result.is_success():
-            return result
-        else:
+        if not attributes_value.HasField('sink') or attributes_value.sink == UUri():
             return ValidationResult.failure("Missing Sink")
+        result = UriValidator.validate_rpc_response(attributes_value.sink)
+        return result
+
 
     def validate_req_id(self, attributes_value: UAttributes) -> ValidationResult:
         """

@@ -466,6 +466,39 @@ class TestUAttributesValidator(unittest.TestCase):
         status = validator.validate(attributes)
         self.assertEqual(ValidationResult.success(), status)
 
+    def test_valid_request_methoduri_in_sink(self):
+        sink = LongUriSerializer().deserialize("/test.service/1/rpc.method")
+        attributes = UAttributesBuilder.request(UPriority.UPRIORITY_CS0, sink, 3000).build()
+        validator = UAttributesValidator.get_validator(attributes)
+        self.assertEqual("UAttributesValidator.Request", str(validator))
+        status = validator.validate(attributes)
+        self.assertEqual(ValidationResult.success(), status)
+
+    def test_invalid_request_methoduri_in_sink(self):
+        sink = LongUriSerializer().deserialize("/test.client/1/test.response")
+        attributes = UAttributesBuilder.request(UPriority.UPRIORITY_CS0, sink, 3000).build()
+        validator = UAttributesValidator.get_validator(attributes)
+        self.assertEqual("UAttributesValidator.Request", str(validator))
+        status = validator.validate(attributes)
+        self.assertEqual("Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.get_message())
+
+    def test_valid_response_uri_in_sink(self):
+        sink = LongUriSerializer().deserialize("/test.client/1/rpc.response")
+        attributes = UAttributesBuilder.response(UPriority.UPRIORITY_CS0, sink, Factories.UPROTOCOL.create()).build()
+        validator = UAttributesValidator.get_validator(attributes)
+        self.assertEqual("UAttributesValidator.Response", str(validator))
+        status = validator.validate(attributes)
+        self.assertEqual(ValidationResult.success(), status)
+
+    def test_invalid_response_uri_in_sink(self):
+        sink = LongUriSerializer().deserialize("/test.client/1/rpc.method")
+        attributes = UAttributesBuilder.response(UPriority.UPRIORITY_CS0, sink, Factories.UPROTOCOL.create()).build()
+        validator = UAttributesValidator.get_validator(attributes)
+        self.assertEqual("UAttributesValidator.Response", str(validator))
+        status = validator.validate(attributes)
+        self.assertEqual("Invalid RPC response type.", status.get_message())
+
+
 
 if __name__ == '__main__':
     unittest.main()

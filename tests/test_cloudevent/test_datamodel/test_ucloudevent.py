@@ -276,3 +276,20 @@ class TestUCloudEvent(unittest.TestCase):
         self.assertEquals(UCloudEvent.get_id(cloud_event),UCloudEvent.get_id(cloud_event1))
         self.assertEquals(UCloudEvent.get_type(cloud_event),UCloudEvent.get_type(cloud_event1))
         self.assertEquals(UCloudEvent.get_request_id(cloud_event),UCloudEvent.get_request_id(cloud_event1))
+
+    def test_to_from_message_from_UCP_cloudevent(self):
+        # additional attributes
+        u_cloud_event_attributes = UCloudEventAttributesBuilder().with_ttl(3).with_token("someOAuthToken").build()
+
+        cloud_event = CloudEventFactory.request(build_uri_for_test(), "//bo.cloud/petapp/1/rpc.response",
+                                                CloudEventFactory.generate_cloud_event_id(),
+                                                build_proto_payload_for_test(),
+                                                u_cloud_event_attributes)
+        cloud_event.__setitem__("priority", "CS4")
+
+        result = UCloudEvent.toMessage(cloud_event)
+        self.assertIsNotNone(result)
+        self.assertEquals(UPriority.UPRIORITY_CS4,result.attributes.priority)
+        cloud_event1 = UCloudEvent.fromMessage(result)
+        self.assertEquals(UCloudEvent.get_priority(cloud_event1),UPriority.Name(result.attributes.priority))
+

@@ -456,6 +456,10 @@ class UCloudEvent:
         if UCloudEvent.has_communication_status_problem(event):
             attributes.commstatus = UCloudEvent.get_communication_status(event)
         priority = UCloudEvent.get_priority(event)
+
+        if priority and 'UPRIORITY_' not in priority:
+            priority = 'UPRIORITY_' + priority
+
         if priority is not None:
             attributes.priority = priority
 

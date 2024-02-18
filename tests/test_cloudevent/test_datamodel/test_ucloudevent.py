@@ -26,7 +26,7 @@
 
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
-from uprotocol.proto.cloudevents_pb2 import CloudEvent
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
 from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.proto.ustatus_pb2 import UCode

@@ -36,7 +36,7 @@ from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.cloudevent.serialize.base64protobufserializer import Base64ProtobufSerializer
 from uprotocol.cloudevent.serialize.cloudeventserializers import CloudEventSerializers
 from uprotocol.cloudevent.serialize.cloudeventtoprotobufserializer import CloudEventToProtobufSerializer
-from uprotocol.proto.cloudevents_pb2 import CloudEvent
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UPriority, UMessageType
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer

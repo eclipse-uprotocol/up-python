@@ -29,7 +29,7 @@ import unittest
 from concurrent.futures import Future
 from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import Int32Value
-from uprotocol.proto.cloudevents_pb2 import CloudEvent
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UPriority
 from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
 from uprotocol.proto.uri_pb2 import UUri, UEntity

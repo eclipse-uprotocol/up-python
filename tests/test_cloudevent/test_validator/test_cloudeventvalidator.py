@@ -34,7 +34,7 @@ from uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttr
 from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.cloudevent.validate.cloudeventvalidator import CloudEventValidator, Validators
-from uprotocol.proto.cloudevents_pb2 import CloudEvent
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UPriority, UMessageType
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
 from uprotocol.proto.ustatus_pb2 import UCode

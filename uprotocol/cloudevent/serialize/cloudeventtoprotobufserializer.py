@@ -27,7 +27,7 @@
 from cloudevents.http import CloudEvent
 
 from uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
-from uprotocol.proto import cloudevents_pb2
+from uprotocol.cloudevent import cloudevents_pb2
 
 
 # ToDo- convert cloud event to cloudevent proto

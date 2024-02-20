@@ -13,17 +13,46 @@ image:https://raw.githubusercontent.com/eclipse-uprotocol/uprotocol-spec/main/up
 
 == Getting Started
 
+=== Prerequisites
+Before proceeding with the setup of this project, ensure that the following prerequisites are met:
+
+* Maven is installed and configured in your environment. You can verify this by running the following command in your terminal:
+[,bash]
+----
+mvn -version
+----
+If Maven is properly installed, you should see information about the Maven version and configuration.
+
 === Importing the sdk
- 
-Setup SDK local repository and install
+
+To set up SDK, follow the steps below:
+
+. Clone the code from the GitHub repository:
++
 [source]
 ----
-$ git clone https://github.com/eclipse-uprotocol/uprotocol-python.git
-$ cd uprotocol-python
-$ pip install .
+git clone https://github.com/eclipse-uprotocol/uprotocol-python.git
 ----
-*This will install the uprotocol-python, making its classes and modules available for import in your python code.*
 
+. Execute the `pull_and_compile_protos.py` script using the following command:
++
+[source]
+----
+python pull_and_compile_protos.py
+----
+This script automates the following tasks:
+
+1. **Cloning and Compilation of Protos:**
+   Clones the `up-core-api` protos from the specified repository URL, compiles them, and generates Python protofiles in the protos folder.
+
+. Install up-python
++
+[source]
+----
+python -m pip install .
+----
+
+*This will install the up-python, making its classes and modules available for import in your python code.*
 
 === Using The Sdk
 

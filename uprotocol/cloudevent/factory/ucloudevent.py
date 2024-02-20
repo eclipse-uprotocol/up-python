@@ -410,7 +410,7 @@ class UCloudEvent:
         attributes = message.attributes
         data = bytearray()
         json_attributes = {"id": LongUuidSerializer.instance().serialize(attributes.id),
-                           "source": LongUriSerializer().serialize(message.source),
+                           "source": LongUriSerializer().serialize(message.attributes.source),
                            "type": UCloudEvent.get_event_type(attributes.type)}
         contenttype = UCloudEvent.get_content_type_from_upayload_format(message.payload.format)
         if contenttype:
@@ -453,6 +453,8 @@ class UCloudEvent:
             value=UCloudEvent.get_payload(event).SerializeToString())
         attributes = UAttributes(id=LongUuidSerializer.instance().deserialize(UCloudEvent.get_id(event)),
                                  type=UCloudEvent.get_message_type(UCloudEvent.get_type(event)))
+        attributes.source.CopyFrom(source)
+
         if UCloudEvent.has_communication_status_problem(event):
             attributes.commstatus = UCloudEvent.get_communication_status(event)
         priority = UCloudEvent.get_priority(event)
@@ -483,4 +485,4 @@ class UCloudEvent:
         if plevel is not None:
             attributes.permission_level = plevel
 
-        return UMessage(attributes=attributes, payload=payload, source=source)
+        return UMessage(attributes=attributes, payload=payload)

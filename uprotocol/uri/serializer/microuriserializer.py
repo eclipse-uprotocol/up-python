@@ -32,7 +32,7 @@ from enum import Enum
 from uprotocol.proto.uri_pb2 import UAuthority
 from uprotocol.proto.uri_pb2 import UEntity
 from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.uri.builder.uresource_builder import UResourceBuilder
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
 
@@ -84,29 +84,18 @@ class MicroUriSerializer(UriSerializer):
         os = io.BytesIO()
         os.write(bytes([self.UP_VERSION]))
 
-        # Determine the uAuthority type to be written
-        remote_case = "REMOTE_NOT_SET"
-
-        if len(uri.authority.ip) > 0:
-            remote_case = "IP"
-        elif len(uri.authority.id) > 0:
-            remote_case = "ID"
-        elif len(uri.authority.name) > 0:
-            remote_case = "NAME"
-        if remote_case == "REMOTE_NOT_SET":
-            address_type = AddressType.LOCAL
-        elif remote_case == "IP":
-            length = len(uri.authority.ip)
+        if uri.authority.HasField('ip'):
+            length: int = len(uri.authority.ip)
             if length == 4:
                 address_type = AddressType.IPv4
             elif length == 16:
                 address_type = AddressType.IPv6
             else:
                 return bytearray()
-        elif remote_case == "ID":
+        elif uri.authority.HasField('id'):
             address_type = AddressType.ID
         else:
-            return bytearray()
+            address_type = AddressType.LOCAL
 
         os.write(address_type.value.to_bytes(1, 'big'))
 
@@ -135,9 +124,9 @@ class MicroUriSerializer(UriSerializer):
                 os.write(len(uri.authority.id).to_bytes(1, 'big'))
 
             try:
-                if remote_case == "IP":
+                if uri.authority.HasField("ip"):
                     os.write(uri.authority.ip)
-                elif remote_case == "ID":
+                elif uri.authority.HasField("id"):
                     os.write(uri.authority.id)
             except Exception as e:
                 print(e)  # Handle the exception as needed

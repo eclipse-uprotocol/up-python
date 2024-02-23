@@ -32,14 +32,20 @@ from google.protobuf.wrappers_pb2 import Int32Value
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UPriority
 from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
-from uprotocol.proto.uri_pb2 import UUri, UEntity
+from uprotocol.proto.uri_pb2 import UUri, UEntity, UAuthority
 from uprotocol.proto.ustatus_pb2 import UStatus, UCode
 from uprotocol.rpc.rpcclient import RpcClient
 from uprotocol.rpc.rpcmapper import RpcMapper
 from uprotocol.rpc.rpcresult import RpcResult
 from uprotocol.transport.builder.uattributesbuilder import UAttributesBuilder
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 
+
+def build_source():
+    return UUri(authority=UAuthority(name="vcu.someVin.veh.ultifi.gm.com"),
+                entity=UEntity(name="petapp.ultifi.gm.com", version_major=1),
+                resource=UResourceBuilder.for_rpc_request(None))
 
 def build_cloud_event():
     return CloudEvent(spec_version="1.0", source="https://example.com", id="HARTLEY IS THE BEST")
@@ -56,7 +62,7 @@ def build_topic():
 
 
 def build_uattributes():
-    return UAttributesBuilder.request(UPriority.UPRIORITY_CS4, UUri(entity=UEntity(name="hartley")), 1000).build()
+    return UAttributesBuilder.request(build_source(), UUri(entity=UEntity(name="hartley")), UPriority.UPRIORITY_CS4, 1000).build()
 
 
 class ReturnsNumber3(RpcClient):

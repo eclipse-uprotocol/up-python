@@ -43,46 +43,38 @@ class UTransport(ABC):
     """
 
     @abstractmethod
-    def authenticate(self, u_entity: UEntity) -> UStatus:
+    def send(self, source: UUri, payload: UPayload, attributes: UAttributes) -> UStatus:
         """
-        API used to authenticate with the underlining transport layer that the uEntity passed matches the transport
-        specific identity. MUST pass a resolved UUri.<br><br>
-        @param u_entity:Resolved UEntity
-        @return: Returns OKSTATUS if authenticate was successful, FAILSTATUS if the calling uE is not authenticated.
-        """
-        pass
-
-    @abstractmethod
-    def send(self, topic: UUri, payload: UPayload, attributes: UAttributes) -> UStatus:
-        """
-        Transmit UPayload to the topic using the attributes defined in UTransportAttributes.<br><br>
-        @param topic:Resolved UUri topic to send the payload to.
-        @param payload:Actual payload.
-        @param attributes:Additional transport attributes.
-        @return:Returns OKSTATUS if the payload has been successfully sent (ACK'ed), otherwise it returns FAILSTATUS
-        with the appropriate failure.
+        Send a message (in parts) over the transport.
+        @param source The source address for the message, (ex. publish topic, the return address 
+        for rpc-request, or the rpc method for rpc response
+        @param payload Actual message payload.
+        @param attributes uProtocol header attributes.
+        @return Returns {@link UStatus} with {@link UCode} set to the status code (successful or failure).
         """
         pass
 
     @abstractmethod
     def register_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
-        Register listener to be called when UPayload is received for the specific topic.<br><br>
-        @param topic:Resolved UUri for where the message arrived via the underlying transport technology.
-        @param listener:The method to execute to process the date for the topic.
-        @return:Returns OKSTATUS if the listener is unregistered correctly, otherwise it returns FAILSTATUS with the
-        appropriate failure.
+        Register {@code UListener} for {@code UUri} topic to be called when a message is received.
+        @param topic {@code UUri} to listen for messages from.
+        @param listener The {@code UListener} that will be execute when the message is 
+        received on the given {@code UUri}.
+        @return Returns {@link UStatus} with {@link UCode.OK} if the listener is registered
+        correctly, otherwise it returns with the appropriate failure.
         """
         pass
 
     @abstractmethod
     def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
-        Unregister a listener for a given topic. Messages arriving on this topic will no longer be processed by this
-        listener.
-        @param topic:Resolved UUri for where the listener was registered to receive messages from.
-        @param listener:The method to execute to process the date for the topic.
-        @return:Returns OKSTATUS if the listener is unregistered correctly, otherwise it returns FAILSTATUS  with the
-        appropriate failure.
+        Unregister {@code UListener} for {@code UUri} topic. Messages arriving on this topic will
+        no longer be processed by this listener.
+        @param topic {@code UUri} to the listener was registered for.
+        @param listener The {@code UListener} that will no longer want to be registered to receive
+        messages.
+        @return Returns {@link UStatus} with {@link UCode.OK} if the listener is unregistered
+        correctly, otherwise it returns with the appropriate failure.
         """
         pass

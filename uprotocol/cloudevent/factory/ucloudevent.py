@@ -33,6 +33,8 @@ from google.protobuf.message import DecodeError
 
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority, UAttributes
+from uprotocol.proto.upayload_pb2 import UPayload
+from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
@@ -367,7 +369,8 @@ class UCloudEvent:
     @staticmethod
     def get_content_type_from_upayload_format(payload_format: UPayloadFormat):
         """
-        Retrieves the content type string based on the provided UPayloadFormat enumeration.<br><br>
+        Retrieves the string representation of the data content type based on the provided UPayloadFormat. <BR>
+        This method uses the uProtocol mimeType custom options declared in upayload.proto.
         @param payload_format The UPayloadFormat enumeration representing the payload format.
         @return The corresponding content type string based on the payload format.
         """
@@ -382,12 +385,13 @@ class UCloudEvent:
     @staticmethod
     def get_upayload_format_from_content_type(contenttype: str):
         """
-        Retrieves the payload format enumeration based on the provided content type.<br><br>
-        @param contenttype The content type string representing the format of the payload.
+        Retrieves the payload format enumeration based on the provided string representation of the data content type <br>
+        This method uses the uProtocol mimeType custom options declared in upayload.proto.
+        @param contentType The content type string representing the format of the payload.
         @return The corresponding UPayloadFormat enumeration based on the content type.
         """
         if contenttype is None:
-            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF
+            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
 
         content_type_mapping = {
             "application/json": UPayloadFormat.UPAYLOAD_FORMAT_JSON,
@@ -407,18 +411,27 @@ class UCloudEvent:
         @param message The UMessage protobuf containing the data
         @return returns the cloud event
         """
+
         attributes = message.attributes
+        payload = message.payload
+
+        if attributes is None:
+            attributes = UAttributes()
+        if payload is None:
+            payload = UPayload()
+
         data = bytearray()
         json_attributes = {"id": LongUuidSerializer.instance().serialize(attributes.id),
                            "source": LongUriSerializer().serialize(message.attributes.source),
                            "type": UCloudEvent.get_event_type(attributes.type)}
-        contenttype = UCloudEvent.get_content_type_from_upayload_format(message.payload.format)
+        contenttype = UCloudEvent.get_content_type_from_upayload_format(payload.format)
+
         if contenttype:
             json_attributes['datacontenttype'] = "application/x-protobuf"
 
         # IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
-        if message.payload.HasField('value'):
-            data = message.payload.value
+        if payload.HasField('value'):
+            data = payload.value
         if attributes.HasField('ttl'):
             json_attributes['ttl'] = attributes.ttl
         if attributes.priority > 0:
@@ -447,14 +460,13 @@ class UCloudEvent:
         """
         if event is None:
             raise ValueError("Cloud Event can't be None")
-        source = LongUriSerializer().deserialize(UCloudEvent.get_source(event))
+
         payload = UPayload(
             format=UCloudEvent.get_upayload_format_from_content_type(UCloudEvent.get_data_content_type(event)),
             value=UCloudEvent.get_payload(event).SerializeToString())
         attributes = UAttributes(id=LongUuidSerializer.instance().deserialize(UCloudEvent.get_id(event)),
-                                 type=UCloudEvent.get_message_type(UCloudEvent.get_type(event)))
-        attributes.source.CopyFrom(source)
-
+                                 type=UCloudEvent.get_message_type(UCloudEvent.get_type(event)),
+                                 source=LongUriSerializer().deserialize(UCloudEvent.get_source(event)))
         if UCloudEvent.has_communication_status_problem(event):
             attributes.commstatus = UCloudEvent.get_communication_status(event)
         priority = UCloudEvent.get_priority(event)

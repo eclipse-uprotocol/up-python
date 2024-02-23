@@ -30,7 +30,7 @@ from uprotocol.proto.uri_pb2 import UEntity
 from uprotocol.proto.uri_pb2 import UResource
 from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.validation.validationresult import ValidationResult
-
+from multipledispatch import dispatch
 
 class UriValidator:
     """
@@ -92,9 +92,12 @@ class UriValidator:
 
     @staticmethod
     def is_empty(uri: UUri) -> bool:
-        if uri is None:
-            raise ValueError("Uri cannot be None.")
-        return not uri.HasField('authority') and not uri.HasField('entity') and not uri.HasField('resource')
+        '''
+        Indicates that this  URI is an empty as it does not contain authority, entity, and resource.
+        @param uri {@link UUri} to check if it is empty
+        @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
+        '''
+        return uri is not None and not uri.HasField('authority') and not uri.HasField('entity') and not uri.HasField('resource')
 
 
     @staticmethod
@@ -104,54 +107,87 @@ class UriValidator:
         @param uri:
         @return:Returns true if this resource specifies an RPC method call or RPC response.
         """
-        if uri is None:
-            raise ValueError("Uri cannot be None.")
         return not UriValidator.is_empty(uri) and uri.resource.name == "rpc" and (
                 uri.resource.HasField('instance') and uri.resource.instance.strip() != "" or (
                 uri.resource.HasField('id') and uri.resource.id != 0))
 
     @staticmethod
-    def is_resolved(uuri: UUri) -> bool:
-        if uuri is None:
-            raise ValueError("Uri cannot be None.")
+    def is_resolved(uri: UUri) -> bool:
 
-        return not UriValidator.is_empty(uuri)
-
-    @staticmethod
-    def is_rpc_response(uuri: UUri) -> bool:
-        if uuri is None:
-            raise ValueError("Uri cannot be None.")
-
-        return UriValidator.is_rpc_method(uuri) and (
-                (uuri.resource.HasField('instance') and "response" in uuri.resource.instance) or (
-                uuri.resource.HasField('id') and uuri.resource.id != 0))
+        return uri is not None and not UriValidator.is_empty(uri) and \
+            UriValidator.is_long_form(uri) and UriValidator.is_micro_form(uri)
 
     @staticmethod
-    def is_micro_form(uuri: UUri) -> bool:
+    def is_rpc_response(uri: UUri) -> bool:
+        if uri is None:
+            return False
+        
+        resource = uri.resource
+
+        return "rpc" in resource.name and uri.HasField("resource") and "response" in resource.instance and resource.HasField("id") and resource.id == 0
+
+    @staticmethod
+    @dispatch(UUri)
+    def is_micro_form(uri: UUri) -> bool:
         """
         Determines if this UUri can be serialized into a micro form UUri.<br><br>
         @param uuri: An UUri proto message object
         @return:Returns true if this UUri can be serialized into a micro form UUri.
         """
-        if uuri is None:
-            raise ValueError("Uri cannot be None.")
-        return not UriValidator.is_empty(uuri) and uuri.entity.HasField('id') and uuri.resource.HasField('id') and (
-                not uuri.HasField('authority') or uuri.authority.HasField('ip') or uuri.authority.HasField('id'))
+
+        return uri is not None and not UriValidator.is_empty(uri) and uri.entity.HasField('id') \
+            and uri.resource.HasField('id') and UriValidator.is_micro_form(uri.authority)
+            
+    @staticmethod
+    @dispatch(UAuthority)
+    def is_micro_form(authority: UAuthority) -> bool:
+        '''
+        check if UAuthority can be represented in micro format. Micro UAuthorities are local or ones 
+        that contain IP address or IDs.
+        @param authority {@link UAuthority} to check
+        @return Returns true if UAuthority can be represented in micro format
+        '''
+
+
+        return UriValidator.is_local(authority) or (authority.HasField('ip') or (authority.HasField('id')))
 
     @staticmethod
-    def is_long_form(uuri: UUri) -> bool:
+    @dispatch(UUri)
+    def is_long_form(uri: UUri) -> bool:
         """
         Determines if this UUri can be serialized into a long form UUri.<br><br>
         @param uuri: An UUri proto message object
         @return:Returns true if this UUri can be serialized into a long form UUri.
         """
-        if uuri is None:
-            raise ValueError("Uri cannot be None.")
-        return not UriValidator.is_empty(uuri) and not (uuri.HasField('authority') and uuri.authority.HasField(
-            'name')) and not uuri.entity.name.strip() == '' and not uuri.resource.name.strip() == ''
+
+        return uri is not None and not UriValidator.is_empty(uri) and UriValidator.is_long_form(uri.authority) and \
+            uri.entity.name.strip() != "" and uri.resource.name.strip() != ""
+            
+    @staticmethod
+    @dispatch(UAuthority)
+    def is_long_form(authority: UAuthority) -> bool:
+        '''
+        Returns true if UAuthority contains names so that it can be serialized into long format.
+        @param authority {@link UAuthority} to check
+        @return Returns true if URI contains names so that it can be serialized into long format.
+        '''
+        return authority is not None and authority.HasField('name') and authority.name.strip() != ""
+    
+    @staticmethod
+    def is_local(authority: UAuthority) -> bool:
+        '''
+        Returns true if UAuthority is local meaning there is no name/ip/id set.
+        @param authority {@link UAuthority} to check if it is local or not
+        @return Returns true if UAuthority is local meaning the Authority is not populated with name, ip and id
+        '''
+        return (authority is None) or (authority == UAuthority())
 
     @staticmethod
     def is_remote(authority: UAuthority) -> bool:
-        if authority is None:
-            raise ValueError("Authority cannot be None.")
-        return not all([authority.name.strip() == "", len(authority.ip) == 0, len(authority.id) == 0])
+        '''
+        Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
+        @param authority {@link UAuthority} to check if it is remote or not
+        @return Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
+        '''
+        return (authority is not None) and (not authority == UAuthority()) and \
+            (UriValidator.is_long_form(authority) or UriValidator.is_micro_form(authority))

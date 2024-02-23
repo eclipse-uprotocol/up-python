@@ -38,14 +38,14 @@ from uprotocol.proto.upayload_pb2 import UPayload
 class RpcMapper:
     """
     RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with an RPC Response (
-    uP-L2). APIs that return Message assumes that the payload is protobuf serialized com.google.protobuf.Any (
-    UPayloadFormat.PROTOBUF) and will barf if anything else is passed
+    uP-L2). APIs that return Message assumes that the message is protobuf serialized com.google.protobuf.Any (
+    UMessageFormat.PROTOBUF) and will barf if anything else is passed
     """
 
     @staticmethod
-    def map_response(payload_future: Future, expected_cls):
+    def map_response(message_future: Future, expected_cls):
         """
-         Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the
+         Map a response of CompletableFuture&lt;UMessage&gt; from Link into a CompletableFuture containing the
          declared expected return type of the RPC method or an exception.<br><br>
         @param response_future:CompletableFuture&lt;UPayload&gt; response from uTransport.
         @param expected_cls:The class name of the declared expected return type of the RPC method.
@@ -54,16 +54,16 @@ class RpcMapper:
         """
         response_future: Future = Future()
 
-        def handle_response(payload):
+        def handle_response(message):
             nonlocal response_future
-            payload = payload.result()
-            if not payload:
+            message = message.result()
+            if not message:
                 response_future.set_exception(
                     RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}"))
 
             try:
                 any_message = any_pb2.Any()
-                any_message.ParseFromString(payload.value)
+                any_message.ParseFromString(message.value)
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     response_future.set_result(RpcMapper.unpack_payload(any_message, expected_cls))
                 else:
@@ -74,7 +74,7 @@ class RpcMapper:
             except Exception as e:
                 response_future.set_exception(RuntimeError(f"{str(e)} [{UStatus.__name__}]"))
 
-        payload_future.add_done_callback(handle_response)
+        message_future.add_done_callback(handle_response)
 
         return response_future
 
@@ -89,19 +89,19 @@ class RpcMapper:
         or a UStatus containing any errors.
         """
 
-        def handle_response(payload):
-            if payload.exception():
-                exception = payload.exception()
+        def handle_response(message):
+            if message.exception():
+                exception = message.exception()
                 return RpcResult.failure(value=exception, message=str(exception))
 
-            payload = payload.result()
-            if not payload:
+            message = message.result()
+            if not message:
                 exception = RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
                 return RpcResult.failure(value=exception, message=str(exception))
 
             try:
                 any_message = any_pb2.Any()
-                any_message.ParseFromString(payload.value)
+                any_message.ParseFromString(message.value)
 
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     if expected_cls == UStatus:

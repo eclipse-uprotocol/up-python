@@ -41,6 +41,7 @@ class UAttributesBuilder:
     """
 
     def __init__(self, id: UUID, type: UMessageType, priority: UPriority):
+        self.source = None
         self.id = id
         self.type = UMessageType.Name(type)
         self.priority = priority
@@ -50,40 +51,44 @@ class UAttributesBuilder:
         self.plevel = None
         self.commstatus = None
         self.reqid = None
+        self.traceparent = None
 
     @staticmethod
-    def publish(priority: UPriority):
+    def publish(source: UUri, priority: UPriority):
         """
         Construct a UAttributesBuilder for a publish message.
+        @param source   Source address of the message.
         @param priority The priority of the message.
         @return Returns the UAttributesBuilder with the configured priority.
         """
         if priority is None:
             raise ValueError("UPriority cannot be None.")
-        return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority)
+        return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSource(source)
 
     @staticmethod
-    def notification(priority: UPriority, sink: UUri):
+    def notification(source: UUri, sink: UUri, priority: UPriority):
         """
         Construct a UAttributesBuilder for a notification message.
+        @param source   Source address of the message.
+        @param sink     The destination URI.
         @param priority The priority of the message.
-        @param sink The destination URI.
-        @return Returns the UAttributesBuilder with the configured priority and sink.
+        @return Returns the UAttributesBuilder with the configured source, priority and sink.
         """
         if priority is None:
             raise ValueError("UPriority cannot be null.")
         if sink is None:
             raise ValueError("sink cannot be null.")
         return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(
-            sink)
+            sink).withSource(source)
 
     @staticmethod
-    def request(priority: UPriority, sink: UUri, ttl: int):
+    def request(source: UUri, sink: UUri, priority: UPriority, ttl: int):
         """
         Construct a UAttributesBuilder for a request message.
+        @param source   Source address of the message.
+        @param sink     The destination URI.
         @param priority The priority of the message.
-        @param sink The destination URI.
-        @param ttl The time to live in milliseconds.
+        @param ttl      The time to live in milliseconds.
         @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
         """
         if priority is None:
@@ -94,15 +99,16 @@ class UAttributesBuilder:
             raise ValueError("ttl cannot be null.")
 
         return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(
-            ttl).withSink(sink)
+            ttl).withSink(sink).withSource(source)
 
     @staticmethod
-    def response(priority: UPriority, sink: UUri, reqid: UUID):
+    def response(source: UUri,  sink: UUri, priority: UPriority, reqid: UUID):
         """
         Construct a UAttributesBuilder for a response message.
+        @param source   Source address of the message.
+        @param sink     The destination URI.
         @param priority The priority of the message.
-        @param sink The destination URI.
-        @param reqid The original request UUID used to correlate the response to the request.
+        @param reqid    The original request UUID used to correlate the response to the request.
         @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
         """
         if priority is None:
@@ -113,7 +119,7 @@ class UAttributesBuilder:
             raise ValueError("reqid cannot be null.")
 
         return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(
-            sink).withReqId(reqid)
+            sink).withReqId(reqid).withSource(source)
 
     def withTtl(self, ttl: int):
         """
@@ -133,6 +139,16 @@ class UAttributesBuilder:
         @return Returns the UAttributesBuilder with the configured token.
         """
         self.token = token
+        return self
+    
+    def withSource(self, source: UUri):
+        """
+        Add the source address of the message.
+
+        @param source   The source address of the message.
+        @return Returns The UAttributesBuilder with the configured source.
+        """
+        self.source = source
         return self
 
     def withSink(self, sink: UUri):
@@ -174,6 +190,17 @@ class UAttributesBuilder:
         """
         self.reqid = reqid
         return self
+    
+    def withTraceparent(self, traceparent: str):
+        """
+        Add the traceparent.
+
+        @param reqid    the traceparent.
+        @return Returns the UAttributesBuilder with the configured traceparent.
+        """
+        self.traceparent = traceparent
+        return self
+
 
     def build(self):
         """
@@ -184,6 +211,8 @@ class UAttributesBuilder:
         attributes = UAttributes(id=self.id, type=self.type, priority=self.priority)
         if self.sink is not None:
             attributes.sink.CopyFrom(self.sink)
+        if self.source is not None:
+            attributes.source.CopyFrom(self.source)
         if self.ttl is not None:
             attributes.ttl = self.ttl
         if self.plevel is not None:
@@ -192,6 +221,8 @@ class UAttributesBuilder:
             attributes.commstatus = self.commstatus
         if self.reqid is not None:
             attributes.reqid.CopyFrom(self.reqid)
+        if self.traceparent is not None:
+            attributes.traceparent = self.traceparent
         if self.token != None:
             attributes.token = self.token
         return attributes

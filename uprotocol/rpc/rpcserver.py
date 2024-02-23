@@ -24,28 +24,36 @@
 
 # -------------------------------------------------------------------------
 
-
 from abc import ABC, abstractmethod
 
-from uprotocol.proto.uattributes_pb2 import UAttributes
 from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.proto.upayload_pb2 import UPayload
 from uprotocol.proto.ustatus_pb2 import UStatus
+from uprotocol.rpc.urpclistener import URpcListener
 
-
-class UListener(ABC):
+class RpcServer(ABC):
     """
-    For any implementation that defines some kind of callback or function that will be called to handle incoming
-    messages.
+    RpcServer is an interface called by uServices to register method listeners for incoming RPC requests
+    from clients.
     """
-
+    
     @abstractmethod
-    def on_receive(self, topic: UUri, payload: UPayload, attributes: UAttributes) -> None:
-        """
-        Method called to handle/process messages.<br><br>
-        @param topic: Topic the underlying source of the message.
-        @param payload: Payload of the message.
-        @param attributes: Transportation attributes.
-        @return Returns an Ack every time a message is received and processed.
-        """
+    def register_rpc_listener(method: UUri, listener: URpcListener) -> UStatus:
+        '''
+        Register a listener for a particular method URI to be notified when requests are sent against said method.
+        <p>Note: Only one listener is allowed to be registered per method URI.
+        @param method Uri for the method to register the listener for.
+        @param listener The listener for handling the request method.
+        @return Returns the status of registering the RpcListener.
+        '''
+        pass
+    
+    @abstractmethod
+    def unregister_rpc_listener(method: UUri, listener: URpcListener) -> UStatus:
+        '''
+        Unregister an RPC listener for a given method Uri. Messages arriving on this topic will no longer be processed
+        by this listener.
+        @param method Resolved UUri for where the listener was registered to receive messages from.
+        @param listener The method to execute to process the date for the topic.
+        @return Returns status of registering the RpcListener
+        '''
         pass

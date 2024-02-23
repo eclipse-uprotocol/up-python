@@ -197,6 +197,8 @@ class LongUriSerializer(UriSerializer):
             u_resource.instance = resource_instance
         if resource_message is not None:
             u_resource.message = resource_message
+        if "rpc" in resource_name and resource_instance is not None and "response" in resource_instance:
+            u_resource.id = 0
 
         return u_resource
 

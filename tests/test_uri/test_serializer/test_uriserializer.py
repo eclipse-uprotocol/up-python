@@ -38,7 +38,8 @@ class TestUriSerializer(unittest.TestCase):
     def test_build_resolved_valid_long_micro_uri(self):
         long_uuri = UUri(authority=UAuthority(name="testauth"), entity=UEntity(name="neelam"),
                          resource=UResource(name="rpc", instance="response"))
-        micro_uuri = UUri(entity=UEntity(id=29999, version_major=254), resource=UResource(id=39999))
+        micro_uuri = UUri(authority=UAuthority(id="abcdefg".encode('UTF-8')),
+                          entity=UEntity(id=29999, version_major=254), resource=UResource(id=39999))
         microuri = MicroUriSerializer().serialize(micro_uuri)
         longuri = LongUriSerializer().serialize(long_uuri)
         resolved_uuri = LongUriSerializer().build_resolved(longuri, microuri)

@@ -96,7 +96,7 @@ class RpcMapper:
 
             message = message.result()
             if not message:
-                exception = RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
+                exception = RuntimeError(f"Server returned a null message. Expected {expected_cls.__name__}")
                 return RpcResult.failure(value=exception, message=str(exception))
 
             try:

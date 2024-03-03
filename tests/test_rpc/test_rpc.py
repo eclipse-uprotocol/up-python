@@ -240,7 +240,7 @@ class TestRpc(unittest.TestCase):
         rpc_response = RpcMapper.map_response(
             WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
             CloudEvent)
-        exception=RuntimeError("Unknown payload type [type.googleapis.com/uprotocol.v1.UStatus]. Expected [CloudEvent]")
+        exception=RuntimeError("Unknown Message type [type.googleapis.com/uprotocol.v1.UStatus]. Expected [CloudEvent]")
         self.assertEqual(str(exception),str(rpc_response.exception()))
 
 

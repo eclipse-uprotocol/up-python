@@ -48,13 +48,13 @@ class RpcClient(ABC):
     def invoke_method(self, methodUri: UUri, request_payload: UPayload, options: CallOptions) -> Future:
         """
         API for clients to invoke a method (send an RPC request) and receive the response (the returned 
-        Future {@link UMessage}. <br>
+        Future UMessage. <br>
         Client will set method to be the URI of the method they want to invoke, 
         payload to the request message, and attributes with the various metadata for the 
         method invocation.
         @param methodUri The method URI to be invoked, ex (long form): /example.hello_world/1/rpc.SayHello.
         @param requestPayload The request message to be sent to the server.
-        @param options RPC method invocation call options, see {@link CallOptions}
+        @param options RPC method invocation call options, see CallOptions
         @return: Returns the CompletableFuture with the result or exception.
         """
         pass

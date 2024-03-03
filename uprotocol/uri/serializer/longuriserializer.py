@@ -44,7 +44,7 @@ class LongUriSerializer(UriSerializer):
 
     def serialize(self, uri: UUri) -> str:
         """
-        Support for serializing {@link UUri} objects into their String format.<br><br>
+        Support for serializing UUri objects into their String format.<br><br>
         @param uri: UUri object to be serialized to the String format.
         @return:Returns the String format of the supplied UUri that can be used as a sink or a source in a
         uProtocol publish communication.

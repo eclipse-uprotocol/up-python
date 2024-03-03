@@ -32,7 +32,7 @@ from uprotocol.proto.umessage_pb2 import UMessage
 class URpcListener(ABC):
     '''
     uService (servers) implement this to receive requests messages from clients. <br>
-    The service must implement the {@link #onReceive(UMessage, CompletableFuture)} method to handle
+    The service must implement the onReceive(UMessage, CompletableFuture) method to handle
     the request and then complete the future passed to the method that triggers the uLink library to
     send (over the transport) the response.
     '''

@@ -40,8 +40,8 @@ class UAttributesBuilder:
     @param priority uProtocol Prioritization classifications.
     """
 
-    def __init__(self, id: UUID, type: UMessageType, priority: UPriority):
-        self.source = None
+    def __init__(self, source: UUri, id: UUID, type: UMessageType, priority: UPriority):
+        self.source = source
         self.id = id
         self.type = UMessageType.Name(type)
         self.priority = priority
@@ -61,9 +61,11 @@ class UAttributesBuilder:
         @param priority The priority of the message.
         @return Returns the UAttributesBuilder with the configured priority.
         """
+        if source is None:
+            raise ValueError("Source cannot be None.")
         if priority is None:
             raise ValueError("UPriority cannot be None.")
-        return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSource(source)
+        return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority)
 
     @staticmethod
     def notification(source: UUri, sink: UUri, priority: UPriority):
@@ -74,12 +76,14 @@ class UAttributesBuilder:
         @param priority The priority of the message.
         @return Returns the UAttributesBuilder with the configured source, priority and sink.
         """
+        if source is None:
+            raise ValueError("Source cannot be None.")
         if priority is None:
             raise ValueError("UPriority cannot be null.")
         if sink is None:
             raise ValueError("sink cannot be null.")
-        return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(
-            sink).withSource(source)
+        return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority
+                                  ).withSink(sink)
 
     @staticmethod
     def request(source: UUri, sink: UUri, priority: UPriority, ttl: int):
@@ -91,6 +95,8 @@ class UAttributesBuilder:
         @param ttl      The time to live in milliseconds.
         @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
         """
+        if source is None:
+            raise ValueError("Source cannot be None.")
         if priority is None:
             raise ValueError("UPriority cannot be null.")
         if sink is None:
@@ -98,8 +104,8 @@ class UAttributesBuilder:
         if ttl is None:
             raise ValueError("ttl cannot be null.")
 
-        return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(
-            ttl).withSink(sink).withSource(source)
+        return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_REQUEST, priority
+                                  ).withTtl(ttl).withSink(sink)
 
     @staticmethod
     def response(source: UUri,  sink: UUri, priority: UPriority, reqid: UUID):
@@ -118,8 +124,8 @@ class UAttributesBuilder:
         if reqid is None:
             raise ValueError("reqid cannot be null.")
 
-        return UAttributesBuilder(Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(
-            sink).withReqId(reqid).withSource(source)
+        return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_RESPONSE, priority
+                                  ).withSink(sink).withReqId(reqid)
 
     def withTtl(self, ttl: int):
         """
@@ -141,16 +147,6 @@ class UAttributesBuilder:
         self.token = token
         return self
     
-    def withSource(self, source: UUri):
-        """
-        Add the source address of the message.
-
-        @param source   The source address of the message.
-        @return Returns The UAttributesBuilder with the configured source.
-        """
-        self.source = source
-        return self
-
     def withSink(self, sink: UUri):
         """
         Add the explicit destination URI.
@@ -208,11 +204,9 @@ class UAttributesBuilder:
 
         @return Returns a constructed
         """
-        attributes = UAttributes(id=self.id, type=self.type, priority=self.priority)
+        attributes = UAttributes(source=self.source, id=self.id, type=self.type, priority=self.priority)
         if self.sink is not None:
             attributes.sink.CopyFrom(self.sink)
-        if self.source is not None:
-            attributes.source.CopyFrom(self.source)
         if self.ttl is not None:
             attributes.ttl = self.ttl
         if self.plevel is not None:

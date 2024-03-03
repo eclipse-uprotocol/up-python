@@ -88,7 +88,7 @@ class UAttributesValidator:
     def is_expired(u_attributes: UAttributes) -> bool:
         '''
         Check the time-to-live attribute to see if it has expired. <br>
-        8The message has expired when the current time is greater than the original UUID time
+        The message has expired when the current time is greater than the original UUID time
         plus the ttl attribute.
         @param uAttributes UAttributes with time to live value.
         @return Returns a true if the original time plus the ttl is less than the current time

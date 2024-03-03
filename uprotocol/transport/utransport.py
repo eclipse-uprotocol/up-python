@@ -27,12 +27,10 @@
 
 from abc import ABC, abstractmethod
 
-from uprotocol.proto.uattributes_pb2 import UAttributes
-from uprotocol.proto.uri_pb2 import UEntity
 from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.transport.ulistener import UListener
-from uprotocol.proto.upayload_pb2 import UPayload
 from uprotocol.proto.ustatus_pb2 import UStatus
+from uprotocol.proto.umessage_pb2 import UMessage
 
 class UTransport(ABC):
     """
@@ -43,25 +41,22 @@ class UTransport(ABC):
     """
 
     @abstractmethod
-    def send(self, source: UUri, payload: UPayload, attributes: UAttributes) -> UStatus:
+    def send(self, message: UMessage) -> UStatus:
         """
         Send a message (in parts) over the transport.
-        @param source The source address for the message, (ex. publish topic, the return address 
-        for rpc-request, or the rpc method for rpc response
-        @param payload Actual message payload.
-        @param attributes uProtocol header attributes.
-        @return Returns {@link UStatus} with {@link UCode} set to the status code (successful or failure).
+        @param message the UMessage to be sent.
+        @return Returns UStatus with UCode set to the status code (successful or failure).
         """
         pass
 
     @abstractmethod
     def register_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
-        Register {@code UListener} for {@code UUri} topic to be called when a message is received.
-        @param topic {@code UUri} to listen for messages from.
-        @param listener The {@code UListener} that will be execute when the message is 
-        received on the given {@code UUri}.
-        @return Returns {@link UStatus} with {@link UCode.OK} if the listener is registered
+        Register UListener for UUri topic to be called when a message is received.
+        @param topic UUri to listen for messages from.
+        @param listener The UListener that will be execute when the message is 
+        received on the given UUri.
+        @return Returns UStatus with UCode.OK if the listener is registered
         correctly, otherwise it returns with the appropriate failure.
         """
         pass
@@ -69,12 +64,12 @@ class UTransport(ABC):
     @abstractmethod
     def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
-        Unregister {@code UListener} for {@code UUri} topic. Messages arriving on this topic will
+        Unregister UListener for UUri topic. Messages arriving on this topic will
         no longer be processed by this listener.
-        @param topic {@code UUri} to the listener was registered for.
-        @param listener The {@code UListener} that will no longer want to be registered to receive
+        @param topic UUri to the listener was registered for.
+        @param listener The UListener that will no longer want to be registered to receive
         messages.
-        @return Returns {@link UStatus} with {@link UCode.OK} if the listener is unregistered
+        @return Returns UStatus with UCode.OK if the listener is unregistered
         correctly, otherwise it returns with the appropriate failure.
         """
         pass

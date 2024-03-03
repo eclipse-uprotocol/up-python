@@ -136,11 +136,11 @@ class RpcMapper:
     @staticmethod
     def unpack_payload(payload, expected_cls):
         """
-        Unpack a payload of type {@link Any} into an object of type T, which is what was packing into the {@link Any}
+        Unpack a payload of type Any into an object of type T, which is what was packing into the Any
         object.<br><br>
-        @param payload:an {@link Any} message containing a type of expectedClazz.
-        @param expected_cls:The class name of the object packed into the {@link Any}
-        @return:Returns an object of type T and of the class name specified, that was packed into the {@link Any}
+        @param payload:an Any message containing a type of expectedClazz.
+        @param expected_cls:The class name of the object packed into the Any
+        @return:Returns an object of type T and of the class name specified, that was packed into the Any
         object.
         """
         try:

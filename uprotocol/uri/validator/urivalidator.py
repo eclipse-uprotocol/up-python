@@ -94,7 +94,7 @@ class UriValidator:
     def is_empty(uri: UUri) -> bool:
         '''
         Indicates that this  URI is an empty as it does not contain authority, entity, and resource.
-        @param uri {@link UUri} to check if it is empty
+        @param uri UUri to check if it is empty
         @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
         '''
         return uri is not None and not uri.HasField('authority') and not uri.HasField('entity') and not uri.HasField('resource')
@@ -144,7 +144,7 @@ class UriValidator:
         '''
         check if UAuthority can be represented in micro format. Micro UAuthorities are local or ones 
         that contain IP address or IDs.
-        @param authority {@link UAuthority} to check
+        @param authority UAuthority to check
         @return Returns true if UAuthority can be represented in micro format
         '''
 
@@ -168,7 +168,7 @@ class UriValidator:
     def is_long_form(authority: UAuthority) -> bool:
         '''
         Returns true if UAuthority contains names so that it can be serialized into long format.
-        @param authority {@link UAuthority} to check
+        @param authority UAuthority to check
         @return Returns true if URI contains names so that it can be serialized into long format.
         '''
         return authority is not None and authority.HasField('name') and authority.name.strip() != ""
@@ -177,7 +177,7 @@ class UriValidator:
     def is_local(authority: UAuthority) -> bool:
         '''
         Returns true if UAuthority is local meaning there is no name/ip/id set.
-        @param authority {@link UAuthority} to check if it is local or not
+        @param authority UAuthority to check if it is local or not
         @return Returns true if UAuthority is local meaning the Authority is not populated with name, ip and id
         '''
         return (authority is None) or (authority == UAuthority())
@@ -186,7 +186,7 @@ class UriValidator:
     def is_remote(authority: UAuthority) -> bool:
         '''
         Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
-        @param authority {@link UAuthority} to check if it is remote or not
+        @param authority UAuthority to check if it is remote or not
         @return Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
         '''
         return (authority is not None) and (not authority == UAuthority()) and \

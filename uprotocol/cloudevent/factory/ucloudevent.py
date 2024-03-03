@@ -177,7 +177,7 @@ class UCloudEvent:
         cloudEvent, it will be indicated in this attribute. If the attribute does not exist, it is assumed that
         everything was UCode.OK_VALUE.<br><br>
         @param ce: CloudEvent with the platformError to be extracted.
-        @return: Returns a {@link UCode} value that indicates of a platform communication error while delivering this
+        @return: Returns a UCode value that indicates of a platform communication error while delivering this
         CloudEvent or UCode.OK_VALUE.
         """
         try:
@@ -301,8 +301,8 @@ class UCloudEvent:
         is implemented. If anything goes wrong, an empty optional will be returned. <br><br> Example: <br>
         <pre>Optional&lt;SomeMessage&gt; unpacked = UCloudEvent.unpack(cloudEvent, SomeMessage.class);</pre><br><br>
         @param ce:CloudEvent containing the payload to extract.
-        @param clazz:The class that extends {@link Message} that the payload is extracted into.
-        @return:  Returns a {@link Message} payload of the class type that is provided.
+        @param clazz:The class that extends Message that the payload is extracted into.
+        @return:  Returns a Message payload of the class type that is provided.
         """
         try:
             any_obj = UCloudEvent.get_payload(ce)

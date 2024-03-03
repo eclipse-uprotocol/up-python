@@ -47,7 +47,7 @@ class RpcMapper:
         """
          Map a response of CompletableFuture&lt;UMessage&gt; from Link into a CompletableFuture containing the
          declared expected return type of the RPC method or an exception.<br><br>
-        @param response_future:CompletableFuture&lt;UPayload&gt; response from uTransport.
+        @param response_future:CompletableFuture&lt;UMessage&gt; response from uTransport.
         @param expected_cls:The class name of the declared expected return type of the RPC method.
         @return:Returns a CompletableFuture containing the declared expected return type of the RPC method or an
         exception.
@@ -59,7 +59,7 @@ class RpcMapper:
             message = message.result()
             if not message:
                 response_future.set_exception(
-                    RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}"))
+                    RuntimeError(f"Server returned a null message. Expected {expected_cls.__name__}"))
 
             try:
                 any_message = any_pb2.Any()
@@ -69,7 +69,7 @@ class RpcMapper:
                 else:
                     response_future.set_exception(
                         RuntimeError(
-                            f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"))
+                            f"Unknown Message type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"))
 
             except Exception as e:
                 response_future.set_exception(RuntimeError(f"{str(e)} [{UStatus.__name__}]"))

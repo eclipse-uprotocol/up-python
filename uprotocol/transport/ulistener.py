@@ -27,10 +27,7 @@
 
 from abc import ABC, abstractmethod
 
-from uprotocol.proto.uattributes_pb2 import UAttributes
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.proto.upayload_pb2 import UPayload
-from uprotocol.proto.ustatus_pb2 import UStatus
+from uprotocol.proto.umessage_pb2 import UMessage
 
 
 class UListener(ABC):
@@ -40,12 +37,9 @@ class UListener(ABC):
     """
 
     @abstractmethod
-    def on_receive(self, topic: UUri, payload: UPayload, attributes: UAttributes) -> None:
+    def on_receive(self, umsg: UMessage) -> None:
         """
         Method called to handle/process messages.<br><br>
-        @param topic: Topic the underlying source of the message.
-        @param payload: Payload of the message.
-        @param attributes: Transportation attributes.
-        @return Returns an Ack every time a message is received and processed.
+        @param umsg: UMessage to be sent.
         """
         pass

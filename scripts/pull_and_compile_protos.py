@@ -33,9 +33,9 @@ import git
 from git import Repo
 
 REPO_URL = "https://github.com/eclipse-uprotocol/up-core-api.git"
-PROTO_REPO_DIR = "target"
+PROTO_REPO_DIR = os.path.abspath("../target")
 TAG_NAME = "uprotocol-core-api-1.5.6"
-PROTO_OUTPUT_DIR = os.path.join("uprotocol", "proto")
+PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/proto")
 
 
 def clone_or_pull(repo_url, PROTO_REPO_DIR):

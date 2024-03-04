@@ -6,13 +6,11 @@ authors = ["Neelam Kushwah <neelam.kushwah@gm.com>"]
 license = "The Apache License, Version 2.0"
 readme = "README.adoc"
 repository = "https://github.com/eclipse-uprotocol/up-python"
-packages = [
-    { include = "uprotocol" },
+packages = [{ include = "uprotocol" },
     { include = "tests" },
     { include = "scripts" }
 
 ]
-
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -21,9 +19,6 @@ multipledispatch = "*"
 gitpython = ">=3.1.41"
 googleapis-common-protos = ">=1.56.4"
 
-[tool.poetry.scripts]
-prebuild = "cd scripts && python pull_and_compile_protos.py"
-c
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

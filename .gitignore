@@ -8,3 +8,4 @@
 .coverage
 target
 **/proto
+poetry.lock

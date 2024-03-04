@@ -57,19 +57,19 @@ class RpcMapper:
         def handle_response(message):
             nonlocal response_future
             message = message.result()
-            if not message:
+            if not message or not message.HasField('payload'):
                 response_future.set_exception(
-                    RuntimeError(f"Server returned a null message. Expected {expected_cls.__name__}"))
+                    RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}"))
 
             try:
                 any_message = any_pb2.Any()
-                any_message.ParseFromString(message.value)
+                any_message.ParseFromString(message.payload.value)
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     response_future.set_result(RpcMapper.unpack_payload(any_message, expected_cls))
                 else:
                     response_future.set_exception(
                         RuntimeError(
-                            f"Unknown Message type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"))
+                            f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"))
 
             except Exception as e:
                 response_future.set_exception(RuntimeError(f"{str(e)} [{UStatus.__name__}]"))
@@ -95,13 +95,13 @@ class RpcMapper:
                 return RpcResult.failure(value=exception, message=str(exception))
 
             message = message.result()
-            if not message:
-                exception = RuntimeError(f"Server returned a null message. Expected {expected_cls.__name__}")
+            if not message or not message.HasField('payload'):
+                exception = RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
                 return RpcResult.failure(value=exception, message=str(exception))
 
             try:
                 any_message = any_pb2.Any()
-                any_message.ParseFromString(message.value)
+                any_message.ParseFromString(message.payload.value)
 
                 if any_message.Is(expected_cls.DESCRIPTOR):
                     if expected_cls == UStatus:

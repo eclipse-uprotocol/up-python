@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "up-python"
-version = "0.1.0-dev"
+version = "0.1.1-dev"
 description = "Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more."
 authors = ["Neelam Kushwah <neelam.kushwah@gm.com>"]
 license = "The Apache License, Version 2.0"

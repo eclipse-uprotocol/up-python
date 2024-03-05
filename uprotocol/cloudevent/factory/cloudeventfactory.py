@@ -105,7 +105,7 @@ class CloudEventFactory:
         @param service_method_uri: The uri for the method that was called on the service Ex.
         :/body.access/1/rpc.UpdateDoor
         @param request_id:The cloud event id from the original request cloud event that this response if for.
-        @param communication_status: A {@link Code} value that indicates of a platform communication error while
+        @param communication_status: A Code value that indicates of a platform communication error while
         delivering this CloudEvent.
         @param attributes:Additional attributes such as ttl, hash and priority.
         @return:Returns an  response CloudEvent Response for the use case of RPC Response message that failed.
@@ -182,7 +182,7 @@ class CloudEventFactory:
         
         @param id:Event unique identifier.
         @param source: Identifies who is sending this event in the format of a uProtocol URI that can be built from a
-        {@link UUri} object.
+        UUri object.
         @param proto_payload_bytes:The serialized Event data with the content type of "application/x-protobuf".
         @param proto_payload_schema:The schema of the proto payload bytes, for example you can use
         <code>protoPayload.getTypeUrl()</code> on your service/app object.

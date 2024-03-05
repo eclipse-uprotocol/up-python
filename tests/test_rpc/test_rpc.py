@@ -29,16 +29,26 @@ import unittest
 from concurrent.futures import Future
 from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import Int32Value
+from uprotocol.rpc.calloptions import CallOptions
+
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UPriority
 from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
-from uprotocol.proto.uri_pb2 import UUri, UEntity
+from uprotocol.proto.uri_pb2 import UUri, UEntity, UAuthority
 from uprotocol.proto.ustatus_pb2 import UStatus, UCode
 from uprotocol.rpc.rpcclient import RpcClient
 from uprotocol.rpc.rpcmapper import RpcMapper
 from uprotocol.rpc.rpcresult import RpcResult
 from uprotocol.transport.builder.uattributesbuilder import UAttributesBuilder
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
+from uprotocol.proto.umessage_pb2 import UMessage
+
+
+def build_source():
+    return UUri(authority=UAuthority(name="vcu.someVin.veh.ultifi.gm.com"),
+                entity=UEntity(name="petapp.ultifi.gm.com", version_major=1),
+                resource=UResourceBuilder.for_rpc_request(None))
 
 
 def build_cloud_event():
@@ -55,77 +65,77 @@ def build_topic():
     return LongUriSerializer().deserialize("//vcu.vin/hartley/1/rpc.Raise")
 
 
-def build_uattributes():
-    return UAttributesBuilder.request(UPriority.UPRIORITY_CS4, UUri(entity=UEntity(name="hartley")), 1000).build()
+def build_calloptions():
+    return CallOptions()
 
 
 class ReturnsNumber3(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         any_obj = Any()
         any_obj.Pack(Int32Value(value=3))
         data = UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, value=any_obj.SerializeToString())
-        future.set_result(data)
+        future.set_result(UMessage(payload=data))
         return future
 
 
 class HappyPath(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         data = build_upayload()
-        future.set_result(data)
+        future.set_result(UMessage(payload=data))
         return future
 
 
 class WithUStatusCodeInsteadOfHappyPath(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         status = UStatus(code=UCode.INVALID_ARGUMENT, message="boom")
         any_value = Any()
         any_value.Pack(status)
         data = UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, value=any_value.SerializeToString())
-        future.set_result(data)
+        future.set_result(UMessage(payload=data))
         return future
 
 
 class WithUStatusCodeHappyPath(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         status = UStatus(code=UCode.OK, message="all good")
         any_value = Any()
         any_value.Pack(status)
         data = UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, value=any_value.SerializeToString())
-        future.set_result(data)
+        future.set_result(UMessage(payload=data))
         return future
 
 
 class ThatBarfsCrapyPayload(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         response = UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_RAW, value=bytes([0]))
-        future.set_result(response)
+        future.set_result(UMessage(payload=response))
         return future
 
 
 class ThatCompletesWithAnException(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         future.set_exception(RuntimeError("Boom"))
         return future
 
 
 class ThatReturnsTheWrongProto(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         any_value = Any()
         any_value.Pack(Int32Value(value=42))
         data = UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, value=any_value.SerializeToString())
-        future.set_result(data)
+        future.set_result(UMessage(payload=data))
         return future
 
 
 class WithNullInPayload(RpcClient):
-    def invoke_method(self, topic, payload, attributes):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
         future = Future()
         future.set_result(None)
         return future
@@ -170,14 +180,14 @@ class TestRpc(unittest.TestCase):
 
     def test_compose_happy_path(self):
         rpc_response = RpcMapper.map_response_to_result(
-            ReturnsNumber3().invoke_method(build_topic(), build_upayload(), build_uattributes()), Int32Value)
+            ReturnsNumber3().invoke_method(build_topic(), build_upayload(), build_calloptions()), Int32Value)
         mapped = rpc_response.map(lambda x: x.value + 5)
         self.assertTrue(rpc_response.isSuccess())
         self.assertEqual(8, mapped.successValue())
 
     def test_compose_that_returns_status(self):
         rpc_response = RpcMapper.map_response_to_result(
-            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             Int32Value)
         mapped = rpc_response.map(lambda x: x.value + 5)
         self.assertTrue(rpc_response.isFailure())
@@ -186,7 +196,7 @@ class TestRpc(unittest.TestCase):
 
     def test_compose_with_failure(self):
         rpc_response = RpcMapper.map_response_to_result(
-            ThatCompletesWithAnException().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            ThatCompletesWithAnException().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             Int32Value)
         mapped = rpc_response.map(lambda x: x.value + 5)
         self.assertTrue(rpc_response.isFailure())
@@ -195,14 +205,14 @@ class TestRpc(unittest.TestCase):
 
     def test_success_invoke_method_happy_flow_using_mapResponseToRpcResponse(self):
         rpc_response = RpcMapper.map_response_to_result(
-            HappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            HappyPath().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             CloudEvent)
         self.assertTrue(rpc_response.isSuccess())
         self.assertEqual(build_cloud_event(), rpc_response.successValue())
 
     def test_fail_invoke_method_when_invoke_method_returns_a_status_using_mapResponseToRpcResponse(self):
         rpc_response = RpcMapper.map_response_to_result(
-            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             CloudEvent)
         self.assertTrue(rpc_response.isFailure())
         self.assertEqual(UCode.INVALID_ARGUMENT, rpc_response.failureValue().code)
@@ -210,7 +220,7 @@ class TestRpc(unittest.TestCase):
 
     def test_fail_invoke_method_when_invoke_method_threw_an_exception_using_mapResponseToRpcResponse(self):
         rpc_response = RpcMapper.map_response_to_result(
-            ThatCompletesWithAnException().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            ThatCompletesWithAnException().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             CloudEvent)
         self.assertTrue(rpc_response.isFailure())
         self.assertEqual(UCode.UNKNOWN, rpc_response.failureValue().code)
@@ -218,24 +228,25 @@ class TestRpc(unittest.TestCase):
 
     def test_fail_invoke_method_when_invoke_method_returns_a_bad_proto_using_mapResponseToRpcResponse(self):
         rpc_response = RpcMapper.map_response_to_result(
-            ThatReturnsTheWrongProto().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            ThatReturnsTheWrongProto().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             CloudEvent)
         self.assertTrue(rpc_response.isFailure())
         self.assertEqual(UCode.UNKNOWN, rpc_response.failureValue().code)
-        self.assertEqual("Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. Expected [io.cloudevents.v1.CloudEvent]", rpc_response.failureValue().message)
+        self.assertEqual(
+            "Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. Expected ["
+            "io.cloudevents.v1.CloudEvent]",
+            rpc_response.failureValue().message)
 
     def test_success_invoke_method_happy_flow_using_mapResponse(self):
         rpc_response = RpcMapper.map_response(
-            HappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            HappyPath().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             CloudEvent)
         self.assertEqual(build_cloud_event(), rpc_response.result())
 
     def test_fail_invoke_method_when_invoke_method_returns_a_status_using_mapResponse(self):
         rpc_response = RpcMapper.map_response(
-            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_uattributes()),
+            WithUStatusCodeInsteadOfHappyPath().invoke_method(build_topic(), build_upayload(), build_calloptions()),
             CloudEvent)
-        exception=RuntimeError("Unknown payload type [type.googleapis.com/uprotocol.v1.UStatus]. Expected [CloudEvent]")
-        self.assertEqual(str(exception),str(rpc_response.exception()))
-
-
-
+        exception = RuntimeError(
+            "Unknown payload type [type.googleapis.com/uprotocol.v1.UStatus]. Expected [CloudEvent]")
+        self.assertEqual(str(exception), str(rpc_response.exception()))

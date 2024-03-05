@@ -28,7 +28,7 @@
 import unittest
 
 from uprotocol.proto.uri_pb2 import UEntity, UUri, UAuthority, UResource
-from uprotocol.uri.builder.uresource_builder import UResourceBuilder
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
 

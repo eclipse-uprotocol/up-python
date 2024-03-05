@@ -24,22 +24,23 @@
 
 # -------------------------------------------------------------------------
 
-
 from abc import ABC, abstractmethod
+from concurrent.futures import Future
 
 from uprotocol.proto.umessage_pb2 import UMessage
 
-
-class UListener(ABC):
-    """
-    For any implementation that defines some kind of callback or function that will be called to handle incoming
-    messages.
-    """
-
+class URpcListener(ABC):
+    '''
+    uService (servers) implement this to receive requests messages from clients. <br>
+    The service must implement the onReceive(UMessage, CompletableFuture) method to handle
+    the request and then complete the future passed to the method that triggers the uLink library to
+    send (over the transport) the response.
+    '''
+    
     @abstractmethod
-    def on_receive(self, umsg: UMessage) -> None:
-        """
-        Method called to handle/process messages.<br><br>
-        @param umsg: UMessage to be sent.
-        """
+    def on_receive(message: UMessage, response_future: Future) -> None:
+        '''
+        Method called to handle/process events.
+        @param message Message received.
+        '''
         pass

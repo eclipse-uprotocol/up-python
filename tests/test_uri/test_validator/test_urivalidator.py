@@ -333,7 +333,7 @@ class TestUriValidator(unittest.TestCase):
             self.assertTrue(status.is_success)
 
     def test_valid_rpc_response_uri(self):
-        uuri = UUri(entity=UEntity(name="neelam"),resource=UResource(name="rpc",id=19999))
+        uuri = UUri(entity=UEntity(name="neelam"),resource=UResource(name="rpc",id=0,instance="response"))
         status = UriValidator.validate_rpc_response(uuri)
         self.assertTrue(UriValidator.is_rpc_response(uuri))
         self.assertTrue(status.is_success)

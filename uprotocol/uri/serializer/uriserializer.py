@@ -60,7 +60,7 @@ class UriSerializer(ABC):
 
     def build_resolved(self, long_uri: str, micro_uri: bytes) -> UUri:
         """
-        Build a fully resolved {@link UUri} from the serialized long format and the serializes micro format.<br><br>
+        Build a fully resolved UUri from the serialized long format and the serializes micro format.<br><br>
         @param long_uri:UUri serialized as a Sting.
         @param micro_uri:UUri serialized as a byte[].
         @return:Returns a UUri object serialized from one of the forms.

@@ -29,8 +29,13 @@ import unittest
 from uprotocol.transport.builder.uattributesbuilder import UAttributesBuilder
 from uprotocol.proto.uattributes_pb2 import UPriority, UMessageType
 from uprotocol.proto.uri_pb2 import UUri, UAuthority, UEntity
-from uprotocol.uri.builder.uresource_builder import UResourceBuilder
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.uuid.factory.uuidfactory import Factories
+
+def build_source():
+    return UUri(authority=UAuthority(name="vcu.someVin.veh.ultifi.gm.com"),
+                entity=UEntity(name="petapp.ultifi.gm.com", version_major=1),
+                resource=UResourceBuilder.for_rpc_request(None))
 
 
 def build_sink():
@@ -46,7 +51,8 @@ def get_uuid():
 class TestUAttributesBuilder(unittest.TestCase):
 
     def test_publish(self):
-        builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1)
+        source = build_source()
+        builder = UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS1)
         self.assertIsNotNone(builder)
         attributes = builder.build()
         self.assertIsNotNone(attributes)
@@ -54,8 +60,9 @@ class TestUAttributesBuilder(unittest.TestCase):
         self.assertEqual(UPriority.UPRIORITY_CS1, attributes.priority)
 
     def test_notification(self):
+        source = build_source()
         sink = build_sink()
-        builder = UAttributesBuilder.notification(UPriority.UPRIORITY_CS1, sink)
+        builder = UAttributesBuilder.notification(source, sink, UPriority.UPRIORITY_CS1)
         self.assertIsNotNone(builder)
         attributes = builder.build()
         self.assertIsNotNone(attributes)
@@ -64,9 +71,10 @@ class TestUAttributesBuilder(unittest.TestCase):
         self.assertEqual(sink, attributes.sink)
 
     def test_request(self):
+        source = build_source()
         sink = build_sink()
         ttl = 1000
-        builder = UAttributesBuilder.request(UPriority.UPRIORITY_CS4, sink, ttl)
+        builder = UAttributesBuilder.request(source, sink, UPriority.UPRIORITY_CS4, ttl)
         self.assertIsNotNone(builder)
         attributes = builder.build()
         self.assertIsNotNone(attributes)
@@ -76,9 +84,10 @@ class TestUAttributesBuilder(unittest.TestCase):
         self.assertEqual(ttl, attributes.ttl)
 
     def test_response(self):
+        source = build_source()
         sink = build_sink()
         req_id = get_uuid()
-        builder = UAttributesBuilder.response(UPriority.UPRIORITY_CS6, sink, req_id)
+        builder = UAttributesBuilder.response(source, sink, UPriority.UPRIORITY_CS6, req_id)
         self.assertIsNotNone(builder)
         attributes = builder.build()
         self.assertIsNotNone(attributes)
@@ -89,7 +98,7 @@ class TestUAttributesBuilder(unittest.TestCase):
 
     def test_build(self):
         req_id = get_uuid()
-        builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token").withSink(
+        builder = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token").withSink(
             build_sink()).withPermissionLevel(2).withCommStatus(1).withReqId(req_id)
         attributes = builder.build()
         self.assertIsNotNone(attributes)
@@ -97,6 +106,7 @@ class TestUAttributesBuilder(unittest.TestCase):
         self.assertEqual(UPriority.UPRIORITY_CS1, attributes.priority)
         self.assertEqual(1000, attributes.ttl)
         self.assertEqual("test_token", attributes.token)
+        self.assertEqual(build_source(), attributes.source)
         self.assertEqual(build_sink(), attributes.sink)
         self.assertEqual(2, attributes.permission_level)
         self.assertEqual(1, attributes.commstatus)

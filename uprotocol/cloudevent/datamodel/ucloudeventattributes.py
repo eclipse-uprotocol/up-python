@@ -48,6 +48,7 @@ class UCloudEventAttributes:
         self.priority = priority
         self.ttl = ttl
         self.token = token
+        self.traceparent = None
 
     @staticmethod
     def empty():
@@ -65,7 +66,8 @@ class UCloudEventAttributes:
         building a CloudEvent.
         """
         return (self.hash is None or self.hash.isspace()) and (self.ttl is None) and (
-                    self.token is None or self.token.isspace()) and (self.priority is None or self.priority.isspace())
+                    self.token is None or self.token.isspace()) and (self.priority is None or self.priority.isspace()) and (
+                           self.traceparent is None or self.traceparent.isspace())
 
     def get_hash(self) -> str:
         """
@@ -102,14 +104,15 @@ class UCloudEventAttributes:
             return False
         return (
                 self.hash == other.hash and self.priority == other.priority and self.ttl == other.ttl and self.token
-                == other.token)
+                == other.token and self.traceparent == other.traceparent)
 
     def __hash__(self):
-        return hash((self.hash, self.priority, self.ttl, self.token))
+        return hash((self.hash, self.priority, self.ttl, self.token, self.traceparent))
 
     def __str__(self):
+        traceparent_string = f", traceparent='{self.traceparent}'" if self.traceparent else ""
         return f"UCloudEventAttributes{{hash='{self.hash}', priority={self.priority}," \
-               f" ttl={self.ttl}, token='{self.token}'}}"
+               f" ttl={self.ttl}, token='{self.token}'{traceparent_string}}}"
 
 
 class UCloudEventAttributesBuilder:
@@ -122,6 +125,7 @@ class UCloudEventAttributesBuilder:
         self.priority = None
         self.ttl = None
         self.token = None
+        self.traceparent = None
 
     def with_hash(self, hash_value: str):
         """
@@ -161,6 +165,16 @@ class UCloudEventAttributesBuilder:
         self.token = token
         return self
 
+
+    def with_traceparent(self, traceparent: str):
+        """
+        An identifier used to correlate observability across related events.
+        @param traceparent: identifier
+        @return Returns a traceparent attribute.
+        """
+        self.traceparent = traceparent
+        return self
+
     def build(self):
         """
         Construct the UCloudEventAttributes from the builder.<br><br>
@@ -172,5 +186,5 @@ class UCloudEventAttributesBuilder:
 if __name__ == "__main__":
     # Example usage:
     attributes = UCloudEventAttributesBuilder().with_hash("abc123").with_priority(UPriority.UPRIORITY_CS0).with_ttl(
-        1000).with_token("xyz456").build()
+        1000).with_token("xyz456").with_traceparent("123456").build()
     print(attributes)

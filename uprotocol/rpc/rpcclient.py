@@ -28,9 +28,9 @@
 from abc import ABC, abstractmethod
 from concurrent.futures import Future
 
-from uprotocol.proto.uattributes_pb2 import UAttributes
 from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.proto.upayload_pb2 import UPayload
+from uprotocol.rpc.calloptions import CallOptions
 
 
 class RpcClient(ABC):
@@ -45,13 +45,16 @@ class RpcClient(ABC):
     """
 
     @abstractmethod
-    def invoke_method(self, topic: UUri, payload: UPayload, attributes: UAttributes) -> Future:
+    def invoke_method(self, methodUri: UUri, request_payload: UPayload, options: CallOptions) -> Future:
         """
-        Support for RPC method invocation.<br><br>
-
-        @param topic: topic of the method to be invoked (i.e. the name of the API we are calling).
-        @param payload:The request message to be sent to the server.
-        @param attributes: metadata for the method invocation (i.e. priority, timeout, etc.)
+        API for clients to invoke a method (send an RPC request) and receive the response (the returned 
+        Future UMessage. <br>
+        Client will set method to be the URI of the method they want to invoke, 
+        payload to the request message, and attributes with the various metadata for the 
+        method invocation.
+        @param methodUri The method URI to be invoked, ex (long form): /example.hello_world/1/rpc.SayHello.
+        @param requestPayload The request message to be sent to the server.
+        @param options RPC method invocation call options, see CallOptions
         @return: Returns the CompletableFuture with the result or exception.
         """
         pass

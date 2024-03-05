@@ -85,21 +85,21 @@ class UAttributesValidator:
             return ValidationResult.success()
 
     @staticmethod
-    def is_expired(u_attributes: UAttributes):
-        """
-        Indication if the Payload with these UAttributes is expired.<br><br>
-        @param u_attributes:UAttributes with time to live value.
-        @return: Returns a  ValidationResult that is success meaning not expired or failed with a validation message or
-        expiration.
-        """
-        maybe_ttl = u_attributes.ttl
+    def is_expired(u_attributes: UAttributes) -> bool:
+        '''
+        Check the time-to-live attribute to see if it has expired. <br>
+        The message has expired when the current time is greater than the original UUID time
+        plus the ttl attribute.
+        @param uAttributes UAttributes with time to live value.
+        @return Returns a true if the original time plus the ttl is less than the current time
+        '''
+        ttl = u_attributes.ttl
         maybe_time = UUIDUtils.getTime(u_attributes.id)
 
-        ttl = maybe_ttl
-        if ttl <= 0:
-            return ValidationResult.success()
-        delta = int(time.time() * 1000)- maybe_time
-        return ValidationResult.failure("Payload is expired") if delta >= ttl else ValidationResult.success()
+        if not u_attributes.HasField('ttl') or maybe_time is None or ttl <=0:
+            return False
+    
+        return (maybe_time + ttl) < int(time.time() * 1000)
 
     @staticmethod
     def validate_ttl(attr: UAttributes) -> ValidationResult:

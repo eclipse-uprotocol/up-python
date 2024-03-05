@@ -24,34 +24,39 @@
 
 # -------------------------------------------------------------------------
 
+from uprotocol.proto.uri_pb2 import UEntity
+from uprotocol.proto.uprotocol_options_pb2 import UProtocolOptions
+from google.protobuf.descriptor_pb2 import ServiceDescriptorProto
 
-from uprotocol.proto.uri_pb2 import UResource
-
-
-class UResourceBuilder:
-    MAX_RPC_ID = 1000
-
-    @staticmethod
-    def for_rpc_response():
-        return UResource(name="rpc", instance="response", id=0)
+class UEntityFactory:
+    """
+    Factory for creating UEntity objects.
+    """
 
     @staticmethod
-    def for_rpc_request(method, id=None):
-        uresource = UResource(name="rpc")
-        if method is not None:
-            uresource.instance = method
+    def from_proto(descriptor: ServiceDescriptorProto) -> UEntity:
+        '''
+        Builds a UEntity for an protobuf generated code Service Descriptor.
+        @param descriptor The protobuf generated code Service Descriptor.
+        @return Returns a UEntity for an protobuf generated code Service Descriptor.
+        '''
+
+        if descriptor is None:
+            return UEntity()
+        
+        options = descriptor.options
+
+        uentity = UEntity()
+
+        name = options.getExtension(UProtocolOptions.name)
+        id = options.getExtension(UProtocolOptions.id)
+        version = options.getExtension(UProtocolOptions.version_major)
+        
+        if name is not None:
+            uentity.name = name
         if id is not None:
-            uresource.id = id
+            uentity.id = id
+        if version is not None:
+            uentity.version_major = version
 
-        return uresource
-
-    @staticmethod
-    def for_rpc_request_with_id(id):
-        return UResourceBuilder.for_rpc_request(None, id)
-
-    @staticmethod
-    def from_id(id):
-        if id is None:
-            raise ValueError("id cannot be None")
-
-        return UResourceBuilder.for_rpc_request_with_id(id) if id < UResourceBuilder.MAX_RPC_ID else UResource(id=id)
+        return uentity

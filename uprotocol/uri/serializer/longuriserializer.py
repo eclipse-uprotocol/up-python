@@ -44,7 +44,7 @@ class LongUriSerializer(UriSerializer):
 
     def serialize(self, uri: UUri) -> str:
         """
-        Support for serializing {@link UUri} objects into their String format.<br><br>
+        Support for serializing UUri objects into their String format.<br><br>
         @param uri: UUri object to be serialized to the String format.
         @return:Returns the String format of the supplied UUri that can be used as a sink or a source in a
         uProtocol publish communication.
@@ -197,6 +197,8 @@ class LongUriSerializer(UriSerializer):
             u_resource.instance = resource_instance
         if resource_message is not None:
             u_resource.message = resource_message
+        if "rpc" in resource_name and resource_instance is not None and "response" in resource_instance:
+            u_resource.id = 0
 
         return u_resource
 

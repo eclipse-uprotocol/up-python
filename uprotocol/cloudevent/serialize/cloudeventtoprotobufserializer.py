@@ -26,7 +26,9 @@
 
 from cloudevents.http import CloudEvent
 
-from uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
+from uprotocol.cloudevent.serialize.cloudeventserializer import (
+    CloudEventSerializer,
+)
 from uprotocol.cloudevent import cloudevents_pb2
 
 
@@ -42,15 +44,14 @@ class CloudEventToProtobufSerializer(CloudEventSerializer):
     def serialize(self, http_event: CloudEvent) -> bytes:
         proto_event = cloudevents_pb2.CloudEvent()
         # Set required attributes
-        proto_event.id = http_event['id']
-        proto_event.source = http_event['source']
-        proto_event.spec_version = http_event['specversion']
-        proto_event.type = http_event['type']
-
+        proto_event.id = http_event["id"]
+        proto_event.source = http_event["source"]
+        proto_event.spec_version = http_event["specversion"]
+        proto_event.type = http_event["type"]
 
         # Set optional & extension attributes
         for key, value in http_event.get_attributes().items():
-            if key not in ['specversion', 'id', 'source', 'type',  'data']:
+            if key not in ["specversion", "id", "source", "type", "data"]:
                 attribute_value = proto_event.attributes[key]
                 if isinstance(value, bool):
                     attribute_value.ce_boolean = value
@@ -74,29 +75,31 @@ class CloudEventToProtobufSerializer(CloudEventSerializer):
         proto_event = cloudevents_pb2.CloudEvent()
         proto_event.ParseFromString(bytes_data)
 
-        json_attributes = {"id": proto_event.id, "source": proto_event.source, "type": proto_event.type,
-                           "specversion": proto_event.spec_version}
-
-
+        json_attributes = {
+            "id": proto_event.id,
+            "source": proto_event.source,
+            "type": proto_event.type,
+            "specversion": proto_event.spec_version,
+        }
 
         # Set optional & extension attributes
         for key in proto_event.attributes:
-            if key not in ['specversion', 'id', 'source', 'type', 'data']:
+            if key not in ["specversion", "id", "source", "type", "data"]:
                 attribute_value = proto_event.attributes[key]
-                if attribute_value.HasField('ce_boolean'):
+                if attribute_value.HasField("ce_boolean"):
                     json_attributes[key] = attribute_value.ce_boolean
-                elif attribute_value.HasField('ce_integer'):
+                elif attribute_value.HasField("ce_integer"):
                     json_attributes[key] = attribute_value.ce_integer
-                elif attribute_value.HasField('ce_string'):
+                elif attribute_value.HasField("ce_string"):
                     json_attributes[key] = attribute_value.ce_string
-                elif attribute_value.HasField('ce_bytes'):
+                elif attribute_value.HasField("ce_bytes"):
                     json_attributes[key] = attribute_value.ce_bytes
 
         # Set data
         data = bytearray()
-        if proto_event.HasField('binary_data'):
+        if proto_event.HasField("binary_data"):
             data = proto_event.binary_data
-        elif proto_event.HasField('text_data'):
+        elif proto_event.HasField("text_data"):
             data = proto_event.text_data
 
         cloud_event = CloudEvent(json_attributes, data)

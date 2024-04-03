@@ -32,6 +32,7 @@ from uprotocol.transport.ulistener import UListener
 from uprotocol.proto.ustatus_pb2 import UStatus
 from uprotocol.proto.umessage_pb2 import UMessage
 
+
 class UTransport(ABC):
     """
     UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive
@@ -54,7 +55,7 @@ class UTransport(ABC):
         """
         Register UListener for UUri topic to be called when a message is received.
         @param topic UUri to listen for messages from.
-        @param listener The UListener that will be execute when the message is 
+        @param listener The UListener that will be execute when the message is
         received on the given UUri.
         @return Returns UStatus with UCode.OK if the listener is registered
         correctly, otherwise it returns with the appropriate failure.

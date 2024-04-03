@@ -23,10 +23,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
+from google.protobuf.descriptor import ServiceDescriptor
+from google.protobuf.descriptor_pb2 import ServiceOptions
 
 from uprotocol.proto.uri_pb2 import UEntity
-from uprotocol.proto.uprotocol_options_pb2 import UProtocolOptions
-from google.protobuf.descriptor_pb2 import ServiceDescriptorProto
+from uprotocol.proto.uprotocol_options_pb2 import name as Name
+from uprotocol.proto.uprotocol_options_pb2 import (
+    version_major as Version_Major,
+)
+from uprotocol.proto.uprotocol_options_pb2 import (
+    version_minor as Version_Minor,
+)
+from uprotocol.proto.uprotocol_options_pb2 import id as Id
+
 
 class UEntityFactory:
     """
@@ -34,29 +43,25 @@ class UEntityFactory:
     """
 
     @staticmethod
-    def from_proto(descriptor: ServiceDescriptorProto) -> UEntity:
-        '''
-        Builds a UEntity for an protobuf generated code Service Descriptor.
-        @param descriptor The protobuf generated code Service Descriptor.
-        @return Returns a UEntity for an protobuf generated code Service Descriptor.
-        '''
-
-        if descriptor is None:
+    def from_proto(service_descriptor: ServiceDescriptor):
+        if service_descriptor is None:
             return UEntity()
-        
-        options = descriptor.options
+
+        options: ServiceOptions = service_descriptor.GetOptions()
+
+        name: str = options.Extensions[Name]
+        version_major: int = options.Extensions[Version_Major]
+        version_minor: int = options.Extensions[Version_Minor]
+        id: int = options.Extensions[Id]
 
         uentity = UEntity()
-
-        name = options.getExtension(UProtocolOptions.name)
-        id = options.getExtension(UProtocolOptions.id)
-        version = options.getExtension(UProtocolOptions.version_major)
-        
         if name is not None:
             uentity.name = name
+        if version_major is not None:
+            uentity.version_major = version_major
+        if version_minor is not None:
+            uentity.version_minor = version_minor
         if id is not None:
             uentity.id = id
-        if version is not None:
-            uentity.version_major = version
 
         return uentity

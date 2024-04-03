@@ -31,15 +31,3 @@ uri: UUri = UUri(
 status : ValidationResult = UriValidator.validate_rpc_method(uuri)
 assertTrue(status.is_success());
 ----
-
-=== Serializing & Deserializing
-[,python]
-----
-        uri = .../* UUri example above */
-        micro = MicroUriSerializer().serialize(uri)
-        long = LongUriSerializer().serialize(uri)
-        deserialized_micro_uuri = MicroUriSerializer().deserialize(uri)
-        deserialized_long_uuri = LongUriSerializer().deserialize(uri)
-        uri2 = UriSerializer.build_resolved(long, micro)
-
-----

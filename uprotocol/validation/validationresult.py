@@ -30,10 +30,10 @@ from abc import ABC, abstractmethod
 from uprotocol.proto.ustatus_pb2 import UCode, UStatus
 
 
-
 class ValidationResult(ABC):
     """
-    Class wrapping a ValidationResult of success or failure wrapping the value of a UStatus.
+    Class wrapping a ValidationResult of success or failure wrapping the value
+    of a UStatus.
     """
     STATUS_SUCCESS = UStatus(code=UCode.OK, message="OK")
 

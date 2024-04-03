@@ -41,6 +41,23 @@ class TestUCloudEventAttributes(unittest.TestCase):
         expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}"
         self.assertEqual(expected, str(u_cloud_event_attributes))
 
+    def test_create_valid_with_blank_traceparent(self):
+        u_cloud_event_attributes = UCloudEventAttributesBuilder().with_hash("somehash").with_priority(
+            UPriority.UPRIORITY_CS1).with_ttl(3).with_token("someOAuthToken").with_traceparent(" ").build()
+        self.assertTrue(u_cloud_event_attributes.get_hash() is not None)
+        self.assertEqual("somehash", u_cloud_event_attributes.get_hash())
+        self.assertFalse(u_cloud_event_attributes.get_traceparent() is not None)
+
+    def test_create_empty_with_only_traceparent(self):
+        u_cloud_event_attributes = UCloudEventAttributesBuilder().with_traceparent("someTraceParent").build()
+        self.assertFalse(u_cloud_event_attributes.get_hash() is not None)
+        self.assertFalse(u_cloud_event_attributes.get_priority() is not None)
+        self.assertFalse(u_cloud_event_attributes.get_token() is not None)
+        self.assertFalse(u_cloud_event_attributes.get_ttl() is not None)
+        self.assertTrue(u_cloud_event_attributes.get_traceparent() is not None)
+        self.assertFalse(u_cloud_event_attributes.is_empty())
+        self.assertEqual("someTraceParent", u_cloud_event_attributes.get_traceparent())
+
     def test_create_valid(self):
         u_cloud_event_attributes = UCloudEventAttributesBuilder().with_hash("somehash").with_priority(
             UPriority.UPRIORITY_CS6).with_ttl(3).with_token("someOAuthToken").build()

@@ -27,23 +27,36 @@
 
 import unittest
 
-from uprotocol.cloudevent.datamodel.ucloudeventattributes import UCloudEventAttributesBuilder
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
+    UCloudEventAttributesBuilder,
+)
 from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
-from uprotocol.cloudevent.serialize.base64protobufserializer import Base64ProtobufSerializer
-from uprotocol.cloudevent.serialize.cloudeventserializers import CloudEventSerializers
+from uprotocol.cloudevent.serialize.base64protobufserializer import (
+    Base64ProtobufSerializer,
+)
+from uprotocol.cloudevent.serialize.cloudeventserializers import (
+    CloudEventSerializers,
+)
 
 
 class TestBase64ProtobufSerializer(unittest.TestCase):
 
     def test_deserialize_bytes_to_string(self):
-        ce = CloudEventFactory.build_base_cloud_event("hello", "http://localhost", bytearray(), "",
-                                                      UCloudEventAttributesBuilder().build(), "example.vertx")
+        ce = CloudEventFactory.build_base_cloud_event(
+            "hello",
+            "http://localhost",
+            bytearray(),
+            "",
+            UCloudEventAttributesBuilder().build(),
+            "example.vertx",
+        )
         ce.__delitem__("time")
         bytes_data = CloudEventSerializers.PROTOBUF.serializer().serialize(ce)
         payload = Base64ProtobufSerializer().deserialize(bytes_data)
         self.assertEqual(
             "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4",
-            payload)
+            payload,
+        )
 
     def test_deserialize_bytes_to_string_when_bytes_is_null(self):
         payload = Base64ProtobufSerializer().deserialize(None)
@@ -54,11 +67,20 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         self.assertEqual("", payload)
 
     def test_serialize_string_into_bytes(self):
-        json_str = "eyJzcGVjdmVyc2lvbiI6ICIxLjAiLCAiaWQiOiAiaGVsbG8iLCAic291cmNlIjogImh0dHA6Ly9sb2NhbGhvc3QiLCAidHlwZSI6ICJleGFtcGxlLnZlcnR4IiwgImRhdGFfYmFzZTY0IjogIiJ9"
+        json_str = (
+            "eyJzcGVjdmVyc2lvbiI6ICIxLjAiLCAiaWQiOiAiaGVsbG8iLCAic2"
+            + "91cmNlIjogImh0dHA6Ly9sb2NhbGhvc3QiLCAidHlwZSI6ICJleGFtcGxlLnZlcnR4IiwgImRhdGFfYmFzZTY0IjogIiJ9"
+        )
         bytes_json = Base64ProtobufSerializer().serialize(json_str)
 
-        ce = CloudEventFactory.build_base_cloud_event("hello", "http://localhost", bytearray(), "",
-                                                      UCloudEventAttributesBuilder().build(), "example.vertx")
+        ce = CloudEventFactory.build_base_cloud_event(
+            "hello",
+            "http://localhost",
+            bytearray(),
+            "",
+            UCloudEventAttributesBuilder().build(),
+            "example.vertx",
+        )
         ce.__delitem__("time")
 
         bytes_data = CloudEventSerializers.JSON.serializer().serialize(ce)
@@ -69,9 +91,9 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         self.assertEqual(bytearray(), bytes_data)
 
     def test_serialize_string_into_bytes_when_string_is_empty(self):
-        bytes_data = Base64ProtobufSerializer().serialize('')
+        bytes_data = Base64ProtobufSerializer().serialize("")
         self.assertEqual(bytearray(), bytes_data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

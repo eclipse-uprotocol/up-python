@@ -24,41 +24,49 @@
 
 # -------------------------------------------------------------------------
 
-import typing
+from typing import Optional, Type
 
 from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
 from google.protobuf.any_pb2 import Any
-from google.protobuf import message
+from google.protobuf.message import Message
+
 
 class UPayloadBuilder:
-    
-    def pack_to_any(message: message) -> UPayload:
-        '''
-        Build a uPayload from google.protobuf.Message by stuffing the message into an Any. 
+
+    @staticmethod
+    def pack_to_any(message: Message) -> UPayload:
+        """
+        Build a uPayload from google.protobuf.Message by stuffing the message into an Any.
         @param message the message to pack
-        @return the UPayload 
-        '''
+        @return the UPayload
+        """
         any_message = Any()
         any_message.Pack(message)
-        return UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
-                           value=any_message.SerializeToString())
-    
-    def pack(message: message) -> UPayload:
-        '''
+        return UPayload(
+            format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
+            value=any_message.SerializeToString(),
+        )
+
+    @staticmethod
+    def pack(message: Message) -> UPayload:
+        """
         Build a uPayload from google.protobuf.Message using protobuf PayloadFormat.
         @param message the message to pack
         @return the UPayload
-        '''
-        return UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
-                           value=message.SerializeToString())
+        """
+        return UPayload(
+            format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
+            value=message.SerializeToString(),
+        )
 
-    def unpack(payload: UPayload, clazz: typing.Type) -> typing.Type:
-        '''
+    @staticmethod
+    def unpack(payload: UPayload, clazz: Type[Message]) -> Optional[Message]:
+        """
         Unpack a uPayload into a google.protobuf.Message.
         @param payload the payload to unpack
         @param clazz the class of the message to unpack
         @return the unpacked message
-        '''
+        """
         if payload is None or payload.value is None:
             return None
         try:
@@ -66,7 +74,10 @@ class UPayloadBuilder:
                 message = clazz()
                 message.ParseFromString(payload.value)
                 return message
-            elif payload.format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY:
+            elif (
+                payload.format
+                == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
+            ):
                 any_message = Any()
                 any_message.ParseFromString(payload.value)
                 message = clazz()
@@ -74,5 +85,5 @@ class UPayloadBuilder:
                 return message
             else:
                 return None
-        except:
+        except Exception:
             return None

@@ -30,12 +30,13 @@ from typing import TypeVar, Generic
 
 from uprotocol.proto.uuid_pb2 import UUID
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class UuidSerializer(ABC, Generic[T]):
     """
-    UUID Serializer interface used to serialize/deserialize UUIDs to/from either Long (string) or micro (bytes) form
+    UUID Serializer interface used to serialize/deserialize UUIDs
+    to/from either Long (string) or micro (bytes) form
     """
 
     @abstractmethod
@@ -43,7 +44,8 @@ class UuidSerializer(ABC, Generic[T]):
         """
         Deserialize from the format to a UUID.
         :param uuid: Serialized UUID.
-        :return: Returns a UUID object from the serialized format from the wire.
+        :return: Returns a UUID object from the
+        serialized format from the wire.
         """
         pass  # Implement your deserialization logic here
 

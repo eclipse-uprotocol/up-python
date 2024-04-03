@@ -34,7 +34,7 @@ from git import Repo
 
 REPO_URL = "https://github.com/eclipse-uprotocol/up-core-api.git"
 PROTO_REPO_DIR = os.path.abspath("../target")
-TAG_NAME = "uprotocol-core-api-1.5.6"
+TAG_NAME = "uprotocol-core-api-1.5.7"
 PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/proto")
 
 
@@ -44,7 +44,7 @@ def clone_or_pull(repo_url, PROTO_REPO_DIR):
         print(f"Repository cloned successfully from {repo_url} to {PROTO_REPO_DIR}")
         # Checkout the specific tag
         repo.git.checkout(TAG_NAME)
-    except git.exc.GitCommandError as clone_error:
+    except git.exc.GitCommandError:
         try:
             git_pull_command = ["git", "pull", "origin", TAG_NAME]
             subprocess.run(git_pull_command, cwd=PROTO_REPO_DIR, check=True)

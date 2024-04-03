@@ -26,7 +26,7 @@
 
 
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
@@ -61,7 +61,7 @@ class TestUuidValidator(unittest.TestCase):
         )
 
     def test_invalid_time_uuid(self):
-        epoch_time = datetime.utcfromtimestamp(0).replace(tzinfo=timezone.utc)
+        epoch_time = datetime.fromtimestamp(0, UTC)
 
         uuid = Factories.UPROTOCOL.create(
             epoch_time
@@ -102,7 +102,7 @@ class TestUuidValidator(unittest.TestCase):
 
         validator = UuidValidator.get_validator(uuid)
         self.assertIsNotNone(validator)
-        self.assertTrue(UUIDUtils.isUuidv6(uuid))
+        self.assertTrue(UUIDUtils.is_uuidv6(uuid))
         self.assertEqual(UCode.OK, validator.validate(uuid).code)
 
     def test_uuidv6_with_invalid_uuid(self):

@@ -42,11 +42,7 @@ class UResourceBuilder:
         return UResource(name="rpc", instance="response", id=0)
 
     @multimethod
-    def for_rpc_request(method: Union[str, None]):
-        return UResourceBuilder.for_rpc_request(method, None)
-
-    @multimethod
-    def for_rpc_request(method: Union[str, None], id: Union[int, None] = None):
+    def for_rpc_request(method: Union[str, None], id: int = None):
         uresource = UResource(name="rpc")
         if method is not None:
             uresource.instance = method
@@ -57,8 +53,6 @@ class UResourceBuilder:
 
     @multimethod
     def for_rpc_request(id: int):
-        if id is None:
-            raise ValueError("id cannot be None")
         return UResourceBuilder.for_rpc_request(None, id)
 
     @staticmethod

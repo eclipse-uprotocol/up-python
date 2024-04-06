@@ -156,15 +156,6 @@ class UriValidator:
             )
         )
 
-    @multimethod
-    def is_rpc_method(resource: None) -> bool:
-        """
-        Returns false if input is None.
-        @param resource: None
-        @return Returns false.
-        """
-        return False
-
     @staticmethod
     def is_resolved(uri: UUri) -> bool:
 

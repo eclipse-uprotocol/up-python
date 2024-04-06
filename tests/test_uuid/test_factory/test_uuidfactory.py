@@ -25,7 +25,7 @@
 # -------------------------------------------------------------------------
 
 
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 import unittest
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
 from uprotocol.uuid.serializer.microuuidserializer import MicroUuidSerializer
@@ -246,7 +246,9 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertTrue(uuid1 == UUID())
 
     def test_create_uprotocol_uuid_in_the_past(self):
-        past = datetime.now(UTC) - timedelta(seconds=10)
+        now = datetime.now()
+        past = now - timedelta(seconds=10)
+        past = past.replace(tzinfo=timezone.utc)
         uuid = Factories.UPROTOCOL.create(past)
         time = UUIDUtils.get_time(uuid)
         self.assertTrue(UUIDUtils.is_uprotocol(uuid))

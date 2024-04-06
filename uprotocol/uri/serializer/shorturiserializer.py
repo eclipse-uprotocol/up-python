@@ -76,7 +76,6 @@ class ShortUriSerializer(UriSerializer):
                         convert_packed_ipaddr_to_string(authority.ip)
                     )
                 except Exception:
-                    print("in exception")
                     return ""
             elif uri.authority.HasField("id"):
                 string_builder.append("//")

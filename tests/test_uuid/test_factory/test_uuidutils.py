@@ -33,7 +33,7 @@ from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 
 from uprotocol.proto.uattributes_pb2 import UAttributes, UPriority
-from uprotocol.proto.uri_pb2 import UUri, UEntity, UAuthority
+from uprotocol.proto.uri_pb2 import UUri, UEntity, UAuthority, UResource
 from uprotocol.proto.uuid_pb2 import UUID
 
 
@@ -45,7 +45,7 @@ def build_source():
     return UUri(
         authority=UAuthority(name="vcu.someVin.veh.ultifi.gm.com"),
         entity=UEntity(name="petapp.ultifi.gm.com", version_major=1),
-        resource=UResourceBuilder.for_rpc_request(None),
+        resource=UResource(name="door", instance="front_left", message="Door"),
     )
 
 

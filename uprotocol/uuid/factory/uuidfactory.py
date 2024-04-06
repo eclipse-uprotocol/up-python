@@ -1,9 +1,5 @@
 # -------------------------------------------------------------------------
-import hashlib
-import random
-import struct
-from datetime import datetime
-# Copyright (c) 2023 General Motors GTO LLC
+# Copyright (c) 2024 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -22,16 +18,17 @@ from datetime import datetime
 # specific language governing permissions and limitations
 # under the License.
 # SPDX-FileType: SOURCE
-# SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+# SPDX-FileCopyrightText: 2024 General Motors GTO LLC
 # SPDX-License-Identifier: Apache-2.0
 
 # -------------------------------------------------------------------------
 
 
-from enum import Enum
+import random
+from datetime import datetime
 
 from uprotocol.proto.uuid_pb2 import UUID
-from uprotocol.uuid.factory import *
+from uprotocol.uuid.factory import uuid6
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 
 
@@ -55,12 +52,17 @@ class UUIDv6Factory(UUIDFactory):
 
 
 class UUIDv8Factory(UUIDFactory):
-    MAX_COUNT = 0xfff
-    _lsb = (random.getrandbits(63) & 0x3fffffffffffffff) | 0x8000000000000000
+    MAX_COUNT = 0xFFF
+    _lsb = (random.getrandbits(63) & 0x3FFFFFFFFFFFFFFF) | 0x8000000000000000
     UUIDV8_VERSION = 8
     _msb = UUIDV8_VERSION << 12
+
     def _create(self, instant) -> UUID:
-        time = int(instant.timestamp() * 1000) if instant else int(datetime.now().timestamp() * 1000)
+        time = (
+            int(instant.timestamp() * 1000)
+            if instant
+            else int(datetime.now().timestamp() * 1000)
+        )
 
         if time == (self._msb >> 16):
             if (self._msb & 0xFFF) < self.MAX_COUNT:
@@ -72,6 +74,6 @@ class UUIDv8Factory(UUIDFactory):
         # return UUID(msb=msb, lsb=lsb)
 
 
-class Factories():
+class Factories:
     UUIDV6 = UUIDv6Factory()
     UPROTOCOL = UUIDv8Factory()

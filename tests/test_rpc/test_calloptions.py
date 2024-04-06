@@ -27,54 +27,40 @@
 
 import unittest
 
-from uprotocol.rpc.calloptions import CallOptions, CallOptionsBuilder
+from uprotocol.proto.uattributes_pb2 import CallOptions
 
 
 class TestCallOptions(unittest.TestCase):
 
-    def test_hash_code_equals(self):
-        call_options = CallOptionsBuilder().build()
-        self.assertEqual(hash(call_options), hash(call_options))
-
     def test_to_string(self):
-        call_options = CallOptionsBuilder().with_timeout(30).with_token("someToken").build()
-        expected = "CallOptions{mTimeout=30, mToken='someToken'}"
-        self.assertEqual(expected, str(call_options))
-
-    def test_creating_call_options_default(self):
-        call_options = CallOptionsBuilder.DEFAULT
-        self.assertEqual(CallOptions.TIMEOUT_DEFAULT, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() is None or call_options.get_token() == "")
+        call_options = CallOptions(ttl=30, token="someToken")
+        self.assertEqual(30, call_options.ttl)
+        self.assertEqual("someToken", call_options.token)
 
     def test_creating_call_options_with_a_token(self):
-        call_options = CallOptionsBuilder().with_token("someToken").build()
-        self.assertEqual(CallOptions.TIMEOUT_DEFAULT, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() == "someToken")
+        call_options = CallOptions(token="someToken")
+        self.assertTrue(call_options.HasField("token"))
+        self.assertTrue(call_options.token == "someToken")
 
-    def test_creating_call_options_with_a_null_token(self):
-        call_options = CallOptionsBuilder().with_token(None).build()
-        self.assertEqual(CallOptions.TIMEOUT_DEFAULT, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() is None or call_options.get_token() == "")
+    def test_creating_call_options_without_token(self):
+        call_options = CallOptions()
+        self.assertFalse(call_options.HasField("token"))
+        self.assertEqual(0, call_options.ttl)
 
     def test_creating_call_options_with_an_empty_string_token(self):
-        call_options = CallOptionsBuilder().with_token("").build()
-        self.assertEqual(CallOptions.TIMEOUT_DEFAULT, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() is None or call_options.get_token() == "")
+        call_options = CallOptions(token="")
+        self.assertTrue(call_options.HasField("token"))
+        self.assertTrue(call_options.token == "")
 
     def test_creating_call_options_with_a_token_with_only_spaces(self):
-        call_options = CallOptionsBuilder().with_token("   ").build()
-        self.assertEqual(CallOptions.TIMEOUT_DEFAULT, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() is None or call_options.get_token().isspace())
+        call_options = CallOptions(token="   ")
+        self.assertTrue(call_options.HasField("token"))
+        self.assertTrue(call_options.token.strip() == "")
 
     def test_creating_call_options_with_a_timeout(self):
-        call_options = CallOptionsBuilder().with_timeout(30).build()
-        self.assertEqual(30, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() is None or call_options.get_token() == "")
-
-    def test_creating_call_options_with_a_negative_timeout(self):
-        call_options = CallOptionsBuilder().with_timeout(-3).build()
-        self.assertEqual(CallOptions.TIMEOUT_DEFAULT, call_options.get_timeout())
-        self.assertTrue(call_options.get_token() is None or call_options.get_token() == "")
+        call_options = CallOptions(ttl=30)
+        self.assertEqual(30, call_options.ttl)
+        self.assertTrue(call_options.token is None or call_options.token == "")
 
 
 if __name__ == '__main__':

@@ -33,7 +33,8 @@ from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 
 class LongUuidSerializer(UuidSerializer):
     """
-    UUID Serializer implementation used to serialize/deserialize UUIDs to/from a string
+    UUID Serializer implementation used to serialize/deserialize UUIDs to/from
+    a string
     """
 
     @staticmethod
@@ -44,15 +45,20 @@ class LongUuidSerializer(UuidSerializer):
         """
         Deserialize from the string format to a UUID.
         :param string_uuid: Serialized UUID in string format.
-        :return: Returns a UUID object from the serialized format from the wire.
+        :return: Returns a UUID object from the serialized format from the
+        wire.
         """
         if not string_uuid or string_uuid.isspace():
-            return UUID()  # Return default UUID if string is empty or whitespace
+            return (
+                UUID()
+            )  # Return default UUID if string is empty or whitespace
         try:
             msb, lsb = UUIDUtils.get_msb_lsb(PythonUUID(string_uuid))
             return UUID(msb=msb, lsb=lsb)
         except ValueError:
-            return UUID()  # Return default UUID in case of parsing failure
+            return (
+                UUID()
+            )  # Return default UUID in case of parsing failure
 
     def serialize(self, uuid: UUID) -> str:
         """
@@ -61,7 +67,9 @@ class LongUuidSerializer(UuidSerializer):
         :return: Returns the UUID in the string serialized format.
         """
         if uuid is None:
-            return ''
+            return ""
 
-        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
-        return str(pythonuuid) if uuid else ''
+        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(
+            uuid
+        )
+        return str(pythonuuid) if uuid else ""

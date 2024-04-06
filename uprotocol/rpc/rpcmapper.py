@@ -32,24 +32,30 @@ from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.proto.ustatus_pb2 import UStatus
 
 from uprotocol.rpc.rpcresult import RpcResult
-from uprotocol.proto.upayload_pb2 import UPayload
 
 
 class RpcMapper:
     """
-    RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with an RPC Response (
-    uP-L2). APIs that return Message assumes that the message is protobuf serialized com.google.protobuf.Any (
+    RPC Wrapper is an interface that provides static methods to be able to
+    wrap an RPC request with an RPC Response (
+    uP-L2). APIs that return Message assumes that the message is
+    protobuf serialized com.google.protobuf.Any (
     UMessageFormat.PROTOBUF) and will barf if anything else is passed
     """
 
     @staticmethod
     def map_response(message_future: Future, expected_cls):
         """
-         Map a response of CompletableFuture&lt;UMessage&gt; from Link into a CompletableFuture containing the
-         declared expected return type of the RPC method or an exception.<br><br>
-        @param response_future:CompletableFuture&lt;UMessage&gt; response from uTransport.
-        @param expected_cls:The class name of the declared expected return type of the RPC method.
-        @return:Returns a CompletableFuture containing the declared expected return type of the RPC method or an
+         Map a response of CompletableFuture&lt;UMessage&gt; from Link
+         into a CompletableFuture containing the
+         declared expected return type of the RPC method or an
+         exception.<br><br>
+        @param response_future:CompletableFuture&lt;UMessage&gt;
+        response from uTransport.
+        @param expected_cls:The class name of the declared expected
+        return type of the RPC method.
+        @return:Returns a CompletableFuture containing the declared
+        expected return type of the RPC method or an
         exception.
         """
         response_future: Future = Future()
@@ -57,22 +63,31 @@ class RpcMapper:
         def handle_response(message):
             nonlocal response_future
             message = message.result()
-            if not message or not message.HasField('payload'):
+            if not message or not message.HasField("payload"):
                 response_future.set_exception(
-                    RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}"))
-
+                    RuntimeError(
+                        f"Server returned a null payload. Expected {expected_cls.__name__}"
+                    )
+                )
+                return response_future
             try:
                 any_message = any_pb2.Any()
                 any_message.ParseFromString(message.payload.value)
                 if any_message.Is(expected_cls.DESCRIPTOR):
-                    response_future.set_result(RpcMapper.unpack_payload(any_message, expected_cls))
+                    response_future.set_result(
+                        RpcMapper.unpack_payload(any_message, expected_cls)
+                    )
                 else:
                     response_future.set_exception(
                         RuntimeError(
-                            f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"))
+                            f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"
+                        )
+                    )
 
             except Exception as e:
-                response_future.set_exception(RuntimeError(f"{str(e)} [{UStatus.__name__}]"))
+                response_future.set_exception(
+                    RuntimeError(f"{str(e)} [{UStatus.__name__}]")
+                )
 
         message_future.add_done_callback(handle_response)
 
@@ -92,12 +107,18 @@ class RpcMapper:
         def handle_response(message):
             if message.exception():
                 exception = message.exception()
-                return RpcResult.failure(value=exception, message=str(exception))
+                return RpcResult.failure(
+                    value=exception, message=str(exception)
+                )
 
             message = message.result()
-            if not message or not message.HasField('payload'):
-                exception = RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
-                return RpcResult.failure(value=exception, message=str(exception))
+            if not message or not message.HasField("payload"):
+                exception = RuntimeError(
+                    f"Server returned a null payload. Expected {expected_cls.__name__}"
+                )
+                return RpcResult.failure(
+                    value=exception, message=str(exception)
+                )
 
             try:
                 any_message = any_pb2.Any()
@@ -107,16 +128,21 @@ class RpcMapper:
                     if expected_cls == UStatus:
                         return RpcMapper.calculate_status_result(any_message)
                     else:
-                        return RpcResult.success(RpcMapper.unpack_payload(any_message, expected_cls))
+                        return RpcResult.success(
+                            RpcMapper.unpack_payload(any_message, expected_cls)
+                        )
 
                 if any_message.Is(UStatus.DESCRIPTOR):
                     return RpcMapper.calculate_status_result(any_message)
             except Exception as e:
                 exception = RuntimeError(f"{str(e)} [{UStatus.__name__}]")
-                return RpcResult.failure(value=exception, message=str(exception))
+                return RpcResult.failure(
+                    value=exception, message=str(exception)
+                )
 
             exception = RuntimeError(
-                f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.DESCRIPTOR.full_name}]")
+                f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.DESCRIPTOR.full_name}]"
+            )
             return RpcResult.failure(value=exception, message=str(exception))
 
         result = None  # Initialize result
@@ -131,7 +157,11 @@ class RpcMapper:
     @staticmethod
     def calculate_status_result(payload):
         status = RpcMapper.unpack_payload(payload, UStatus)
-        return RpcResult.success(status) if status.code == UCode.OK else RpcResult.failure(status)
+        return (
+            RpcResult.success(status)
+            if status.code == UCode.OK
+            else RpcResult.failure(status)
+        )
 
     @staticmethod
     def unpack_payload(payload, expected_cls):

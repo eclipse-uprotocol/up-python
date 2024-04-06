@@ -31,7 +31,7 @@ from typing import Callable, TypeVar, Union
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.proto.ustatus_pb2 import UStatus
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class RpcResult(ABC):
@@ -53,15 +53,15 @@ class RpcResult(ABC):
         pass
 
     @abstractmethod
-    def map(self, f: Callable[[T], T]) -> 'RpcResult':
+    def map(self, f: Callable[[T], T]) -> "RpcResult":
         pass
 
     @abstractmethod
-    def flatMap(self, f: Callable[[T], 'RpcResult']) -> 'RpcResult':
+    def flatMap(self, f: Callable[[T], "RpcResult"]) -> "RpcResult":
         pass
 
     @abstractmethod
-    def filter(self, f: Callable[[T], bool]) -> 'RpcResult':
+    def filter(self, f: Callable[[T], bool]) -> "RpcResult":
         pass
 
     @abstractmethod
@@ -73,16 +73,23 @@ class RpcResult(ABC):
         pass
 
     @staticmethod
-    def success(value: T) -> 'RpcResult':
+    def success(value: T) -> "RpcResult":
         return Success(value)
 
     @staticmethod
-    def failure(value: Union[UStatus,'Failure', Exception,] = None, code: UCode = UCode.UNKNOWN,
-                message: str = '') -> 'RpcResult':
+    def failure(
+        value: Union[
+            UStatus,
+            "Failure",
+            Exception,
+        ] = None,
+        code: UCode = UCode.UNKNOWN,
+        message: str = "",
+    ) -> "RpcResult":
         return Failure(value, code, message)
 
     @staticmethod
-    def flatten(result: 'RpcResult') -> 'RpcResult':
+    def flatten(result: "RpcResult") -> "RpcResult":
         return result.flatMap(lambda x: x)
 
 
@@ -115,7 +122,13 @@ class Success(RpcResult):
 
     def filter(self, f: Callable[[T], bool]) -> RpcResult:
         try:
-            return self if f(self.successValue()) else self.failure(code=UCode.FAILED_PRECONDITION, message="filtered out")
+            return (
+                self
+                if f(self.successValue())
+                else self.failure(
+                    code=UCode.FAILED_PRECONDITION, message="filtered out"
+                )
+            )
         except Exception as e:
             return self.failure(e)
 
@@ -131,7 +144,12 @@ class Success(RpcResult):
 
 class Failure(RpcResult):
 
-    def __init__(self, value: Union[UStatus,'Failure', Exception, None] = None, code: UCode = UCode.UNKNOWN, message: str = ''):
+    def __init__(
+        self,
+        value: Union[UStatus, "Failure", Exception, None] = None,
+        code: UCode = UCode.UNKNOWN,
+        message: str = "",
+    ):
         if isinstance(value, UStatus):
             self.value = value
         elif isinstance(value, Exception):

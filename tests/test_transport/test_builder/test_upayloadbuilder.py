@@ -159,6 +159,24 @@ class TestUPayloadBuilder(unittest.TestCase):
 
         self.assertEqual(original_msg, unpacked_msg)
 
+    def test_unpack_exception(self):
+        builder = self._create_upayload_builder()
+
+        original_msg: Message = Method(
+            name="name",
+            request_type_url="request_type_url",
+            response_type_url="response_type_url",
+            request_streaming=None,
+        )
+        upayload: UPayload = UPayload(
+            format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
+            value=b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        )
+
+        unpacked_msg: Method = builder.unpack(upayload, Method)
+
+        self.assertEqual(unpacked_msg, None)
+
     def test_unpack_given_upayload_proto_returns_any(self):
         builder = self._create_upayload_builder()
 

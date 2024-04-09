@@ -10,3 +10,4 @@ target
 #**/proto
 poetry.lock
 htmlcov
+coverage_report.txt

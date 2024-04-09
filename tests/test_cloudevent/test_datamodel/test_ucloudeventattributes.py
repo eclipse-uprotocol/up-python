@@ -98,6 +98,29 @@ class TestUCloudEventAttributes(unittest.TestCase):
         u_cloud_event_attributes5 = UCloudEventAttributesBuilder().with_ttl(8).build()
         self.assertFalse(u_cloud_event_attributes5.is_empty())
 
+    def test__eq__is_same(self):
+        u_cloud_event_attributes = UCloudEventAttributesBuilder().with_hash("  ").with_token("  ").build()
+        self.assertTrue(u_cloud_event_attributes.__eq__(u_cloud_event_attributes))
+
+    def test__eq__is_equal(self):
+        u_cloud_event_attributes_1 = UCloudEventAttributesBuilder().with_hash("  ").with_token("  ").build()
+        u_cloud_event_attributes_2 = UCloudEventAttributesBuilder().with_hash("  ").with_token("  ").build()
+        self.assertTrue(u_cloud_event_attributes_1.__eq__(u_cloud_event_attributes_2))
+    
+    def test__eq__is_not_equal(self):
+        u_cloud_event_attributes_1 = UCloudEventAttributesBuilder().with_hash("  ").with_token("  ").build()
+        u_cloud_event_attributes_2 = UCloudEventAttributesBuilder().with_hash("  ").with_token("12345").build()
+        self.assertFalse(u_cloud_event_attributes_1.__eq__(u_cloud_event_attributes_2))
+
+    def test__hash__same(self):
+        u_cloud_event_attributes_1 = UCloudEventAttributesBuilder().with_hash("  ").with_token("  ").build()
+        self.assertEqual(hash(u_cloud_event_attributes_1), hash(u_cloud_event_attributes_1))
+    
+    def test__hash__different(self):
+        u_cloud_event_attributes_1 = UCloudEventAttributesBuilder().with_hash("  ").with_token("  ").build()
+        u_cloud_event_attributes_2 = UCloudEventAttributesBuilder().with_hash("  ").with_token("12345").build()
+        self.assertNotEqual(hash(u_cloud_event_attributes_1), hash(u_cloud_event_attributes_2))
+    
 
 if __name__ == '__main__':
     unittest.main()

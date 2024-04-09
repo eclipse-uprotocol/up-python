@@ -88,6 +88,12 @@ class TestMicroUriSerializer(unittest.TestCase):
         self.assertEqual(str(uri), str(uri2))
         self.assertTrue(uri == uri2)
 
+    def test_serialize_bad_authority(self):
+        uri = UUri(authority=UAuthority(ip=b"123456789"),
+                   entity=UEntity(id=29999, version_major=254), resource=UResourceBuilder.for_rpc_request(99))
+        bytes_uuri = MicroUriSerializer().serialize(uri)
+        self.assertEqual(bytes_uuri, bytearray())
+
     def test_serialize_good_ipv6_based_authority(self):
         uri = UUri(authority=UAuthority(
             ip=socket.inet_pton(socket.AF_INET6, "2001:0db8:85a3:0000:0000:8a2e:0370:7334")),

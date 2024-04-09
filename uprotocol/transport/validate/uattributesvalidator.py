@@ -135,10 +135,7 @@ class UAttributesValidator:
         @return:Returns a  ValidationResult that is success or
         failed with a failure message.
         """
-        if attr.HasField("ttl") and attr.ttl <= 0:
-            return ValidationResult.failure(f"Invalid TTL [{attr.ttl}]")
-        else:
-            return ValidationResult.success()
+        return ValidationResult.success()
 
     @staticmethod
     def validate_sink(attr: UAttributes) -> ValidationResult:
@@ -300,10 +297,6 @@ class Request(UAttributesValidator):
         """
         if not attributes_value.HasField("ttl"):
             return ValidationResult.failure("Missing TTL")
-        if attributes_value.ttl <= 0:
-            return ValidationResult.failure(
-                f"Invalid TTL [{attributes_value.ttl}]"
-            )
 
         return ValidationResult.success()
 

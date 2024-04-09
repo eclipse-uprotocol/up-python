@@ -26,10 +26,12 @@
 
 import time
 import unittest
+import uuid
 
 from uprotocol.proto.uattributes_pb2 import UPriority
 from uprotocol.proto.uri_pb2 import UUri, UAuthority, UEntity
 from uprotocol.proto.uuid_pb2 import UUID
+from uprotocol.proto.uattributes_pb2 import UAttributes
 from uprotocol.transport.builder.uattributesbuilder import UAttributesBuilder
 from uprotocol.transport.validate.uattributesvalidator import (
     UAttributesValidator,
@@ -59,7 +61,7 @@ def build_source():
 
 class TestUAttributesValidator(unittest.TestCase):
 
-    def test_fetching_validator_for_valid_types(self):
+    def test_fetching_validator_for_publish_type(self):
         publish = UAttributesValidator.get_validator(
             UAttributesBuilder.publish(
                 build_source(), UPriority.UPRIORITY_CS0
@@ -67,6 +69,7 @@ class TestUAttributesValidator(unittest.TestCase):
         )
         self.assertEqual("UAttributesValidator.Publish", str(publish))
 
+    def test_fetching_validator_for_request_type(self):
         request = UAttributesValidator.get_validator(
             UAttributesBuilder.request(
                 build_source(), UUri(), UPriority.UPRIORITY_CS4, 1000
@@ -74,6 +77,7 @@ class TestUAttributesValidator(unittest.TestCase):
         )
         self.assertEqual("UAttributesValidator.Request", str(request))
 
+    def test_fetching_validator_for_response_type(self):
         response = UAttributesValidator.get_validator(
             UAttributesBuilder.response(
                 build_source(),
@@ -83,6 +87,18 @@ class TestUAttributesValidator(unittest.TestCase):
             ).build()
         )
         self.assertEqual("UAttributesValidator.Response", str(response))
+
+    def test_fetching_validator_for_notification_type(self):
+        response = UAttributesValidator.get_validator(
+            UAttributesBuilder.notification(
+                build_source(), UUri(), UPriority.UPRIORITY_CS4
+            ).build()
+        )
+        self.assertEqual("UAttributesValidator.Notification", str(response))
+
+    def test_fetching_validator_for_no_type(self):
+        response = UAttributesValidator.get_validator(UAttributes())
+        self.assertEqual("UAttributesValidator.Publish", str(response))
 
     def test_validate_uAttributes_for_publish_message_payload(self):
         attributes = UAttributesBuilder.publish(
@@ -461,12 +477,14 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual(ValidationResult.success(), status)
 
     # def test_validating_invalid_ReqId_attribute(self):
-    #     uuid_java = java.util.UUID.randomUUID()
-    #
-    #     attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).with_req_id(
-    #         UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits()).setLsb(uuid_java.getLeastSignificantBits())
-    #         .build()).build()
-    #
+    #     uuid_python = uuid.UUID('12345678123456781234567812345678')
+
+    #     attributes = (
+    #         UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0)
+    #         .withReqId(None)
+    #         .build()
+    #     )
+
     #     validator = Validators.PUBLISH.validator()
     #     status = validator.validate_req_id(attributes)
     #     self.assertTrue(status.is_failure())
@@ -482,6 +500,47 @@ class TestUAttributesValidator(unittest.TestCase):
         validator = Validators.PUBLISH.validator()
         status = validator.validate_req_id(attributes)
         self.assertEqual(ValidationResult.success(), status)
+
+    def test_validating_valid_type_attribute(self):
+        attributes = (
+            UAttributesBuilder.notification(build_source(), build_sink(), UPriority.UPRIORITY_CS0)
+            .withReqId(Factories.UPROTOCOL.create())
+            .build()
+        )
+
+        validator = Validators.NOTIFICATION.validator()
+        status = validator.validate_type(attributes)
+        self.assertEqual(ValidationResult.success(), status)
+
+    def test_validating_valid_sink_attribute(self):
+        attributes = (
+            UAttributesBuilder.notification(build_source(), build_sink(), UPriority.UPRIORITY_CS0)
+            .withReqId(Factories.UPROTOCOL.create())
+            .build()
+        )
+
+        validator = Validators.NOTIFICATION.validator()
+        status = validator.validate_sink(attributes)
+        self.assertEqual(ValidationResult.success(), status)
+
+    def test_validating_none_attribute(self):
+        attributes = None
+
+        validator = Validators.NOTIFICATION.validator()
+        status = validator.validate_sink(attributes)
+        self.assertEqual("UAttributes cannot be null.", status.get_message())
+
+    def test_validating_invalid_sink_attribute(self):
+        attributes = (
+            UAttributesBuilder.notification(build_source(), UUri(), UPriority.UPRIORITY_CS0)
+            .withReqId(Factories.UPROTOCOL.create())
+            .build()
+        )
+
+        validator = Validators.NOTIFICATION.validator()
+        status = validator.validate_sink(attributes)
+        self.assertEqual("Missing Sink", status.get_message())
+
 
     def test_validating_invalid_PermissionLevel_attribute(self):
         with self.assertRaises(ValueError) as context:

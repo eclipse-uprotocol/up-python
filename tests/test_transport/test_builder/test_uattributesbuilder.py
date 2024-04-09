@@ -134,6 +134,7 @@ class TestUAttributesBuilder(unittest.TestCase):
             .withPermissionLevel(2)
             .withCommStatus(UCode.CANCELLED)
             .withReqId(req_id)
+            .withTraceparent("test_traceparent")
         )
         attributes = builder.build()
         self.assertIsNotNone(attributes)
@@ -146,7 +147,92 @@ class TestUAttributesBuilder(unittest.TestCase):
         self.assertEqual(2, attributes.permission_level)
         self.assertEqual(UCode.CANCELLED, attributes.commstatus)
         self.assertEqual(req_id, attributes.reqid)
+        self.assertEqual("test_traceparent", attributes.traceparent)
 
+    def test_publish_source_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.publish(None, UPriority.UPRIORITY_CS1)
+            self.assertTrue("Source cannot be None." in context.exception)
+
+    def test_publish_priority_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.publish(build_source(), None)
+            self.assertTrue("UPriority cannot be null." in context.exception)
+
+    def test_notification_source_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.notification(
+                None, build_sink(), UPriority.UPRIORITY_CS1
+            )
+            self.assertTrue("Source cannot be None." in context.exception)
+
+    def test_notification_priority_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.notification(build_source(), build_sink(), None)
+            self.assertTrue("UPriority cannot be null." in context.exception)
+
+    def test_notification_sink_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.notification(
+                build_source(), None, UPriority.UPRIORITY_CS1
+            )
+            self.assertTrue("sink cannot be null." in context.exception)
+
+    def test_request_source_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(
+                None, build_sink(), UPriority.UPRIORITY_CS1, 1000
+            )
+            self.assertTrue("Source cannot be None." in context.exception)
+
+    def test_request_priority_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(
+                build_source(), build_sink(), None, 1000
+            )
+            self.assertTrue("UPriority cannot be null." in context.exception)
+
+    def test_request_sink_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(
+                build_source(), None, UPriority.UPRIORITY_CS1, 1000
+            )
+            self.assertTrue("sink cannot be null." in context.exception)
+
+    def test_request_ttl_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(
+                build_source(), build_sink(), UPriority.UPRIORITY_CS1, None
+            )
+            self.assertTrue("ttl cannot be null." in context.exception)
+
+    def test_response_priority_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(
+                build_source(), build_sink(), None, get_uuid()
+            )
+            self.assertTrue("UPriority cannot be null." in context.exception)
+
+    def test_response_sink_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(
+                build_source(), None, UPriority.UPRIORITY_CS1, get_uuid()
+            )
+            self.assertTrue("sink cannot be null." in context.exception)
+
+    def test_response_reqid_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(
+                build_source(), build_sink(), UPriority.UPRIORITY_CS1, None
+            )
+            self.assertTrue("reqid cannot be null." in context.exception)
+
+    def test_response_request_is_none(self):
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(
+                None
+            )
+            self.assertTrue("request cannot be null." in context.exception)
 
 if __name__ == "__main__":
     unittest.main()

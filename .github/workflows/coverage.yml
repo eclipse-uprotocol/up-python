@@ -1,7 +1,8 @@
 name: Python Test and Coverage
 
 on:
-  pull_request:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
@@ -10,77 +11,79 @@ jobs:
   test-and-coverage:
     name: Test with coverage
     runs-on: ubuntu-latest
-#    permissions:
-#      contents: write
-#      pull-requests: write
-#      repository-projects: write
-#      id-token: write
+    permissions:
+      pull-requests: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - run: |
+          git config --global user.name 'eclipse-uprotocol-bot'
+          git config --global user.email 'uprotocol-bot@eclipse.org'
 
-    - name: Set up Apache Maven Central
-      uses: actions/setup-java@v3
-      with: # configure settings.xml
-        distribution: 'temurin'
-        java-version: '11'
-        server-id: ossrh
-        server-username: OSSRH_USER
-        server-password: OSSRH_PASSWORD
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
+      - name: Set up Apache Maven Central
+        uses: actions/setup-java@v3
+        with: # configure settings.xml
+          distribution: 'temurin'
+          java-version: '11'
+          server-id: ossrh
+          server-username: OSSRH_USER
+          server-password: OSSRH_PASSWORD
 
-    - name: Install Poetry
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        poetry install
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install poetry
 
-    - name: Run prebuild script
-      run: |
-        cd scripts
-        # Run the script within the Poetry virtual environment
-        poetry run python pull_and_compile_protos.py
+      - name: Install dependencies
+        run: |
+          poetry install
 
-    - name: Run tests with coverage
-      run: |
-        poetry run coverage run --source=uprotocol --omit=uprotocol/proto/*,uprotocol/cloudevent/*_pb2.py,tests/*,*/__init__.py -m pytest
-        poetry run coverage report > coverage_report.txt
-        export COVERAGE_PERCENTAGE=$(awk '/TOTAL/{print $4}' coverage_report.txt)
-        echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV
-        echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
-        poetry run coverage html
+      - name: Run prebuild script
+        run: |
+          cd scripts
+          # Run the script within the Poetry virtual environment
+          poetry run python pull_and_compile_protos.py
+
+      - name: Run tests with coverage
+        run: |
+          poetry run coverage run --source=uprotocol --omit=uprotocol/proto/*,uprotocol/cloudevent/*_pb2.py,tests/*,*/__init__.py -m pytest
+          poetry run coverage report > coverage_report.txt
+          export COVERAGE_PERCENTAGE=$(awk '/TOTAL/{print $4}' coverage_report.txt)
+          echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV
+          echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
+          poetry run coverage html
 
 
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-report
-        path: htmlcov/
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: htmlcov/
 
-#    - name: Comment PR with coverage results
-#      uses: actions/github-script@v6
-#      with:
-#        script: |
-#          const COVERAGE_PERCENTAGE = process.env.COVERAGE_PERCENTAGE;;
-#          const COVERAGE_REPORT_PATH = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/`;
-#
-#           github.rest.issues.createComment({
-#            issue_number: context.issue.number,
-#            owner: context.repo.owner,
-#            repo: context.repo.repo,
-#            body: `
-#            Code coverage report is ready! :chart_with_upwards_trend:
-#
-#            - **Code Coverage Percentage:** ${COVERAGE_PERCENTAGE}
-#            - **Code Coverage Report:** [View Coverage Report](${COVERAGE_REPORT_PATH})
-#            `
-#            });
+      - name: Comment PR with coverage results
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN  }}
+
+          script: |
+            const COVERAGE_PERCENTAGE = process.env.COVERAGE_PERCENTAGE;;
+            const COVERAGE_REPORT_PATH = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/`;
+             github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `
+              Code coverage report is ready! :chart_with_upwards_trend:
+
+              - **Code Coverage Percentage:** ${COVERAGE_PERCENTAGE}
+              - **Code Coverage Report:** [View Coverage Report](${COVERAGE_REPORT_PATH})
+              `
+              });
           

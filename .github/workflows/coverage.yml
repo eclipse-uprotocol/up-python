@@ -1,8 +1,7 @@
 name: Python Test and Coverage
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+  pull_request:
     branches:
       - main
 
@@ -67,23 +66,36 @@ jobs:
           name: coverage-report
           path: htmlcov/
 
-      - name: Comment PR with coverage results
+      - name: Check code coverage
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN  }}
-
           script: |
-            const COVERAGE_PERCENTAGE = process.env.COVERAGE_PERCENTAGE;;
-            const COVERAGE_REPORT_PATH = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/`;
-             github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `
-              Code coverage report is ready! :chart_with_upwards_trend:
+            const COVERAGE_PERCENTAGE = process.env.COVERAGE_PERCENTAGE;
+            if (parseInt(COVERAGE_PERCENTAGE) < 95){
+              core.setFailed(`Coverage Percentage is less than 95%: ${COVERAGE_PERCENTAGE}`);
+            }else{
+              core.info(`Success`);
+              core.info(parseInt(COVERAGE_PERCENTAGE));
+            }
 
-              - **Code Coverage Percentage:** ${COVERAGE_PERCENTAGE}
-              - **Code Coverage Report:** [View Coverage Report](${COVERAGE_REPORT_PATH})
-              `
-              });
-          
+
+#      - name: Comment PR with coverage results
+#        uses: actions/github-script@v6
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN  }}
+#
+#          script: |
+#            const COVERAGE_PERCENTAGE = process.env.COVERAGE_PERCENTAGE;;
+#            const COVERAGE_REPORT_PATH = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/`;
+#             github.rest.issues.createComment({
+#              issue_number: context.issue.number,
+#              owner: context.repo.owner,
+#              repo: context.repo.repo,
+#              body: `
+#              Code coverage report is ready! :chart_with_upwards_trend:
+#
+#              - **Code Coverage Percentage:** ${COVERAGE_PERCENTAGE}
+#              - **Code Coverage Report:** [View Coverage Report](${COVERAGE_REPORT_PATH})
+#              `
+#              });
+#

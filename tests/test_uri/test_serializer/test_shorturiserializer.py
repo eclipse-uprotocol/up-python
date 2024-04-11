@@ -89,6 +89,10 @@ class ShortUriSerializerTest(unittest.TestCase):
         uri = ShortUriSerializer().deserialize("")
         self.assertEqual(uri, UUri())
 
+    def test_short_deserialize_uri_too_short(self):
+        uri = ShortUriSerializer().deserialize("1")
+        self.assertEqual(uri, UUri())
+
     def test_short_deserialize_uri_with_scheme_and_authority(self):
         uri = ShortUriSerializer().deserialize("up://mypc/1/1/1")
         self.assertTrue(uri.authority is not None)
@@ -234,6 +238,11 @@ class ShortUriSerializerTest(unittest.TestCase):
     ):
         uri = ShortUriSerializer().deserialize("//mypc/1/1/abc")
         self.assertEqual(uri.resource, UResource())
+
+    def test_parse_from_string_none(self):
+        with self.assertRaises(ValueError) as context:
+            ShortUriSerializer().parse_from_string(None)
+            self.assertTrue(" Resource must have a command name" in context.exception)
 
 
 if __name__ == "__main__":

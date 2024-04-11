@@ -25,6 +25,7 @@
 # -------------------------------------------------------------------------
 
 from multimethod import multimethod
+from typing import Union
 
 from uprotocol.proto.uattributes_pb2 import (
     UAttributes,
@@ -39,10 +40,12 @@ from uprotocol.uuid.factory.uuidfactory import Factories
 
 class UAttributesBuilder:
     """
-    Construct the UAttributesBuilder with the configurations that are required for every payload transport.
+    Construct the UAttributesBuilder with the configurations that are
+    required for every payload transport.
 
     @param id       Unique identifier for the message.
-    @param type     Message type such as Publish a state change, RPC request or RPC response.
+    @param type     Message type such as Publish a state change,
+    RPC request or RPC response.
     @param priority uProtocol Prioritization classifications.
     """
 
@@ -87,7 +90,8 @@ class UAttributesBuilder:
         @param source   Source address of the message.
         @param sink     The destination URI.
         @param priority The priority of the message.
-        @return Returns the UAttributesBuilder with the configured source, priority and sink.
+        @return Returns the UAttributesBuilder with the configured source,
+        priority and sink.
         """
         if source is None:
             raise ValueError("Source cannot be None.")
@@ -110,7 +114,8 @@ class UAttributesBuilder:
         @param sink     The destination URI.
         @param priority The priority of the message.
         @param ttl      The time to live in milliseconds.
-        @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
+        @return Returns the UAttributesBuilder with the configured
+        priority, sink and ttl.
         """
         if source is None:
             raise ValueError("Source cannot be None.")
@@ -133,14 +138,21 @@ class UAttributesBuilder:
         )
 
     @multimethod
-    def response(source: UUri, sink: UUri, priority: int, reqid: UUID):
+    def response(
+        source: Union[UUri, None],
+        sink: Union[UUri, None],
+        priority: Union[int, None],
+        reqid: Union[UUID, None],
+    ):
         """
         Construct a UAttributesBuilder for a response message.
         @param source   Source address of the message.
         @param sink     The destination URI.
         @param priority The priority of the message.
-        @param reqid    The original request UUID used to correlate the response to the request.
-        @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
+        @param reqid    The original request UUID used to correlate the
+        response to the request.
+        @return Returns the UAttributesBuilder with the configured priority,
+        sink and reqid.
         """
         if priority is None:
             raise ValueError("UPriority cannot be null.")
@@ -161,7 +173,7 @@ class UAttributesBuilder:
         )
 
     @multimethod
-    def response(request: UAttributes):
+    def response(request: Union[UAttributes, None]):
         if request is None:
             raise ValueError("request cannot be null.")
         return UAttributesBuilder.response(
@@ -233,7 +245,8 @@ class UAttributesBuilder:
         Add the traceparent.
 
         @param reqid    the traceparent.
-        @return Returns the UAttributesBuilder with the configured traceparent.
+        @return Returns the UAttributesBuilder with the configured
+        traceparent.
         """
         self.traceparent = traceparent
         return self

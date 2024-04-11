@@ -213,16 +213,3 @@ class UCloudEventAttributesBuilder:
             self.priority, self.hash, self.ttl, self.token, self.traceparent
         )
 
-
-if __name__ == "__main__":
-    # Example usage:
-    attributes = (
-        UCloudEventAttributesBuilder()
-        .with_hash("abc123")
-        .with_priority(UPriority.UPRIORITY_CS0)
-        .with_ttl(1000)
-        .with_token("xyz456")
-        .with_traceparent("123456")
-        .build()
-    )
-    print(attributes)

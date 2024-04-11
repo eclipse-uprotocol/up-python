@@ -25,7 +25,8 @@
 
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import copy
 
 from cloudevents.http import CloudEvent
 from google.protobuf import any_pb2
@@ -271,8 +272,9 @@ class UCloudEvent:
         """
         if communication_status is None:
             return ce
-        ce.__setitem__("commstatus", communication_status)
-        return ce
+        ce_new = copy.deepcopy(ce)
+        ce_new.__setitem__("commstatus", communication_status)
+        return ce_new
 
     @staticmethod
     def get_creation_timestamp(ce: CloudEvent) -> int:
@@ -289,7 +291,7 @@ class UCloudEvent:
         )
         uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
 
-        return UUIDUtils.getTime(uuid) if uuid is not None else None
+        return UUIDUtils.get_time(uuid) if uuid is not None else None
 
     @staticmethod
     def is_expired_by_cloud_event_creation_date(ce: CloudEvent) -> bool:
@@ -313,8 +315,8 @@ class UCloudEvent:
         if cloud_event_creation_time is None:
             return False
 
-        now = datetime.now()
-        creation_time_plus_ttl = cloud_event_creation_time + timedelta(
+        now = datetime.now(timezone.utc)
+        creation_time_plus_ttl = datetime.fromisoformat(cloud_event_creation_time) + timedelta(
             milliseconds=maybe_ttl
         )
 

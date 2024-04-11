@@ -1,7 +1,7 @@
 import os
 import shutil
 
-
+# some test
 def clean_project():
     # Remove build/ directory
     if os.path.exists('build'):

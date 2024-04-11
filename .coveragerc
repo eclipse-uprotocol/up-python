@@ -1,0 +1,6 @@
+[run]
+omit = uprotocol/proto/*, uprotocol/cloudevent/*_pb2.py, tests/*, */__init__.py
+[report]
+exclude_lines =
+    pragma: no cover
+    .*pass.*

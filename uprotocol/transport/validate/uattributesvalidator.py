@@ -91,6 +91,7 @@ class UAttributesValidator:
             self.validate_priority(attributes),
             self.validate_permission_level(attributes),
             self.validate_req_id(attributes),
+            self.validate_id(attributes)
         ]
 
         error_messages = [
@@ -203,6 +204,21 @@ class UAttributesValidator:
             return ValidationResult.failure("Invalid UUID")
         else:
             return ValidationResult.success()
+
+    @staticmethod
+    def validate_id(attr: UAttributes) -> ValidationResult:
+        """
+        Validate the Id for the default case. If the UAttributes object does
+        not contain an Id, the ValidationResult is failed.
+
+        @param attr:Attributes object containing the Id to validate.
+        @return:Returns a  ValidationResult that is success or failed
+        """
+        if not attr.HasField("id"):
+            return ValidationResult.failure("Missing id")
+        if not UUIDUtils.is_uuid(attr.id):
+            return ValidationResult.failure("Attributes must contain valid uProtocol UUID in id property")
+        return ValidationResult.success()
 
     @abstractmethod
     def validate_type(self, attr: UAttributes):

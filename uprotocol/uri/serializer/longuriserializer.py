@@ -55,7 +55,11 @@ class LongUriSerializer(UriSerializer):
 
         sb = []
 
-        if uri.HasField("authority"):
+        if (
+            uri.HasField("authority")
+            and uri.authority.HasField("name")
+            and not uri.authority.name.strip() == ""
+        ):
             sb.append("//")
             sb.append(uri.authority.name)
 
@@ -75,9 +79,15 @@ class LongUriSerializer(UriSerializer):
 
         sb = "/" + u_resource.name
 
-        if u_resource.instance:
+        if (
+            u_resource.instance is not None
+            and not u_resource.instance.strip() == ""
+        ):
             sb += "." + u_resource.instance
-        if u_resource.message:
+        if (
+            u_resource.message is not None
+            and not u_resource.message.strip() == ""
+        ):
             sb += "#" + u_resource.message
 
         return sb
@@ -109,7 +119,7 @@ class LongUriSerializer(UriSerializer):
         if u_protocol_uri is None or u_protocol_uri.strip() == "":
             return UUri()
         uri = (
-            u_protocol_uri[u_protocol_uri.index(":") + 1:]
+            u_protocol_uri[u_protocol_uri.index(":") + 1 :]
             if ":" in u_protocol_uri
             else u_protocol_uri.replace("\\", "/")
         )

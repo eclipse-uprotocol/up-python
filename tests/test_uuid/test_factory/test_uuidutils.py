@@ -26,11 +26,11 @@
 
 import unittest
 import time
+import datetime
 
 from uprotocol.transport.builder.uattributesbuilder import UAttributesBuilder
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 
 from uprotocol.proto.uattributes_pb2 import UAttributes, UPriority
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UAuthority, UResource
@@ -117,3 +117,12 @@ class TestUUIDUtils(unittest.TestCase):
             build_source(), UPriority.UPRIORITY_CS0
         ).build()
         self.assertFalse(UUIDUtils.is_expired(attributes))
+
+    def test_get_elapsed_time_invalid_uuid(self):
+        self.assertFalse(UUIDUtils.get_elapsed_time(None) is not None)
+
+    def test_get_elapsed_time_past(self):
+        id: UUID = Factories.UPROTOCOL.create(
+            datetime.datetime.now() + datetime.timedelta(minutes=1)
+        )
+        self.assertFalse(UUIDUtils.get_elapsed_time(id) is not None)

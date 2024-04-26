@@ -229,10 +229,9 @@ class TestUAttributesBuilder(unittest.TestCase):
 
     def test_response_request_is_none(self):
         with self.assertRaises(ValueError) as context:
-            UAttributesBuilder.response(
-                None
-            )
+            UAttributesBuilder.response(None)
             self.assertTrue("request cannot be null." in context.exception)
+
 
 if __name__ == "__main__":
     unittest.main()

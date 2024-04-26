@@ -24,13 +24,13 @@
 #
 # -------------------------------------------------------------------------
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
-from uprotocol.proto.upayload_pb2 import UPayloadFormat 
+from uprotocol.proto.upayload_pb2 import UPayloadFormat
 from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.uuid.factory.uuidfactory import Factories
@@ -407,8 +407,6 @@ class TestUCloudEvent(unittest.TestCase):
             UCloudEvent.get_type(cloud_event1),
         )
 
-
-
     def test_to_from_message_from_request_cloudevent(self):
         # additional attributes
         u_cloud_event_attributes = (
@@ -599,12 +597,12 @@ class TestUCloudEvent(unittest.TestCase):
 
     def test_cloud_event_to_string_none(self):
         cloud_event_string = UCloudEvent.to_string(None)
-        self.assertEqual(
-            cloud_event_string, "null"
-        )
+        self.assertEqual(cloud_event_string, "null")
 
     def test_get_upayload_format_from_content_type(self):
-        new_format = UCloudEvent().get_upayload_format_from_content_type("application/json")
+        new_format = UCloudEvent().get_upayload_format_from_content_type(
+            "application/json"
+        )
         self.assertEqual(new_format, UPayloadFormat.UPAYLOAD_FORMAT_JSON)
 
     def test_to_message_none_entry(self):

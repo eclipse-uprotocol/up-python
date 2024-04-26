@@ -212,4 +212,3 @@ class UCloudEventAttributesBuilder:
         return UCloudEventAttributes(
             self.priority, self.hash, self.ttl, self.token, self.traceparent
         )
-

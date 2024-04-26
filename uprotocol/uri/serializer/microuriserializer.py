@@ -72,6 +72,7 @@ class MicroUriSerializer(UriSerializer):
     IPV4_MICRO_URI_LENGTH = 12
     IPV6_MICRO_URI_LENGTH = 24
     UP_VERSION = 0x1
+    MAX_ID_LENGTH = 255
 
     def serialize(self, uri: UUri) -> bytes:
         """
@@ -109,6 +110,9 @@ class MicroUriSerializer(UriSerializer):
 
         byte_arr.append(address_type.value)
 
+        if maybe_uresource_id > 0xFFFF or maybe_ue_id > 0xFFFF:
+            return bytearray()
+
         # URESOURCE_ID
         byte_arr.append(keep_8_least_significant_bits(maybe_uresource_id >> 8))
         byte_arr.append(keep_8_least_significant_bits(maybe_uresource_id))
@@ -128,6 +132,9 @@ class MicroUriSerializer(UriSerializer):
         if address_type != AddressType.LOCAL:
             # Write the ID length if the type is ID
             if address_type == AddressType.ID:
+                # If the ID length is greater than the maximum allowed, return an empty byte[]
+                if len(uri.authority.id) > self.MAX_ID_LENGTH:
+                    return bytearray()
                 byte_arr.append(
                     keep_8_least_significant_bits(len(uri.authority.id))
                 )

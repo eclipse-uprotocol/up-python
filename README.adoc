@@ -34,10 +34,11 @@ To set up SDK, follow the steps below:
 git clone https://github.com/eclipse-uprotocol/uprotocol-python.git
 ----
 
-. Execute the `pull_and_compile_protos.py` script using the following command:
+. Execute the `pull_and_compile_protos.py` script using the following commands:
 +
 [source]
 ----
+cd scripts
 python pull_and_compile_protos.py
 ----
 This script automates the following tasks:

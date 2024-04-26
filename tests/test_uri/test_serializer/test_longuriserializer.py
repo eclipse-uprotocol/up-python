@@ -525,12 +525,9 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("", uprotocol_uri)
 
     def test_build_protocol_uri_from__uri_when__uri_has_empty_use(self):
-        use = UEntity()
-        uuri = UUri(
-            authority=UAuthority(), entity=use, resource=UResource(name="door")
-        )
+        uuri = UUri(resource=UResource(name="door"))
         uprotocol_uri = LongUriSerializer().serialize(uuri)
-        self.assertEqual("/////door", uprotocol_uri)
+        self.assertEqual("///door", uprotocol_uri)
 
     def test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version(
         self,
@@ -806,6 +803,39 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("front_left", uuri.resource.instance)
         self.assertEqual("Door", uuri.resource.message)
         self.assertEqual(uri2, LongUriSerializer().serialize(uuri))
+
+    def test_b_prtcl_uri__uri__uri_rmte_auth_srvc_vsn_rsrc_emp_instc(self):
+        u_authority = UAuthority(name="vcu.my_car_vin")
+        use = UEntity(name="body.access", version_major=1)
+        resource = UResource(name="door", instance="", message="Door")
+        ucustom_uri = LongUriSerializer().serialize(
+            UUri(authority=u_authority, entity=use, resource=resource)
+        )
+        self.assertEqual(
+            "//vcu.my_car_vin/body.access/1/door#Door", ucustom_uri
+        )
+
+    def test_b_prtcl_uri__uri__uri_rmte_auth_srvc_vsn_rsrc_emp_msg(self):
+        u_authority = UAuthority(name="vcu.my_car_vin")
+        use = UEntity(name="body.access", version_major=1)
+        resource = UResource(name="door", instance="front_left", message="")
+        ucustom_uri = LongUriSerializer().serialize(
+            UUri(authority=u_authority, entity=use, resource=resource)
+        )
+        self.assertEqual(
+            "//vcu.my_car_vin/body.access/1/door.front_left", ucustom_uri
+        )
+
+    def test_b_prtcl_uri__uri__uri_empty_auth_service_ver_w_rsrc(self):
+        u_authority = UAuthority(name="")
+        use = UEntity(name="body.access", version_major=1)
+        resource = UResource(
+            name="door", instance="front_left", message="Door"
+        )
+        ucustom_uri = LongUriSerializer().serialize(
+            UUri(authority=u_authority, entity=use, resource=resource)
+        )
+        self.assertEqual("/body.access/1/door.front_left#Door", ucustom_uri)
 
 
 if __name__ == "__main__":

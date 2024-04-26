@@ -162,12 +162,6 @@ class TestUPayloadBuilder(unittest.TestCase):
     def test_unpack_exception(self):
         builder = self._create_upayload_builder()
 
-        original_msg: Message = Method(
-            name="name",
-            request_type_url="request_type_url",
-            response_type_url="response_type_url",
-            request_streaming=None,
-        )
         upayload: UPayload = UPayload(
             format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
             value=b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",

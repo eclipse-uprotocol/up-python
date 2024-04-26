@@ -8,20 +8,21 @@ from uprotocol.proto.uri_pb2 import UUri
 
 class MyListener(UListener):
     def on_receive(self, message):
-        super().on_receive( message)
+        super().on_receive(message)
         pass
 
 
 class HappyUTransport(UTransport):
 
     def send(self, message):
-        super().send( message)
+        super().send(message)
 
         return UStatus(
-            code=UCode.INVALID_ARGUMENT if message is None else UCode.OK)
+            code=UCode.INVALID_ARGUMENT if message is None else UCode.OK
+        )
 
     def register_listener(self, topic, listener):
-        super().register_listener( topic, listener)
+        super().register_listener(topic, listener)
         listener.on_receive(UMessage())
         return UStatus(code=UCode.OK)
 
@@ -32,16 +33,16 @@ class HappyUTransport(UTransport):
 
 class SadUTransport(UTransport):
     def send(self, message):
-        super().send( message)
+        super().send(message)
         return UStatus(code=UCode.INTERNAL)
 
     def register_listener(self, topic, listener):
-        super().register_listener( topic, listener)
+        super().register_listener(topic, listener)
         listener.on_receive(None)
         return UStatus(code=UCode.INTERNAL)
 
     def unregister_listener(self, topic, listener):
-        super().unregister_listener( topic, listener)
+        super().unregister_listener(topic, listener)
         return UStatus(code=UCode.INTERNAL)
 
 
@@ -92,5 +93,5 @@ class UTransportTest(unittest.TestCase):
         self.assertEqual(status.code, UCode.INTERNAL)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

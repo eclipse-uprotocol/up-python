@@ -26,7 +26,6 @@
 
 import time
 import unittest
-import uuid
 
 from uprotocol.proto.uattributes_pb2 import UPriority
 from uprotocol.proto.uri_pb2 import UUri, UAuthority, UEntity
@@ -503,7 +502,9 @@ class TestUAttributesValidator(unittest.TestCase):
 
     def test_validating_valid_type_attribute(self):
         attributes = (
-            UAttributesBuilder.notification(build_source(), build_sink(), UPriority.UPRIORITY_CS0)
+            UAttributesBuilder.notification(
+                build_source(), build_sink(), UPriority.UPRIORITY_CS0
+            )
             .withReqId(Factories.UPROTOCOL.create())
             .build()
         )
@@ -514,7 +515,9 @@ class TestUAttributesValidator(unittest.TestCase):
 
     def test_validating_valid_sink_attribute(self):
         attributes = (
-            UAttributesBuilder.notification(build_source(), build_sink(), UPriority.UPRIORITY_CS0)
+            UAttributesBuilder.notification(
+                build_source(), build_sink(), UPriority.UPRIORITY_CS0
+            )
             .withReqId(Factories.UPROTOCOL.create())
             .build()
         )
@@ -532,7 +535,9 @@ class TestUAttributesValidator(unittest.TestCase):
 
     def test_validating_invalid_sink_attribute(self):
         attributes = (
-            UAttributesBuilder.notification(build_source(), UUri(), UPriority.UPRIORITY_CS0)
+            UAttributesBuilder.notification(
+                build_source(), UUri(), UPriority.UPRIORITY_CS0
+            )
             .withReqId(Factories.UPROTOCOL.create())
             .build()
         )
@@ -540,7 +545,6 @@ class TestUAttributesValidator(unittest.TestCase):
         validator = Validators.NOTIFICATION.validator()
         status = validator.validate_sink(attributes)
         self.assertEqual("Missing Sink", status.get_message())
-
 
     def test_validating_invalid_PermissionLevel_attribute(self):
         with self.assertRaises(ValueError) as context:
@@ -704,6 +708,140 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("UAttributesValidator.Response", str(validator))
         status = validator.validate(attributes)
         self.assertEqual("Invalid RPC response type.", status.get_message())
+
+    def test_publish_validation_without_id(self):
+        attributes = UAttributesBuilder.publish(
+            build_source(), UPriority.UPRIORITY_CS0
+        ).build()
+        attributes.ClearField("id")
+        validator = Validators.PUBLISH.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual("Missing id", status.get_message())
+
+    def test_notification_validation_without_id(self):
+        attributes = UAttributesBuilder.notification(
+            build_source(), build_sink(), UPriority.UPRIORITY_CS0
+        ).build()
+        attributes.ClearField("id")
+        validator = Validators.NOTIFICATION.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual("Missing id", status.get_message())
+
+    def test_request_validation_without_id(self):
+        attributes = UAttributesBuilder.request(
+            build_source(), build_sink(), UPriority.UPRIORITY_CS0, 1000
+        ).build()
+        attributes.ClearField("id")
+        validator = Validators.REQUEST.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual("Missing id", status.get_message())
+
+    def test_response_validation_without_id(self):
+        attributes = UAttributesBuilder.response(
+            build_source(),
+            build_sink(),
+            UPriority.UPRIORITY_CS0,
+            Factories.UPROTOCOL.create(),
+        ).build()
+        attributes.ClearField("id")
+        validator = Validators.RESPONSE.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual("Missing id", status.get_message())
+
+    def test_publish_validation_invalid_id(self):
+        attributes = UAttributesBuilder.publish(
+            build_source(), UPriority.UPRIORITY_CS0
+        ).build()
+        attributes.id.CopyFrom(UUID())
+        validator = Validators.PUBLISH.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Attributes must contain valid uProtocol UUID in id property",
+            status.get_message(),
+        )
+
+    def test_notification_validation_invalid_id(self):
+        attributes = UAttributesBuilder.notification(
+            build_source(), build_sink(), UPriority.UPRIORITY_CS0
+        ).build()
+        attributes.id.CopyFrom(UUID())
+        validator = Validators.NOTIFICATION.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Attributes must contain valid uProtocol UUID in id property",
+            status.get_message(),
+        )
+
+    def test_request_validation_invalid_id(self):
+        attributes = UAttributesBuilder.request(
+            build_source(), build_sink(), UPriority.UPRIORITY_CS0, 1000
+        ).build()
+        attributes.id.CopyFrom(UUID())
+        validator = Validators.REQUEST.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Attributes must contain valid uProtocol UUID in id property",
+            status.get_message(),
+        )
+
+    def test_response_validation_invalid_id(self):
+        attributes = UAttributesBuilder.response(
+            build_source(),
+            build_sink(),
+            UPriority.UPRIORITY_CS0,
+            Factories.UPROTOCOL.create(),
+        ).build()
+        attributes.id.CopyFrom(UUID())
+        validator = Validators.RESPONSE.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Attributes must contain valid uProtocol UUID in id property",
+            status.get_message(),
+        )
+
+    def test_publish_validation_when_an_invalid_priority(self):
+        attributes = UAttributesBuilder.publish(
+            build_source(), UPriority.UPRIORITY_UNSPECIFIED
+        ).build()
+        validator = Validators.PUBLISH.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.get_message()
+        )
+
+    def test_request_validation_with_invalid_priority(self):
+        attributes = UAttributesBuilder.request(
+            build_source(), build_sink(), UPriority.UPRIORITY_UNSPECIFIED, 1000
+        ).build()
+        validator = Validators.REQUEST.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.get_message()
+        )
+
+    def test_response_validation_with_invalid_priority(self):
+        attributes = UAttributesBuilder.response(
+            build_source(),
+            build_sink(),
+            UPriority.UPRIORITY_UNSPECIFIED,
+            Factories.UPROTOCOL.create(),
+        ).build()
+        validator = Validators.RESPONSE.validator()
+        status = validator.validate(attributes)
+        self.assertTrue(status.is_failure())
+        self.assertEqual(
+            "Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.get_message()
+        )
 
 
 if __name__ == "__main__":

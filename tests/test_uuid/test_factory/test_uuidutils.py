@@ -43,8 +43,8 @@ def create_id():
 
 def build_source():
     return UUri(
-        authority=UAuthority(name="vcu.someVin.veh.ultifi.gm.com"),
-        entity=UEntity(name="petapp.ultifi.gm.com", version_major=1),
+        authority=UAuthority(name="vcu.someVin.veh.com"),
+        entity=UEntity(name="petapp.com", version_major=1),
         resource=UResource(name="door", instance="front_left", message="Door"),
     )
 

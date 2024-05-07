@@ -44,8 +44,8 @@ from uprotocol.proto.umessage_pb2 import UMessage
 
 def build_source():
     return UUri(
-        authority=UAuthority(name="vcu.someVin.veh.ultifi.gm.com"),
-        entity=UEntity(name="petapp.ultifi.gm.com", version_major=1),
+        authority=UAuthority(name="vcu.someVin.veh.com"),
+        entity=UEntity(name="petapp.com", version_major=1),
         resource=UResourceBuilder.for_rpc_request(None),
     )
 

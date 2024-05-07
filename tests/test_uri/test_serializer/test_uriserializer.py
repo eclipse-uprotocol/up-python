@@ -130,7 +130,7 @@ class TestUriSerializer(unittest.TestCase):
         ipv4_packed_ip: bytes = socket.inet_pton(socket.AF_INET, ipv4_address)
 
         authority: UAuthority = UAuthority(
-            name="vcu.veh.com", ip=ipv4_packed_ip
+            name="vcu.veh.steven.gm.com", ip=ipv4_packed_ip
         )
         uuri: UUri = UUri(entity=uentity, resource=uresrc, authority=authority)
 
@@ -141,7 +141,7 @@ class TestUriSerializer(unittest.TestCase):
         actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
 
         expected_longuri_given_ipv4_uathority: str = (
-            "//vcu.veh.com/core.usubscription/3/SubscriptionChange#Update"
+            "//vcu.veh.steven.gm.com/core.usubscription/3/SubscriptionChange#Update"
         )
         expected_shorturi_given_ipv4_uathority: str = (
             "//192.168.1.100/0/3/32768"
@@ -174,7 +174,7 @@ class TestUriSerializer(unittest.TestCase):
         uentity: UEntity = UEntityFactory.from_proto(service_descriptor)
 
         authority: UAuthority = UAuthority(
-            name="1G1YZ23J9P5800001.veh.com", id=b"1G1YZ23J9P5800001"
+            name="1G1YZ23J9P5800001.veh.steven.gm.com", id=b"1G1YZ23J9P5800001"
         )
         uuri: UUri = UUri(entity=uentity, resource=uresrc, authority=authority)
 
@@ -185,7 +185,7 @@ class TestUriSerializer(unittest.TestCase):
         actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
 
         expected_longuri_given_id_uathority: str = (
-            "//1G1YZ23J9P5800001.veh.com/core.usubscription/3/SubscriptionChange#Update"
+            "//1G1YZ23J9P5800001.veh.steven.gm.com/core.usubscription/3/SubscriptionChange#Update"
         )
         expected_shorturi_given_id_uathority: str = (
             "//1G1YZ23J9P5800001/0/3/32768"
@@ -220,7 +220,7 @@ class TestUriSerializer(unittest.TestCase):
         ipv6_packed_ip: bytes = socket.inet_pton(socket.AF_INET6, ipv6_address)
 
         authority: UAuthority = UAuthority(
-            name="vcu.veh.com", ip=ipv6_packed_ip
+            name="vcu.veh.steven.gm.com", ip=ipv6_packed_ip
         )
         uuri: UUri = UUri(entity=uentity, resource=uresrc, authority=authority)
 
@@ -231,7 +231,7 @@ class TestUriSerializer(unittest.TestCase):
         actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
 
         expected_longuri_given_ipv6_uathority: str = (
-            "//vcu.veh.com/core.usubscription/3/SubscriptionChange#Update"
+            "//vcu.veh.steven.gm.com/core.usubscription/3/SubscriptionChange#Update"
         )
         expected_shorturi_given_ipv6_uathority: str = (
             "//2001:db8:85a3::8a2e:370:7334/0/3/32768"

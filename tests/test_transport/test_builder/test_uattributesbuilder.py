@@ -36,16 +36,16 @@ from uprotocol.uuid.factory.uuidfactory import Factories
 
 def build_source():
     return UUri(
-        authority=UAuthority(name="vcu.someVin.veh.com"),
-        entity=UEntity(name="petapp.com", version_major=1),
+        authority=UAuthority(name="vcu.someVin.veh.steven.gm.com"),
+        entity=UEntity(name="petapp.steven.gm.com", version_major=1),
         resource=UResourceBuilder.for_rpc_request(None),
     )
 
 
 def build_sink():
     return UUri(
-        authority=UAuthority(name="vcu.someVin.veh.com"),
-        entity=UEntity(name="petapp.com", version_major=1),
+        authority=UAuthority(name="vcu.someVin.veh.steven.gm.com"),
+        entity=UEntity(name="petapp.steven.gm.com", version_major=1),
         resource=UResourceBuilder.for_rpc_response(),
     )
 

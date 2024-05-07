@@ -523,13 +523,13 @@ class TestUriValidator(unittest.TestCase):
     #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.ID)
 
     # def test_is_remote_when_authority_has_name_and_number_set(self):
-    #     authority = UAuthority(name="vcu.veh.steven.gm.com", id=b"hello Jello")
+    #     authority = UAuthority(name="vcu.veh.gm.com", id=b"hello Jello")
     #     self.assertTrue(UriValidator.is_remote(authority))
     #     self.assertTrue(authority.name is not None)
     #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.ID)
 
     # def test_is_remote_when_authority_has_name_and_number_is_not_set(self):
-    #     authority = UAuthority(name="vcu.veh.steven.gm.com")
+    #     authority = UAuthority(name="vcu.veh.gm.com")
     #     self.assertTrue(UriValidator.is_remote(authority))
     #     self.assertTrue(authority.name is not None)
     #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.NUMBER_NOT_SET)

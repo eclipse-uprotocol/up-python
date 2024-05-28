@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
 import random
 from datetime import datetime
 
-from uprotocol.proto.uuid_pb2 import UUID
+from uprotocol.proto.uprotocol.v1.uuid_pb2 import UUID
 from uprotocol.uuid.factory import uuid6
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,16 +20,15 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import unittest
 import json
 import os
 from google.protobuf import any_pb2
-from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
+from uprotocol.cloudevent.datamodel.ucloudevent_attributes import (
     UCloudEventAttributesBuilder,
     UCloudEventAttributes,
 )
-from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
+from uprotocol.cloudevent.factory.cloudevent_factory import CloudEventFactory
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.cloudevent.serialize.base64protobufserializer import (
     Base64ProtobufSerializer,
@@ -38,11 +37,14 @@ from uprotocol.cloudevent.serialize.cloudeventtojsonserializer import (
     CloudEventToJsonSerializer,
 )
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
-from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
-from uprotocol.proto.ustatus_pb2 import UCode
+from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
+    UMessageType,
+    UPriority,
+)
+from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
+from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UCode
 
-from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+from uprotocol.uri.serializer.uri_serializer import UriSerializer
 
 
 def get_json_object():
@@ -62,11 +64,8 @@ def get_json_object():
 
 
 def build_uri_for_test():
-    uri = UUri(
-        entity=UEntity(name="body.access"),
-        resource=UResource(name="door", instance="front_left", message="Door"),
-    )
-    return LongUriSerializer().serialize(uri)
+    uri = UUri(ue_id=12345, resource_id=531)
+    return UriSerializer().serialize(uri)
 
 
 def build_proto_payload_for_test():
@@ -86,6 +85,25 @@ def build_proto_payload_for_test():
 class TestCloudEventFactory(unittest.TestCase):
     DATA_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE
 
+    def _check_parts_of_ce(self, cloudevent, ce_json):
+
+        parts_map = {
+            "source": UCloudEvent.get_source,
+            "sink": UCloudEvent.get_sink,
+            "type": UCloudEvent.get_type,
+            "priority": UCloudEvent.get_priority,
+            "ttl": UCloudEvent.get_ttl,
+            "hash": UCloudEvent.get_hash,
+            "token": UCloudEvent.get_token,
+            "dataschema": UCloudEvent.get_data_schema,
+            "datacontenttype": UCloudEvent.get_data_content_type,
+            "commstatus": UCloudEvent.get_communication_status,
+        }
+
+        for key, value in parts_map.items():
+            if key in ce_json:
+                self.assertEqual(value(cloudevent), ce_json[key])
+
     def test_all_cloud_events_from_json(self):
         cloudevents = get_json_object()
         for ce_json in cloudevents:
@@ -97,49 +115,7 @@ class TestCloudEventFactory(unittest.TestCase):
             self.assertEqual(
                 UCloudEvent.get_specversion(cloudevent), ce_json["specversion"]
             )
-            if "source" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_source(cloudevent), ce_json["source"]
-                )
-            if "sink" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_sink(cloudevent), ce_json["sink"]
-                )
-            if "type" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_type(cloudevent), ce_json["type"]
-                )
-            if "priority" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_priority(cloudevent), ce_json["priority"]
-                )
-            if "ttl" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_ttl(cloudevent), ce_json["ttl"]
-                )
-            if "hash" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_hash(cloudevent), ce_json["hash"]
-                )
-            if "token" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_token(cloudevent), ce_json["token"]
-                )
-            if "dataschema" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_data_schema(cloudevent),
-                    ce_json["dataschema"],
-                )
-            if "datacontenttype" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_data_content_type(cloudevent),
-                    ce_json["datacontenttype"],
-                )
-            if "commstatus" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_communication_status(cloudevent),
-                    ce_json["commstatus"],
-                )
+            self._check_parts_of_ce(cloudevent, ce_json)
 
     def test_create_base_cloud_event(self):
         source = build_uri_for_test()
@@ -341,7 +317,7 @@ class TestCloudEventFactory(unittest.TestCase):
             .build()
         )
 
-        # build the cloud event of type publish with destination - a notification
+        # build the cloud event of type publish with destination
         cloud_event = CloudEventFactory.notification(
             source, sink, proto_payload, u_cloud_event_attributes
         )
@@ -480,62 +456,6 @@ class TestCloudEventFactory(unittest.TestCase):
         )
 
     def test_create_failed_response_cloud_event_originating_from_local_use(
-        self,
-    ):
-        # UriPart for the application requesting the RPC
-        application_uri_for_rpc = build_uri_for_test()
-
-        # service Method UriPart
-        service_method_uri = build_uri_for_test()
-
-        # additional attributes
-
-        u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_hash("somehash")
-            .with_priority(UPriority.UPRIORITY_CS2)
-            .with_ttl(3)
-            .build()
-        )
-
-        cloud_event = CloudEventFactory.failed_response(
-            application_uri_for_rpc,
-            service_method_uri,
-            "requestIdFromRequestCloudEvent",
-            UCode.INVALID_ARGUMENT,
-            u_cloud_event_attributes,
-        )
-
-        # test all attributes
-        self.assertEqual("1.0", UCloudEvent.get_specversion(cloud_event))
-        self.assertIsNotNone(UCloudEvent.get_id(cloud_event))
-        self.assertEqual(
-            service_method_uri, UCloudEvent.get_source(cloud_event)
-        )
-
-        self.assertIn("sink", cloud_event.get_attributes())
-        self.assertEqual(
-            application_uri_for_rpc, UCloudEvent.get_sink(cloud_event)
-        )
-
-        self.assertEqual("res.v1", UCloudEvent.get_type(cloud_event))
-        self.assertEqual("somehash", UCloudEvent.get_hash(cloud_event))
-        self.assertEqual(
-            UPriority.Name(UPriority.UPRIORITY_CS2),
-            UCloudEvent.get_priority(cloud_event),
-        )
-        self.assertEqual(3, UCloudEvent.get_ttl(cloud_event))
-        self.assertEqual(
-            UCode.INVALID_ARGUMENT,
-            UCloudEvent.get_communication_status(cloud_event),
-        )
-
-        self.assertEqual(
-            "requestIdFromRequestCloudEvent",
-            UCloudEvent.get_request_id(cloud_event),
-        )
-
-    def test_create_failed_response_cloud_event_originating_from_remote_use(
         self,
     ):
         # UriPart for the application requesting the RPC

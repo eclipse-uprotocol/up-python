@@ -1,0 +1,22 @@
+# UPClient API (uP-L2 Interface)
+
+The following folder include the Python specific Layer 2 interface definition along with example implementation for said interface. per the uP-L2 API specifications defined in https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[uProtocol Specifications].
+
+uP-L1 interfaces implements the core uProtocol across various the communication middlewares and programming languages while uP-L2 API are the client-facing APIs that wrap the transport functionality into easy to use, language specific, APIs to do the most common functionality of the protocol (subscribe, publish, notify, invoke a Method, or handle RPC requests).
+
+This folder contains the uP-L2 interface and data models for Python that will be implemented by the various UPClient implementations.
+
+## uP-L2 Interfaces
+
+.UPClient Interfaces (uP-L2 Interface)
+[cols="1,3",options="header"]
+|===
+| uP-L2 Interface | Description  
+
+| link:publisher.py[*publisher.py*] | Producers API to send publish or notification messages
+| link:subscriber.py[*subscriber.py*] | Consumers API to subscribe or unsubscribe to topics
+| link:rpcclient.py[*rpcclient.py*] | Client interface to invoke a method
+| link:rpcserver.py[*rpcserver.py*] | Server interface to register a listener for incoming RPC requests and automatically send a response
+| link:notifier.py[*notifier.py*] | Notification communication pattern APIs to notify and register a listener to receive the notifications
+
+|===

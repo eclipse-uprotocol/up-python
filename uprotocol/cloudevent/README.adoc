@@ -16,7 +16,7 @@ Factory class that builds the various types of CloudEvents for uProtocol (publis
 === Building an uuri
 [source,python]
 ----
-     uri = UUri(entity=UEntity(name="body.access"),
+     uri = UUri(entity=UEntity(name="12345"),
                resource=UResource(name="door", instance="front_left", message="Door"))
      source= LongUriSerializer().serialize(uri)
 ----

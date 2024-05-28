@@ -20,25 +20,21 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-import os
-import shutil
+from abc import ABC, abstractmethod
+
+from uprotocol.transport.utransport import UTransport
 
 
-def clean_project():
-    # Remove build/ directory
-    if os.path.exists('build'):
-        shutil.rmtree('build')
+class TransportWrapper(ABC):
+    """
+    TransportWrapper provides a simple means to fetch the transport object
+    to be used throughout the L2 implementation code
+    """
 
-    # Remove dist/ directory
-    if os.path.exists('dist'):
-        shutil.rmtree('dist')
-
-    # Remove *.egg-info/ directories
-    egg_info_directories = [d for d in os.listdir() if d.endswith('.egg-info')]
-    for egg_info_directory in egg_info_directories:
-        shutil.rmtree(egg_info_directory)
-
-
-if __name__ == "__main__":
-    clean_project()
-    print("Cleanup complete.")
+    @abstractmethod
+    def get_transport(self) -> UTransport:
+        """
+        Get the transport object
+        :return: The transport object
+        """
+        pass

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,17 +20,16 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import time
 from abc import abstractmethod
 from enum import Enum
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.proto.uattributes_pb2 import (
+from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
+from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UMessageType,
     UPriority,
 )
-from uprotocol.uri.validator.urivalidator import UriValidator
+from uprotocol.uri.validator.uri_validator import UriValidator
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.validation.validationresult import ValidationResult
 
@@ -86,8 +85,8 @@ class UAttributesValidator:
             self.validate_sink(attributes),
             self.validate_priority(attributes),
             self.validate_permission_level(attributes),
-            self.validate_req_id(attributes),
-            self.validate_id(attributes)
+            self.validate_reqid(attributes),
+            self.validate_id(attributes),
         ]
 
         error_messages = [
@@ -102,7 +101,7 @@ class UAttributesValidator:
             return ValidationResult.success()
 
     @staticmethod
-    def is_expired(u_attributes: UAttributes) -> bool:
+    def is_expired(uattributes: UAttributes) -> bool:
         """
         Check the time-to-live attribute to see if it has expired. <br>
         The message has expired when the current time is greater
@@ -112,8 +111,8 @@ class UAttributesValidator:
         @return Returns a true if the original time plus the ttl
         is less than the current time
         """
-        ttl = u_attributes.ttl
-        maybe_time = UUIDUtils.get_time(u_attributes.id)
+        ttl = uattributes.ttl
+        maybe_time = UUIDUtils.get_time(uattributes.id)
 
         if maybe_time is None or ttl <= 0:
             return False
@@ -126,7 +125,7 @@ class UAttributesValidator:
         Validate the time to live configuration. If the UAttributes
         does not contain a time to live then the
         ValidationResult
-        is ok.<br><br>
+        is ok.
         @param attr:UAttributes object containing the message time
         to live configuration to validate.
         @return:Returns a  ValidationResult that is success or
@@ -146,8 +145,8 @@ class UAttributesValidator:
         failed with a failure message.
         """
         return (
-            UriValidator.validate(attr.sink)
-            if attr.HasField("sink")
+            ValidationResult.failure("Uri is empty.")
+            if attr.HasField("sink") and UriValidator.is_empty(attr.sink)
             else ValidationResult.success()
         )
 
@@ -186,7 +185,7 @@ class UAttributesValidator:
             return ValidationResult.success()
 
     @staticmethod
-    def validate_req_id(attr: UAttributes) -> ValidationResult:
+    def validate_reqid(attr: UAttributes) -> ValidationResult:
         """
         Validate the correlationId for the default case. If the
         UAttributes does not contain a request id then the
@@ -213,7 +212,9 @@ class UAttributesValidator:
         if not attr.HasField("id"):
             return ValidationResult.failure("Missing id")
         if not UUIDUtils.is_uuid(attr.id):
-            return ValidationResult.failure("Attributes must contain valid uProtocol UUID in id property")
+            return ValidationResult.failure(
+                "Attributes must contain valid uProtocol UUID in id property"
+            )
         return ValidationResult.success()
 
     @abstractmethod
@@ -237,7 +238,7 @@ class Publish(UAttributesValidator):
     def validate_type(self, attributes_value: UAttributes) -> ValidationResult:
         """
         Validates that attributes for a message meant to publish
-        state changes has the correct type.<br><br>
+        state changes has the correct type.
         @param attributes_value:UAttributes object containing
         the message type to validate.
         @return:Returns a  ValidationResult that is success or
@@ -248,7 +249,8 @@ class Publish(UAttributesValidator):
             if attributes_value.type == UMessageType.UMESSAGE_TYPE_PUBLISH
             else (
                 ValidationResult.failure(
-                    f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"
+                    "Wrong Attribute Type "
+                    f"[{UMessageType.Name(attributes_value.type)}]"
                 )
             )
         )
@@ -277,7 +279,8 @@ class Request(UAttributesValidator):
             if attributes_value.type == UMessageType.UMESSAGE_TYPE_REQUEST
             else (
                 ValidationResult.failure(
-                    f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"
+                    "Wrong Attribute Type "
+                    f"[{UMessageType.Name(attributes_value.type)}]"
                 )
             )
         )
@@ -293,9 +296,9 @@ class Request(UAttributesValidator):
         failed with a failure message.
         """
         return (
-            UriValidator.validate_rpc_method(attributes_value.sink)
-            if attributes_value.HasField("sink")
-            else ValidationResult.failure("Missing Sink")
+            ValidationResult.success()
+            if UriValidator.is_rpc_method(attributes_value.sink)
+            else ValidationResult.failure("Invalid Sink Uri")
         )
 
     def validate_ttl(self, attributes_value: UAttributes) -> ValidationResult:
@@ -336,7 +339,8 @@ class Response(UAttributesValidator):
             if attributes_value.type == UMessageType.UMESSAGE_TYPE_RESPONSE
             else (
                 ValidationResult.failure(
-                    f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"
+                    "Wrong Attribute Type "
+                    f"[{UMessageType.Name(attributes_value.type)}]"
                 )
             )
         )
@@ -351,15 +355,13 @@ class Response(UAttributesValidator):
         @return:Returns a  ValidationResult that is success or failed
         with a failure message.
         """
-        if (
-            not attributes_value.HasField("sink")
-            or attributes_value.sink == UUri()
-        ):
-            return ValidationResult.failure("Missing Sink")
-        result = UriValidator.validate_rpc_response(attributes_value.sink)
-        return result
+        return (
+            ValidationResult.success()
+            if UriValidator.is_rpc_response(attributes_value.sink)
+            else ValidationResult.failure("Invalid Sink Uri")
+        )
 
-    def validate_req_id(
+    def validate_reqid(
         self, attributes_value: UAttributes
     ) -> ValidationResult:
         """
@@ -401,7 +403,8 @@ class Notification(UAttributesValidator):
             if attributes_value.type == UMessageType.UMESSAGE_TYPE_NOTIFICATION
             else (
                 ValidationResult.failure(
-                    f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"
+                    "Wrong Attribute Type "
+                    f"[{UMessageType.Name(attributes_value.type)}]"
                 )
             )
         )

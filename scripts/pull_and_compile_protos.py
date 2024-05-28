@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -28,16 +28,20 @@ import subprocess
 import git
 from git import Repo
 
-REPO_URL = "https://github.com/eclipse-uprotocol/up-core-api.git"
+REPO_URL = "https://github.com/eclipse-uprotocol/up-spec.git"
 PROTO_REPO_DIR = os.path.abspath("../target")
-TAG_NAME = "uprotocol-core-api-1.5.7"
+TAG_NAME = "main"
 PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/proto")
+MAVEN_COMMAND = "mvn protobuf:compile-python"
 
 
-def clone_or_pull(repo_url, PROTO_REPO_DIR):
+def clone_or_pull():
     try:
-        repo = Repo.clone_from(repo_url, PROTO_REPO_DIR)
-        print(f"Repository cloned successfully from {repo_url} to {PROTO_REPO_DIR}")
+        repo = Repo.clone_from(REPO_URL, PROTO_REPO_DIR)
+        print(
+            f"Repository cloned successfully from {REPO_URL} "
+            f"to {PROTO_REPO_DIR}"
+        )
         # Checkout the specific tag
         repo.git.checkout(TAG_NAME)
     except git.exc.GitCommandError:
@@ -49,10 +53,18 @@ def clone_or_pull(repo_url, PROTO_REPO_DIR):
             print(f"Error during Git pull: {pull_error}")
 
 
-def execute_maven_command(project_dir, command):
+def execute_maven_command():
     try:
-        with subprocess.Popen(command, cwd=os.path.join(os.getcwd(), project_dir), shell=True, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE, text=True) as process:
+        current_working_dir = os.path.join(os.getcwd(), PROTO_REPO_DIR)
+        print(f"Current working directory: {current_working_dir}")
+        with subprocess.Popen(
+            MAVEN_COMMAND,
+            cwd=current_working_dir,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        ) as process:
             stdout, stderr = process.communicate()
             print(stdout)
 
@@ -60,24 +72,30 @@ def execute_maven_command(project_dir, command):
                 print(f"Error: {stderr}")
             else:
                 print("Maven command executed successfully.")
-                src_directory = os.path.join(os.getcwd(), project_dir, "target", "generated-sources", "protobuf",
-                                             "python")
-                # if not os.path.exists(PROTO_OUTPUT_DIR):
-                #     os.makedirs(PROTO_OUTPUT_DIR)
+                src_directory = os.path.join(
+                    os.getcwd(),
+                    PROTO_REPO_DIR,
+                    "target",
+                    "generated-sources",
+                    "protobuf",
+                    "python",
+                )
 
-                shutil.copytree(src_directory, PROTO_OUTPUT_DIR, dirs_exist_ok=True)
+                shutil.copytree(
+                    src_directory, PROTO_OUTPUT_DIR, dirs_exist_ok=True
+                )
                 process_python_protofiles(PROTO_OUTPUT_DIR)
     except Exception as e:
         print(f"Error executing Maven command: {e}")
 
 
 def replace_in_file(file_path, search_pattern, replace_pattern):
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         file_content = file.read()
 
     updated_content = re.sub(search_pattern, replace_pattern, file_content)
 
-    with open(file_path, 'w') as file:
+    with open(file_path, "w") as file:
         file.write(updated_content)
 
 
@@ -85,17 +103,23 @@ def process_python_protofiles(directory):
     for root, dirs, files in os.walk(directory):
         create_init_py(root)
         for file in files:
-            if file.endswith('.py'):
+            if file.endswith(".py"):
                 file_path = os.path.join(root, file)
-                replace_in_file(file_path, r'import uri_pb2', 'import uprotocol.proto.uri_pb2')
-                replace_in_file(file_path, r'import uuid_pb2', 'import uprotocol.proto.uuid_pb2')
-                replace_in_file(file_path, r'import uprotocol_options_pb2',
-                                'import uprotocol.proto.uprotocol_options_pb2')
-                replace_in_file(file_path, r'import uattributes_pb2', 'import uprotocol.proto.uattributes_pb2')
-                replace_in_file(file_path, r'import upayload_pb2', 'import uprotocol.proto.upayload_pb2')
-                replace_in_file(file_path, r'import ustatus_pb2', 'import uprotocol.proto.ustatus_pb2')
-                replace_in_file(file_path, r'import upayload_pb2', 'import uprotocol.proto.upayload_pb2')
-                replace_in_file(file_path, r'import umessage_pb2', 'import uprotocol.proto.umessage_pb2')
+                replace_in_file(
+                    file_path,
+                    r"from uprotocol.v1 import ",
+                    "import uprotocol.proto.uprotocol.v1.",
+                )
+                replace_in_file(
+                    file_path,
+                    r"from uprotocol import ",
+                    "import uprotocol.proto.uprotocol.",
+                )
+                replace_in_file(
+                    file_path,
+                    r"import uoptions_pb2",
+                    "import uprotocol.proto.uprotocol.uoptions_pb2",
+                )
 
 
 def create_init_py(directory):
@@ -109,11 +133,8 @@ def create_init_py(directory):
 
 
 def execute():
-    clone_or_pull(REPO_URL, PROTO_REPO_DIR)
-
-    # Execute mvn compile-python
-    maven_command = "mvn protobuf:compile-python"
-    execute_maven_command(PROTO_REPO_DIR, maven_command)
+    clone_or_pull()
+    execute_maven_command()
 
 
 if __name__ == "__main__":

@@ -20,25 +20,37 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-import os
-import shutil
 
+class UStatusException(BaseException):
+    """
+    The unchecked exception which carries uProtocol error model.
+    """
 
-def clean_project():
-    # Remove build/ directory
-    if os.path.exists('build'):
-        shutil.rmtree('build')
+    def __init__(self, status, cause):
+        """
+        Constructs an instance.
+        :param status: An error UStatus.
+        :param cause: An exception that caused this one.
+        """
+        self.m_status = status
 
-    # Remove dist/ directory
-    if os.path.exists('dist'):
-        shutil.rmtree('dist')
+    def get_status(self):
+        """
+        Get the error status.
+        :return: The error UStatus.
+        """
+        return self.m_status
 
-    # Remove *.egg-info/ directories
-    egg_info_directories = [d for d in os.listdir() if d.endswith('.egg-info')]
-    for egg_info_directory in egg_info_directories:
-        shutil.rmtree(egg_info_directory)
+    def get_code(self):
+        """
+        Get the error code.
+        :return: The error UCode.
+        """
+        return self.m_status.code
 
-
-if __name__ == "__main__":
-    clean_project()
-    print("Cleanup complete.")
+    def get_message(self):
+        """
+        Get the error message.
+        :return: The error message.
+        """
+        return self.m_status.message

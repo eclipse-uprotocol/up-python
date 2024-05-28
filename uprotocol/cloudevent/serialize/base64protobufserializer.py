@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,11 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import base64
 from builtins import str
 
-from uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
+from uprotocol.cloudevent.serialize.cloudeventserializer import (
+    CloudEventSerializer,
+)
 
 
 class Base64ProtobufSerializer(CloudEventSerializer):
@@ -41,7 +42,7 @@ class Base64ProtobufSerializer(CloudEventSerializer):
         """
         if proto_bytes is None:
             return ""
-        return base64.b64encode(proto_bytes).decode('utf-8')  # return base64.b64decode(proto_bytes).decode('utf-8')
+        return base64.b64encode(proto_bytes).decode("utf-8")
 
     def serialize(self, string_to_serialize: str) -> bytes:
         """
@@ -51,4 +52,4 @@ class Base64ProtobufSerializer(CloudEventSerializer):
         """
         if string_to_serialize is None:
             return bytearray()
-        return base64.b64decode(string_to_serialize.encode('utf-8'))
+        return base64.b64decode(string_to_serialize.encode("utf-8"))

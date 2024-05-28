@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,17 +20,21 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from enum import Enum
 
-from uprotocol.cloudevent.serialize.cloudeventtojsonserializer import CloudEventToJsonSerializer
-from uprotocol.cloudevent.serialize.cloudeventtoprotobufserializer import CloudEventToProtobufSerializer
+from uprotocol.cloudevent.serialize.cloudeventtojsonserializer import (
+    CloudEventToJsonSerializer,
+)
+from uprotocol.cloudevent.serialize.cloudeventtoprotobufserializer import (
+    CloudEventToProtobufSerializer,
+)
 
 
 class CloudEventSerializers(Enum):
     """
     Provides Singleton instances of the CloudEvent Serializers.
     """
+
     JSON = CloudEventToJsonSerializer()
     PROTOBUF = CloudEventToProtobufSerializer()
 

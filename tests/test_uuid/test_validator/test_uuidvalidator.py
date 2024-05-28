@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -24,13 +24,13 @@ import unittest
 from datetime import datetime, timezone
 
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
-from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
+from uprotocol.uuid.serializer.uuid_serializer import UuidSerializer
 
 from uprotocol.validation.validationresult import ValidationResult
-from uprotocol.proto.uuid_pb2 import UUID
-from uprotocol.proto.ustatus_pb2 import UCode
+from uprotocol.proto.uprotocol.v1.uuid_pb2 import UUID
+from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UCode
 from uprotocol.uuid.factory.uuidfactory import Factories
-from uprotocol.uuid.validate.uuidvalidator import UuidValidator, Validators
+from uprotocol.uuid.validate.uuid_validator import UuidValidator, Validators
 
 
 class TestUuidValidator(unittest.TestCase):
@@ -58,9 +58,7 @@ class TestUuidValidator(unittest.TestCase):
     def test_invalid_time_uuid(self):
         epoch_time = datetime.fromtimestamp(0, tz=timezone.utc)
 
-        uuid = Factories.UPROTOCOL.create(
-            epoch_time
-        )
+        uuid = Factories.UPROTOCOL.create(epoch_time)
         status = Validators.UPROTOCOL.validator().validate(uuid)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
         self.assertEqual("Invalid UUID Time", status.message)
@@ -70,12 +68,16 @@ class TestUuidValidator(unittest.TestCase):
         self.assertIsNotNone(validator)
         status = validator.validate(None)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status.message)
+        self.assertEqual(
+            "Invalid UUIDv8 Version,Invalid UUID Time", status.message
+        )
 
     def test_uuidv8_with_invalid_types(self):
         uuidv6 = Factories.UUIDV6.create()
         uuid = UUID(msb=0, lsb=0)
-        uuidv4 = LongUuidSerializer.instance().deserialize("195f9bd1-526d-4c28-91b1-ff34c8e3632d")
+        uuidv4 = UuidSerializer.deserialize(
+            "195f9bd1-526d-4c28-91b1-ff34c8e3632d"
+        )
 
         validator = Validators.UPROTOCOL.validator()
         self.assertIsNotNone(validator)
@@ -86,11 +88,15 @@ class TestUuidValidator(unittest.TestCase):
 
         status1 = validator.validate(uuid)
         self.assertEqual(UCode.INVALID_ARGUMENT, status1.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status1.message)
+        self.assertEqual(
+            "Invalid UUIDv8 Version,Invalid UUID Time", status1.message
+        )
 
         status2 = validator.validate(uuidv4)
         self.assertEqual(UCode.INVALID_ARGUMENT, status2.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status2.message)
+        self.assertEqual(
+            "Invalid UUIDv8 Version,Invalid UUID Time", status2.message
+        )
 
     def test_good_uuidv6(self):
         uuid = Factories.UUIDV6.create()

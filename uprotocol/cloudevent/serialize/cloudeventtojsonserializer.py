@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,16 +20,18 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from cloudevents.conversion import to_json
 from cloudevents.http import CloudEvent, from_json
 
-from uprotocol.cloudevent.serialize.cloudeventserializer import CloudEventSerializer
+from uprotocol.cloudevent.serialize.cloudeventserializer import (
+    CloudEventSerializer,
+)
 
 
 class CloudEventToJsonSerializer(CloudEventSerializer):
     """
-    CloudEventSerializer to serialize and deserialize CloudEvents to JSON format.
+    CloudEventSerializer to serialize and deserialize CloudEvents
+    to JSON format.
     """
 
     def serialize(self, ce: CloudEvent) -> bytes:

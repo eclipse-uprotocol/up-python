@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,16 +22,15 @@ SPDX-License-Identifier: Apache-2.0
 
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
-from uprotocol.proto.ustatus_pb2 import UStatus, UCode
-from uprotocol.proto.umessage_pb2 import UMessage
+from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus, UCode
+from uprotocol.proto.uprotocol.v1.umessage_pb2 import UMessage
 import unittest
-from uprotocol.proto.uri_pb2 import UUri
+from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 
 
 class MyListener(UListener):
     def on_receive(self, message):
         super().on_receive(message)
-        pass
 
 
 class HappyUTransport(UTransport):
@@ -43,13 +42,13 @@ class HappyUTransport(UTransport):
             code=UCode.INVALID_ARGUMENT if message is None else UCode.OK
         )
 
-    def register_listener(self, topic, listener):
-        super().register_listener(topic, listener)
+    def register_listener(self, source_filter, sink_filter, listener):
+        super().register_listener(source_filter, sink_filter, listener)
         listener.on_receive(UMessage())
         return UStatus(code=UCode.OK)
 
-    def unregister_listener(self, topic, listener):
-        super().unregister_listener(topic, listener)
+    def unregister_listener(self, source_filter, sink_filter, listener):
+        super().unregister_listener(source_filter, sink_filter, listener)
         return UStatus(code=UCode.OK)
 
 
@@ -58,13 +57,13 @@ class SadUTransport(UTransport):
         super().send(message)
         return UStatus(code=UCode.INTERNAL)
 
-    def register_listener(self, topic, listener):
-        super().register_listener(topic, listener)
+    def register_listener(self, source_filter, sink_filter, listener):
+        super().register_listener(source_filter, sink_filter, listener)
         listener.on_receive(None)
         return UStatus(code=UCode.INTERNAL)
 
-    def unregister_listener(self, topic, listener):
-        super().unregister_listener(topic, listener)
+    def unregister_listener(self, source_filter, sink_filter, listener):
+        super().unregister_listener(source_filter, sink_filter, listener)
         return UStatus(code=UCode.INTERNAL)
 
 
@@ -74,19 +73,14 @@ class UTransportTest(unittest.TestCase):
         status = transport.send(UMessage())
         self.assertEqual(status.code, UCode.OK)
 
-    def test_happy_send_message(self):
-        transport = HappyUTransport()
-        status = transport.send(UMessage())
-        self.assertEqual(status.code, UCode.OK)
-
     def test_happy_register_listener(self):
         transport = HappyUTransport()
-        status = transport.register_listener(UUri(), MyListener())
+        status = transport.register_listener(UUri(), UUri(), MyListener())
         self.assertEqual(status.code, UCode.OK)
 
     def test_happy_register_unlistener(self):
         transport = HappyUTransport()
-        status = transport.unregister_listener(UUri(), MyListener())
+        status = transport.unregister_listener(UUri(), UUri(), MyListener())
         self.assertEqual(status.code, UCode.OK)
 
     def test_sending_null_message(self):
@@ -99,19 +93,14 @@ class UTransportTest(unittest.TestCase):
         status = transport.send(UMessage())
         self.assertEqual(status.code, UCode.INTERNAL)
 
-    def test_unhappy_send_message(self):
-        transport = SadUTransport()
-        status = transport.send(UMessage())
-        self.assertEqual(status.code, UCode.INTERNAL)
-
     def test_unhappy_register_listener(self):
         transport = SadUTransport()
-        status = transport.register_listener(UUri(), MyListener())
+        status = transport.register_listener(UUri(), UUri(), MyListener())
         self.assertEqual(status.code, UCode.INTERNAL)
 
     def test_unhappy_register_unlistener(self):
         transport = SadUTransport()
-        status = transport.unregister_listener(UUri(), MyListener())
+        status = transport.unregister_listener(UUri(), UUri(), MyListener())
         self.assertEqual(status.code, UCode.INTERNAL)
 
 

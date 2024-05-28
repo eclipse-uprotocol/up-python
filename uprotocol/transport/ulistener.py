@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -23,13 +23,13 @@ SPDX-License-Identifier: Apache-2.0
 
 from abc import ABC, abstractmethod
 
-from uprotocol.proto.umessage_pb2 import UMessage
+from uprotocol.proto.uprotocol.v1.umessage_pb2 import UMessage
 
 
 class UListener(ABC):
     """
-    For any implementation that defines some kind of callback or function that will be called to handle incoming
-    messages.
+    For any implementation that defines some kind of callback or function
+    that will be called to handle incoming messages.
     """
 
     @abstractmethod

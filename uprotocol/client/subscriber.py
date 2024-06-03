@@ -25,6 +25,7 @@ from uprotocol.client.rpc_client import RpcClient
 from uprotocol.client.rpc_mapper import RpcMapper
 from uprotocol.transport.ulistener import UListener
 from uprotocol.uri.factory.uri_factory import UriFactory
+from uprotocol.client.ustatus_exception import UStatusException
 
 from uprotocol.proto.uprotocol.core.usubscription.v3 import usubscription_pb2
 from uprotocol.proto.uprotocol.core.usubscription.v3.usubscription_pb2 import (
@@ -35,6 +36,7 @@ from uprotocol.proto.uprotocol.core.usubscription.v3.usubscription_pb2 import (
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus, UCode
 
+from concurrent.futures import Future, ThreadPoolExecutor
 
 class Subscriber(RpcClient):
     """
@@ -57,23 +59,57 @@ class Subscriber(RpcClient):
             "uSubscription"
         ]
         subscribe = UriFactory.from_proto(service_descriptor, 0)
+        print("subscribe:", type(subscribe), subscribe)
         request: SubscriptionRequest = SubscriptionRequest(
             topic=topic,
             subscriber=SubscriberInfo(uri=self.get_transport().source),
         )
-        result = RpcMapper.map_response(
-            self.invoke_method(subscribe, request), UStatus
-        )
+        # result: Future = RpcMapper.map_response(
+        #     self.invoke_method(subscribe, request), UStatus
+        # )
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            invoke_future: Future = self.invoke_method(subscribe, request)
+            result_f: Future = executor.submit(RpcMapper.map_response, 
+                                               invoke_future, 
+                                               UStatus)
+            
+            future_UStatus: Future = result_f.result()
+            print("future_UStatus:", future_UStatus)
 
+        
+        try:
+            status: UStatus = future_UStatus.result()
+            print("status:", status)
+            if status.code == UCode.OK:
+                return self.get_transport().register_listener(topic, listener)
+            return status
+        except UStatusException as ue:
+            print("at subscriber UStatusException")
+            return ue.get_status()
+        except RuntimeError as re:
+            raise re
+        
+        
+        '''
         def handle_response(future):
             status = future.result()
+            print("status:", status)
             if status.code == UCode.OK:
                 return self.get_transport().register_listener(topic, listener)
             return status
 
         result.add_done_callback(handle_response)
-
+        
         return result
+        
+        '''
+        
+        
+        # print("future result:", result.done())
+        # new_result = await result
+        # time.sleep(5)
+        # print("future result:", result.done())
+
 
     def unsubscribe(self, topic: UUri, listener: UListener) -> UStatus:
         """

@@ -65,7 +65,7 @@ class UMessageBuilder:
     # private ByteString payload;
 
     @staticmethod
-    def publish(source: UUri):
+    def publish(source: UUri) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a publish message.
 
@@ -81,7 +81,7 @@ class UMessageBuilder:
         )
 
     @staticmethod
-    def notification(source: UUri, sink: UUri):
+    def notification(source: UUri, sink: UUri) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a notification message.
 
@@ -101,7 +101,7 @@ class UMessageBuilder:
         ).with_sink(sink)
 
     @staticmethod
-    def request(source: UUri, sink: UUri, ttl: int):
+    def request(source: UUri, sink: UUri, ttl: int) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a request message.
 
@@ -128,7 +128,7 @@ class UMessageBuilder:
         )
 
     @multimethod
-    def response(source: UUri, sink: UUri, reqid: UUID):
+    def response(source: UUri, sink: UUri, reqid: UUID) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a response message.
 
@@ -157,7 +157,7 @@ class UMessageBuilder:
         )
 
     @multimethod
-    def response(request: UAttributes):
+    def response(request: UAttributes) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a response message using an
         existing request.
@@ -203,7 +203,7 @@ class UMessageBuilder:
         self.format = None
         self.payload = None
 
-    def with_ttl(self, ttl: int):
+    def with_ttl(self, ttl: int) -> "UMessageBuilder":
         """
         Add the time to live in milliseconds.
 
@@ -213,7 +213,7 @@ class UMessageBuilder:
         self.ttl = ttl
         return self
 
-    def with_token(self, token: str):
+    def with_token(self, token: str) -> "UMessageBuilder":
         """
         Add the authorization token used for TAP.
 
@@ -223,7 +223,7 @@ class UMessageBuilder:
         self.token = token
         return self
 
-    def with_priority(self, priority: UPriority):
+    def with_priority(self, priority: UPriority) -> "UMessageBuilder":
         """
         Add the priority level of the message.
 
@@ -233,7 +233,7 @@ class UMessageBuilder:
         self.priority = priority
         return self
 
-    def with_permission_level(self, plevel: int):
+    def with_permission_level(self, plevel: int) -> "UMessageBuilder":
         """
         Add the permission level of the message.
 
@@ -243,7 +243,7 @@ class UMessageBuilder:
         self.plevel = plevel
         return self
 
-    def with_traceparent(self, traceparent: str):
+    def with_traceparent(self, traceparent: str) -> "UMessageBuilder":
         """
         Add the traceprent.
 
@@ -253,7 +253,7 @@ class UMessageBuilder:
         self.traceparent = traceparent
         return self
 
-    def with_commstatus(self, commstatus: UCode):
+    def with_commstatus(self, commstatus: UCode) -> "UMessageBuilder":
         """
         Add the communication status of the message.
 
@@ -263,7 +263,7 @@ class UMessageBuilder:
         self.commstatus = commstatus
         return self
 
-    def with_reqid(self, reqid: UUID):
+    def with_reqid(self, reqid: UUID) -> "UMessageBuilder":
         """
         Add the request ID.
 
@@ -273,7 +273,7 @@ class UMessageBuilder:
         self.reqid = reqid
         return self
 
-    def with_sink(self, sink: UUri):
+    def with_sink(self, sink: UUri) -> "UMessageBuilder":
         """
         Add the explicit destination URI.
 

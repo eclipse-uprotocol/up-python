@@ -19,12 +19,14 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
+from google.protobuf.any_pb2 import Any
 
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus, UCode
 from uprotocol.proto.uprotocol.v1.uattributes_pb2 import UMessageType
 
 from uprotocol.transport.builder.umessage_builder import UMessageBuilder
+from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.transport.validate.uattributesvalidator import (
     UAttributesValidator,
@@ -52,7 +54,9 @@ class UTransportImpl(UTransport):
 
     def send(self, message):
         validator = UAttributesValidator.get_validator(message.attributes)
-
+        # print("SEND Message:", message)
+        # print("Send validat", validator.validate(message.attributes))
+        
         if (
             message is None
             or validator.validate(message.attributes)
@@ -65,17 +69,19 @@ class UTransportImpl(UTransport):
 
         # The following is test code to generate a response from a request
         if message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
-            response = UMessageBuilder.response(message.attributes).build()
+            serialized_status: bytes = UStatus(code=UCode.OK, message="nice").SerializeToString()
+            print("serialized_status:", serialized_status)
+            response = UMessageBuilder.response(message.attributes).build(arg1= Any(value=serialized_status))
             for key, listener in self.mlisteners.items():
                 if (
                     key.source == message.attributes.source
                     or key.sink == message.attributes.sink
                 ):
-                    listener(response)
+                    listener.on_receive(response)
 
         return UStatus(code=UCode.OK)
 
-    def register_listener(self, source: UUri, sink: UUri, listener):
+    def register_listener(self, source: UUri, sink: UUri, listener: UListener):
         key = UTransportImpl.Key(source, sink)
         self.mlisteners[key] = listener
         return UStatus(code=UCode.OK)

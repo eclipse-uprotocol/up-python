@@ -19,6 +19,7 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
+from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus, UCode
 
 
 class UStatusException(BaseException):
@@ -26,7 +27,7 @@ class UStatusException(BaseException):
     The unchecked exception which carries uProtocol error model.
     """
 
-    def __init__(self, status, cause):
+    def __init__(self, status: UStatus, cause):
         """
         Constructs an instance.
         :param status: An error UStatus.
@@ -34,21 +35,21 @@ class UStatusException(BaseException):
         """
         self.m_status = status
 
-    def get_status(self):
+    def get_status(self) -> UStatus:
         """
         Get the error status.
         :return: The error UStatus.
         """
         return self.m_status
 
-    def get_code(self):
+    def get_code(self) -> UCode:
         """
         Get the error code.
         :return: The error UCode.
         """
         return self.m_status.code
 
-    def get_message(self):
+    def get_message(self) -> str:
         """
         Get the error message.
         :return: The error message.

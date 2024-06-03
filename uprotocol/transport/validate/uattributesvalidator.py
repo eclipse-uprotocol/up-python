@@ -88,7 +88,14 @@ class UAttributesValidator:
             self.validate_reqid(attributes),
             self.validate_id(attributes),
         ]
-
+        
+        # print("UAttributesValidator error msg:")
+        # for i, e in enumerate(error_messages):
+        #     print(i, e)
+        # print("attributes:", attributes)
+        # print("error:", error_messages[2], error_messages[2].get_message())
+        # print(attributes.HasField("sink") , UriValidator.is_empty(attributes.sink))
+                
         error_messages = [
             status.get_message()
             for status in error_messages

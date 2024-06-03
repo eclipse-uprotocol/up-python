@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+import time
 import unittest
 
 from tests.test_client.utransport_impl import UTransportImpl
@@ -28,6 +29,7 @@ from uprotocol.client.subscriber import Subscriber
 from uprotocol.transport.ulistener import UListener
 
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
+from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus, UCode
 
 
 def create_topic():
@@ -36,6 +38,7 @@ def create_topic():
         ue_id=3,
         ue_version_major=1,
         resource_id=0x8000,
+        
     )
 
 
@@ -47,7 +50,10 @@ class SubscriptionListener(UListener):
 class SubscriberImpl(Subscriber):
     def __init__(self):
         self.source = UUri(
-            authority_name="hartley", ue_id=1, ue_version_major=1
+            authority_name="hartley", 
+            ue_id=1, 
+            ue_version_major=1, 
+            resource_id=1,
         )
         self.mtransport = UTransportImpl(self.source)
 
@@ -64,15 +70,16 @@ class TestSubscriber(unittest.TestCase):
         subscriber: SubscriberImpl = SubscriberImpl()
         self.assertIsNotNone(subscriber)
 
-    # def test_subscribe_api(self):
-    #     """
-    #     Test Subscribe API
-    #     """
-    #     subscriber: SubscriberImpl = SubscriberImpl()
-    #     listener = SubscriptionListener()
-    #     topic = create_topic()
-    #     status: UStatus = subscriber.subscribe(topic, listener)
-    #     self.assertEqual(status.code, UCode.OK)
+    def test_subscribe_api(self):
+        """
+        Test Subscribe API
+        """
+        subscriber: SubscriberImpl = SubscriberImpl()
+        listener = SubscriptionListener()
+        topic: UUri = create_topic()
+        print("topic", topic)
+        status: UStatus = subscriber.subscribe(topic, listener)
+        self.assertEqual(status.code, UCode.OK)
 
     # def test_unsubscribe_api(self):
     #     """
@@ -83,3 +90,7 @@ class TestSubscriber(unittest.TestCase):
     #     topic = create_topic()
     #     status: UStatus = subscriber.unsubscribe(topic, listener)
     #     self.assertEqual(status.code, UCode.OK)
+
+
+if __name__ == '__main__':
+    unittest.main()

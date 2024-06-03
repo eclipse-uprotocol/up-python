@@ -26,6 +26,7 @@ from google.protobuf import any_pb2
 from uprotocol.client.upayload import UPayload
 from uprotocol.client.rpc_result import RpcResult
 
+from uprotocol.client.ustatus_exception import UStatusException
 from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UCode
 from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus
 
@@ -54,9 +55,21 @@ class RpcMapper:
         """
         response_future: Future = Future()
 
-        def handle_response(payload: UPayload):
+        def handle_response(payload: Future):
             nonlocal response_future
-            if not payload or len(payload.get_data()) == 0:
+            
+            print("handle_future's payload:", type(payload), payload)
+            try:
+                payload: UPayload = payload.result()
+            except UStatusException as ue:
+                print("UStatusException:", type(ue), ue)
+                response_future.set_exception(ue)
+                return
+            
+            print("handle_response's payload type:", type(payload))
+            print("handle_response's payload:",  payload.get_data())
+
+            if payload is None or len(payload.get_data()) == 0:
                 response_future.set_exception(
                     RuntimeError(
                         "Server returned a null payload. "

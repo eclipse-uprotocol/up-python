@@ -54,8 +54,6 @@ class UTransportImpl(UTransport):
 
     def send(self, message):
         validator = UAttributesValidator.get_validator(message.attributes)
-        # print("SEND Message:", message)
-        # print("Send validat", validator.validate(message.attributes))
         
         if (
             message is None

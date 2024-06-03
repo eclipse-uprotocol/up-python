@@ -46,9 +46,7 @@ def create_destination_uri():
 
 class NotifierImpl(Notifier):
     def __init__(self):
-        self.source = UUri(
-            authority_name="hartley", ue_id=1, ue_version_major=1
-        )
+        self.source = UUri(authority_name="hartley", ue_id=1, ue_version_major=1)
         self.mtransport = UTransportImpl(self.source)
 
     def get_transport(self):
@@ -82,9 +80,7 @@ class TestNotifier(unittest.TestCase):
         Test calling notify Api passing google.protobuf.Message as payload
         """
         notifier: NotifierImpl = NotifierImpl()
-        status: UStatus = notifier.notify(
-            create_topic(), create_destination_uri(), UUri()
-        )
+        status: UStatus = notifier.notify(create_topic(), create_destination_uri(), UUri())
         self.assertEqual(status.code, UCode.OK)
 
     def test_register_notification_listener(self):
@@ -92,9 +88,7 @@ class TestNotifier(unittest.TestCase):
         Test calling registerNotificationListener
         """
         notifier: NotifierImpl = NotifierImpl()
-        status: UStatus = notifier.register_notification_listener(
-            create_topic(), NotificationListener()
-        )
+        status: UStatus = notifier.register_notification_listener(create_topic(), NotificationListener())
         self.assertEqual(status.code, UCode.OK)
 
     def test_unregister_notification_listener(self):
@@ -102,7 +96,5 @@ class TestNotifier(unittest.TestCase):
         Test calling registerNotificationListener
         """
         notifier: NotifierImpl = NotifierImpl()
-        status: UStatus = notifier.unregister_notification_listener(
-            create_topic(), NotificationListener()
-        )
+        status: UStatus = notifier.unregister_notification_listener(create_topic(), NotificationListener())
         self.assertEqual(status.code, UCode.OK)

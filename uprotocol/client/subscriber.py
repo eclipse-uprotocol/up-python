@@ -64,9 +64,7 @@ class Subscriber(RpcClient):
             topic=topic,
             subscriber=SubscriberInfo(uri=self.get_transport().source),
         )
-        # result: Future = RpcMapper.map_response(
-        #     self.invoke_method(subscribe, request), UStatus
-        # )
+
         with ThreadPoolExecutor(max_workers=1) as executor:
             invoke_future: Future = self.invoke_method(subscribe, request)
             result_f: Future = executor.submit(RpcMapper.map_response, 

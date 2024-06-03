@@ -116,12 +116,6 @@ class RpcClient(TransportWrapper):
         out = transport.register_listener(
             method_uri, transport.get_source(), TestUListener()
         )
-        
-        print("out:", type(out), out)
-        print()
-        # transport.register_listener(
-        #     method_uri, transport.get_source(), on_receive
-        # )
 
         result = transport.send(request)
         print("transport.send(request):",result )
@@ -137,29 +131,3 @@ class RpcClient(TransportWrapper):
             )
 
         return response_payload
-
-        
-    # def invoke_method(self, method_uri: UUri, arg2, arg3=None):
-    #     """
-    #     Overloaded method to handle different signatures for
-    #     invoking RPC methods.
-    #     """
-    #     if isinstance(arg2, Message) and arg3 is None:
-    #         return self._invoke_method_static(
-    #             method_uri,
-    #             UPayload(
-    #                 format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
-    #                 data=arg2.SerializeToString(),
-    #             ),
-    #             CallOptions(),
-    #         )
-    #     elif isinstance(arg2, UPayload) and arg3 is None:
-    #         return self._invoke_method_static(
-    #             method_uri,
-    #             arg2,
-    #             CallOptions(),
-    #         )
-    #     elif isinstance(arg2, UPayload) and isinstance(arg3, CallOptions):
-    #         return self._invoke_method_static(method_uri, arg2, arg3)
-    #     else:
-    #         raise TypeError("Invalid arguments for invoke_method")

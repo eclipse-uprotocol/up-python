@@ -38,7 +38,6 @@ def create_topic():
         ue_id=3,
         ue_version_major=1,
         resource_id=0x8000,
-        
     )
 
 
@@ -50,9 +49,9 @@ class SubscriptionListener(UListener):
 class SubscriberImpl(Subscriber):
     def __init__(self):
         self.source = UUri(
-            authority_name="hartley", 
-            ue_id=1, 
-            ue_version_major=1, 
+            authority_name="hartley",
+            ue_id=1,
+            ue_version_major=1,
             resource_id=1,
         )
         self.mtransport = UTransportImpl(self.source)
@@ -92,5 +91,5 @@ class TestSubscriber(unittest.TestCase):
     #     self.assertEqual(status.code, UCode.OK)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

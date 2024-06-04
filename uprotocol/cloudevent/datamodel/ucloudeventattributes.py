@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -39,14 +39,11 @@ class UCloudEventAttributes:
     ):
         """
         Construct the properties object.<br><br>
-        @param hash_value: an HMAC generated on the data portion of the
-        CloudEvent message using the device key.
+        @param hash_value: an HMAC generated on the data portion of the CloudEvent message using the device key.
         @param priority: uProtocol Prioritization classifications.
-        @param ttl: How long this event should live for after it
-        was generated (in milliseconds). Events without this attribute
-        (or value is 0) MUST NOT timeout.
-        @param token: Oauth2 access token to perform the access
-        request defined in the request message.
+        @param ttl: How long this event should live for after it was generated (in milliseconds). Events without this
+        attribute (or value is 0) MUST NOT timeout.
+        @param token: Oauth2 access token to perform the access request defined in the request message.
         """
         self.hash = hash_value
         self.priority = priority
@@ -57,20 +54,17 @@ class UCloudEventAttributes:
     @staticmethod
     def empty():
         """
-        Static factory method for creating an empty cloud event attributes
-        object, to avoid working with null.
-        @return: Returns an empty cloud event attributes that indicates that
-        there are no added additional attributes to configure.
+        Static factory method for creating an empty  cloud event attributes object, to avoid working with null<br><br>
+        @return: Returns an empty  cloud event attributes that indicates that there are no added additional
+        attributes to configure.
         """
         return UCloudEventAttributes(None, None, None, None)
 
     def is_empty(self):
         """
-        Indicates that there are no added additional attributes to configure
-        when building a CloudEvent.
-        @return: Returns true if this attributes container is an
-        empty container and has no valuable information in building a
-        CloudEvent.
+        Indicates that there are no added additional attributes to configure when building a CloudEvent.<br><br>
+        @return: Returns true if this attributes container is an empty container and has no valuable information in
+        building a CloudEvent.
         """
         return (
             (self.hash is None or self.hash.isspace())
@@ -82,8 +76,7 @@ class UCloudEventAttributes:
 
     def get_hash(self) -> str:
         """
-        An HMAC generated on the data portion of the CloudEvent message
-        using the device key.
+        An HMAC generated on the data portion of the CloudEvent message using the device key.<br><br>
         @return: Returns an Optional hash attribute.
         """
         return self.hash if self.hash and self.hash.strip() else None
@@ -97,16 +90,14 @@ class UCloudEventAttributes:
 
     def get_ttl(self) -> int:
         """
-        How long this event should live for after it was generated
-        (in milliseconds).
+        How long this event should live for after it was generated (in milliseconds).<br><br>
         @return: Returns an Optional time to live attribute.
         """
         return self.ttl
 
     def get_token(self) -> str:
         """
-        Oauth2 access token to perform the access request defined in
-        the request message.
+        Oauth2 access token to perform the access request defined in the request message.<br><br>
         @return: Returns an Optional OAuth token attribute.
         """
         return self.token if self.token and self.token.strip() else None
@@ -145,8 +136,7 @@ class UCloudEventAttributes:
             f", traceparent='{self.traceparent}'" if self.traceparent else ""
         )
         return (
-            f"UCloudEventAttributes{{hash='{self.hash}', "
-            f"priority={self.priority},"
+            f"UCloudEventAttributes{{hash='{self.hash}', priority={self.priority},"
             f" ttl={self.ttl}, token='{self.token}'{traceparent_string}}}"
         )
 
@@ -165,48 +155,38 @@ class UCloudEventAttributesBuilder:
 
     def with_hash(self, hash_value: str):
         """
-        Add an HMAC generated on the data portion of the CloudEvent message
-        using the device key.
-        @param hash_value: hash an HMAC generated on the data portion of
-        the CloudEvent message using the device key.
-        @return:  Returns the UCloudEventAttributesBuilder with the
-        configured hash.
+        Add an HMAC generated on the data portion of the CloudEvent message using the device key.<br><br>
+        @param hash_value: hash an HMAC generated on the data portion of the CloudEvent message using the device key.
+        @return:  Returns the UCloudEventAttributesBuilder with the configured hash.
         """
         self.hash = hash_value
         return self
 
     def with_priority(self, priority: UPriority):
         """
-        Add a uProtocol Prioritization classifications.
+        Add a uProtocol Prioritization classifications.<br><br>
         @param priority: priority uProtocol Prioritization classifications.
-        @return: Returns the UCloudEventAttributesBuilder with the
-        configured priority.
+        @return: Returns the UCloudEventAttributesBuilder with the configured priority.
         """
         self.priority = UPriority.Name(priority)
         return self
 
     def with_ttl(self, ttl: int):
         """
-        Add a time to live which is how long this event should live for after
-        it was generated (in milliseconds).
-        Events without this attribute (or value is 0) MUST NOT timeout.
-        @param ttl: How long this event should live for after it was
-        generated (in milliseconds). Events without this attribute (or value
-        is 0) MUST NOT timeout.
-        @return: Returns the UCloudEventAttributesBuilder with the
-        configured time to live.
+        Add a time to live which is how long this event should live for after it was generated (in milliseconds).
+        Events without this attribute (or value is 0) MUST NOT timeout.<br><br>
+        @param ttl: How long this event should live for after it was generated (in milliseconds). Events without this
+        attribute (or value is 0) MUST NOT timeout.
+        @return: Returns the UCloudEventAttributesBuilder with the configured time to live.
         """
         self.ttl = ttl
         return self
 
     def with_token(self, token: str):
         """
-        Add an Oauth2 access token to perform the access request defined in
-        the request message.
-        @param token: An Oauth2 access token to perform the access
-        request defined in the request message.
-        @return: Returns the UCloudEventAttributesBuilder with the
-        configured OAuth token.
+        Add an Oauth2 access token to perform the access request defined in the request message.<br><br>
+        @param token: An Oauth2 access token to perform the access request defined in the request message.
+        @return: Returns the UCloudEventAttributesBuilder with the configured OAuth token.
         """
         self.token = token
         return self

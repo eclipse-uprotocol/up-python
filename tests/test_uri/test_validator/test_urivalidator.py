@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.uri.validator.uri_validator import UriValidator
+from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 
 

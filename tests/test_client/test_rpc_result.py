@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -26,7 +26,7 @@ from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UCode, UStatus
 from uprotocol.client.rpc_result import RpcResult
 
 
-def get_default():
+def getDefault():
     return 5
 
 
@@ -54,11 +54,11 @@ class TestRpcResult(unittest.TestCase):
 
     def testGetOrElseOnSuccess(self):
         result = RpcResult.success(2)
-        self.assertEqual(2, result.getOrElse(get_default()))
+        self.assertEqual(2, result.getOrElse(getDefault()))
 
     def testGetOrElseOnFailure(self):
         result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
-        self.assertEqual(get_default(), result.getOrElse(get_default))
+        self.assertEqual(getDefault(), result.getOrElse(getDefault))
 
     def testGetOrElseOnSuccess_(self):
         result = RpcResult.success(2)
@@ -76,19 +76,13 @@ class TestRpcResult(unittest.TestCase):
         result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
         with self.assertRaises(Exception) as context:
             result.successValue()
-        self.assertEqual(
-            str(context.exception),
-            "Method successValue() called on a Failure instance",
-        )
+        self.assertEqual(str(context.exception), "Method successValue() called on a Failure instance")
 
     def testFailureValue_onSuccess(self):
         result = RpcResult.success(2)
         with self.assertRaises(Exception) as context:
             result.failureValue()
-        self.assertEqual(
-            str(context.exception),
-            "Method failureValue() called on a Success instance",
-        )
+        self.assertEqual(str(context.exception), "Method failureValue() called on a Success instance")
 
     def testFailureValue_onFailure_(self):
         result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
@@ -118,9 +112,7 @@ class TestRpcResult(unittest.TestCase):
 
     def test_flat_map_success_when_function_throws_exception(self):
         result = RpcResult.success(2)
-        flat_mapped = result.flatMap(
-            self.fun_that_throws_exception_for_flat_map
-        )
+        flat_mapped = result.flatMap(self.fun_that_throws_exception_for_flat_map)
         self.assertTrue(flat_mapped.isFailure())
         self.assertEqual(UCode.UNKNOWN, flat_mapped.failureValue().code)
         self.assertEqual("2 went boom", flat_mapped.failureValue().message)
@@ -148,9 +140,7 @@ class TestRpcResult(unittest.TestCase):
         result = RpcResult.success(2)
         filter_result = result.filter(lambda i: i > 5)
         self.assertTrue(filter_result.isFailure())
-        expected_status = UStatus(
-            code=UCode.FAILED_PRECONDITION, message="filtered out"
-        )
+        expected_status = UStatus(code=UCode.FAILED_PRECONDITION, message="filtered out")
         self.assertEqual(expected_status, filter_result.failureValue())
 
     def test_filter_on_success_that_succeeds(self):
@@ -205,9 +195,8 @@ class TestRpcResult(unittest.TestCase):
 
     def test_to_string_failure(self):
         result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
-        expected_string = (
-            "Failure(code: INVALID_ARGUMENT\n" 'message: "boom"\n)'
-        )
+        expected_string = ("Failure(code: INVALID_ARGUMENT\n"
+                           "'message: \"boom\"\n)")
         self.assertEqual(expected_string, str(result))
 
 

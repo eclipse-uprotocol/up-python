@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,23 +20,21 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 import unittest
 
 from google.protobuf import any_pb2
 
-from uprotocol.cloudevent.datamodel.ucloudevent_attributes import (
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
-from uprotocol.cloudevent.factory.cloudevent_factory import CloudEventFactory
+from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.cloudevent.serialize.cloudeventserializers import (
     CloudEventSerializers,
 )
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
-    UPriority,
-    UMessageType,
-)
+from uprotocol.proto.uprotocol.v1.uattributes_pb2 import UPriority, UMessageType
 
 protoContentType = CloudEventFactory.PROTOBUF_CONTENT_TYPE
 serializer = CloudEventSerializers.JSON.serializer()
@@ -84,16 +82,11 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         bytes_data = serializer.serialize(cloud_event)
         json_str = bytes_data.decode("utf-8")
         expected = (
-            '{"specversion": "1.0", "id": "hello", "source": '
-            '"/12345/1/door.front_left", '
-            '"type": "pub.v1", "datacontenttype": "application/x-protobuf", '
-            '"dataschema": '
-            '"type.googleapis.com/io.cloudevents.v1.CloudEvent", '
-            '"data_base64": '
-            '"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnR'
-            'zLnYxLkNsb3VkRXZlbnQSPQoFaGVs'
-            'bG8SE2h0dHBzOi8vZXhhbXBsZS5jb20aAzEuMCIMZXhhbXBsZS5kZW1'
-            'vKgoKA3R0bBIDGgEzQgA=", '
+            '{"specversion": "1.0", "id": "hello", "source": "/12345/1/door.front_left", '
+            '"type": "pub.v1", "datacontenttype": "application/x-protobuf", "dataschema": '
+            '"type.googleapis.com/io.cloudevents.v1.CloudEvent", "data_base64": '
+            '"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLnYxLkNsb3VkRXZlbnQSPQoFaGVs'
+            'bG8SE2h0dHBzOi8vZXhhbXBsZS5jb20aAzEuMCIMZXhhbXBsZS5kZW1vKgoKA3R0bBIDGgEzQgA=", '
             '"ttl": 3, "priority": "UPRIORITY_CS1"}'
         )
         self.assertEqual(expected, json_str)
@@ -126,7 +119,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
 
         self.assertEqual(cloud_event, deserialized_data)
 
-    def test_double_ser_protobuf_creating_cloud_event_factory_methods(
+    def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(
         self,
     ):
         proto_payload = build_proto_payload_for_test()

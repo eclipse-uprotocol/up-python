@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -24,12 +24,12 @@ import re
 from typing import Optional
 
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
-from uprotocol.uri.validator.uri_validator import UriValidator
+from uprotocol.uri.validator.urivalidator import UriValidator
 
 
 class UriSerializer:
     """
-    UUris are used in transport layers and hence need to be serialized.
+    UUris are used in transport layers and hence need to be serialized.<br>
     Each transport supports different
     serialization formats.
     """

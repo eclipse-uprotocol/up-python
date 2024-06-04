@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 from abc import ABC, abstractmethod
 
 from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UCode, UStatus
@@ -30,8 +31,10 @@ class ValidationResult(ABC):
     Class wrapping a ValidationResult of success or failure wrapping the value
     of a UStatus.
     """
-
     STATUS_SUCCESS = UStatus(code=UCode.OK, message="OK")
+
+    def __init__(self):
+        pass
 
     @abstractmethod
     def to_status(self) -> UStatus:
@@ -81,7 +84,7 @@ class Failure(ValidationResult):
 
 class Success(ValidationResult):
     """
-    Implementation for success, wrapping a UStatus with UCode 0 for success.
+     Implementation for success, wrapping a UStatus with UCode 0 for success.
     """
 
     def to_status(self) -> UStatus:

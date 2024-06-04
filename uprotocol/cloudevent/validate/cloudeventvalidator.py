@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 from abc import ABC, abstractmethod
 from enum import Enum
 
@@ -28,8 +29,8 @@ from cloudevents.http import CloudEvent
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.proto.uprotocol.v1.uattributes_pb2 import UMessageType
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
-from uprotocol.uri.serializer.uri_serializer import UriSerializer
-from uprotocol.uri.validator.uri_validator import UriValidator
+from uprotocol.uri.serializer.uriserializer import UriSerializer
+from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.validation.validationresult import ValidationResult
 
 
@@ -101,19 +102,17 @@ class CloudEventValidator(ABC):
             return ValidationResult.success()
         else:
             return ValidationResult.failure(
-                f"Invalid CloudEvent version [{version}]. "
-                "CloudEvent version must be 1.0."
+                f"Invalid CloudEvent version [{version}]. CloudEvent version must be 1.0."
             )
 
     @staticmethod
     def validate_id(ce: CloudEvent) -> ValidationResult:
-        id_val = UCloudEvent.extract_string_value_from_attributes("id", ce)
+        id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         return (
             ValidationResult.success()
             if UCloudEvent.is_cloud_event_id(ce)
             else ValidationResult.failure(
-                f"Invalid CloudEvent Id [{id_val}]. CloudEventId "
-                "must be of type UUIDv8."
+                f"Invalid CloudEvent Id [{id}]. CloudEvent Id must be of type UUIDv8."
             )
         )
 
@@ -144,7 +143,7 @@ class CloudEventValidator(ABC):
     def validate_sink(self, ce: CloudEvent) -> ValidationResult:
         """
         Validate the sink value of a cloud event in the default scenario where
-        the sink attribute is optional.
+        the sink attribute is optional.<br><br>
         @param ce:The cloud event
         containing the sink to validate.
         @return:Returns the ValidationResult
@@ -153,21 +152,20 @@ class CloudEventValidator(ABC):
         maybe_sink = UCloudEvent.get_sink(ce)
         if maybe_sink:
             sink = maybe_sink
-            check_sink = self.validate_uentity_uri(sink)
+            check_sink = self.validate_u_entity_uri(sink)
             if check_sink.is_failure():
                 return ValidationResult.failure(
-                    "Invalid CloudEvent sink "
-                    f"[{sink}]. {check_sink.get_message()}"
+                    f"Invalid CloudEvent sink [{sink}]. {check_sink.get_message()}"
                 )
 
         return ValidationResult.success()
 
     @staticmethod
-    def validate_uentity_uri(uri: str) -> ValidationResult:
+    def validate_u_entity_uri(uri: str) -> ValidationResult:
         """
         Validate an  UriPart for an  Software Entity must have an authority in
         the case of a microRemote uri, and must contain the name of the
-        USE.
+        USE.<br><br>
         @param uri:uri string to validate.
         @return:Returns the
         ValidationResult containing a success or a failure with the error
@@ -181,7 +179,7 @@ class CloudEventValidator(ABC):
         )
 
     @staticmethod
-    def validate_uentity_uri_from_UURI(uri: UUri) -> ValidationResult:
+    def validate_u_entity_uri_from_UURI(uri: UUri) -> ValidationResult:
         return UriValidator.validate(uri)
 
     @staticmethod
@@ -214,19 +212,19 @@ class CloudEventValidator(ABC):
         @return:Returns the ValidationResult containing a
         success or a failure with the error message.
         """
-        validation_result = CloudEventValidator.validate_uentity_uri_from_UURI(
+        validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(
             uri
         )
-        if validation_result.is_failure():
-            return validation_result
+        if validationResult.is_failure():
+            return validationResult
 
-        uresource = uri.resource
-        if not uresource.name:
+        u_resource = uri.resource
+        if not u_resource.name:
             return ValidationResult.failure(
                 "UriPart is missing uResource name."
             )
 
-        if not uresource.message:
+        if not u_resource.message:
             return ValidationResult.failure(
                 "UriPart is missing Message information."
             )
@@ -256,32 +254,31 @@ class CloudEventValidator(ABC):
     @staticmethod
     def validate_rpc_topic_uri_from_uuri(uri: UUri) -> ValidationResult:
         """
-        Validate a UriPart that is meant to be used as the
-        application response topic for rpc calls. Used in Request source
-        values and Response sink values.
+        Validate a UriPart that is meant to be used as the application response
+        topic for rpc calls. <br>Used in Request source values and Response
+        sink values.<br><br>
         @param uri:UriPart to validate.
-        @return:Returns the ValidationResult containing a success or a
-        failure with the error message.
+        @return:Returns
+        the ValidationResult containing a success or a failure with the error
+        message.
         """
-        validation_result = CloudEventValidator.validate_uentity_uri_from_UURI(
+        validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(
             uri
         )
-        if validation_result.is_failure():
+        if validationResult.is_failure():
             return ValidationResult.failure(
-                "Invalid RPC uri application response topic. "
-                f"{validation_result.get_message()}",
+                f"Invalid RPC uri application response topic. {validationResult.get_message()}",
             )
 
-        uresource = uri.resource
+        u_resource = uri.resource
         topic = (
-            f"{uresource.name}.{uresource.instance}"
-            if uresource.instance
-            else f"{uresource.name}"
+            f"{u_resource.name}.{u_resource.instance}"
+            if u_resource.instance
+            else f"{u_resource.name}"
         )
         if topic != "rpc.response":
             return ValidationResult.failure(
-                "Invalid RPC uri application response topic. "
-                "UriPart is missing rpc.response.",
+                "Invalid RPC uri application response topic. UriPart is missing rpc.response.",
             )
 
         return ValidationResult.success()
@@ -289,25 +286,23 @@ class CloudEventValidator(ABC):
     @staticmethod
     def validate_rpc_method(uri: str) -> ValidationResult:
         """
-        Validate a UriPart that is meant to be used as an RPC method
-        URI. Used in Request sink values and Response source values.
+        Validate a UriPart that is meant to be used as an RPC method URI. Used in Request sink values and Response
+        source values.<br><br>
         @param uri: String UriPart to validate
-        @return:Returns the ValidationResult containing a success
-        or a failure with the error message.
+        @return:Returns the ValidationResult containing a success or a failure with the error message.
         """
         uuri = UriSerializer().deserialize(uri)
-        validation_result = CloudEventValidator.validate_uentity_uri_from_UURI(
+        validationResult = CloudEventValidator.validate_u_entity_uri_from_UURI(
             uuri
         )
-        if validation_result.is_failure():
+        if validationResult.is_failure():
             return ValidationResult.failure(
-                f"Invalid RPC method uri. {validation_result.get_message()}"
+                f"Invalid RPC method uri. {validationResult.get_message()}"
             )
 
         if not UriValidator.is_rpc_method(uuri):
             return ValidationResult.failure(
-                "Invalid RPC method uri. UriPart should be the method "
-                "to be called, or method from response.",
+                "Invalid RPC method uri. UriPart should be the method to be called, or method from response.",
             )
 
         return ValidationResult.success()
@@ -330,13 +325,12 @@ class Publish(CloudEventValidator):
         return ValidationResult.success()
 
     def validate_type(self, cl_event: CloudEvent) -> ValidationResult:
-        type_val = cl_event.get_attributes().get("type")
+        type = cl_event.get_attributes().get("type")
         return (
             ValidationResult.success()
-            if type_val == "pub.v1"
+            if type == "pub.v1"
             else ValidationResult.failure(
-                f"Invalid CloudEvent type [{type_val}]. CloudEvent of "
-                "type Publish must have a type of 'pub.v1'",
+                f"Invalid CloudEvent type [{type}]. CloudEvent of type Publish must have a type of 'pub.v1'",
             )
         )
 
@@ -354,8 +348,7 @@ class Notification(Publish):
         maybe_sink = UCloudEvent.get_sink(cl_event)
         if not maybe_sink:
             return ValidationResult.failure(
-                "Invalid CloudEvent sink. Notification "
-                "CloudEvent sink must be an  uri.",
+                "Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.",
             )
         else:
             sink = maybe_sink
@@ -373,8 +366,7 @@ class Notification(Publish):
         check_source = self.validate_topic_uri(source)
         if check_source.is_failure():
             return ValidationResult.failure(
-                "Invalid Notification type CloudEvent source "
-                f"[{source}], {check_source.get_message()}",
+                f"Invalid Notification type CloudEvent source [{source}], {check_source.get_message()}",
             )
         return ValidationResult.success()
 
@@ -383,10 +375,8 @@ class Notification(Publish):
             ValidationResult.success()
             if UCloudEvent.get_type(cl_event) == "not.v1"
             else ValidationResult.failure(
-                "Invalid CloudEvent type "
-                f"[{UCloudEvent.get_type(cl_event)}]. "
-                "CloudEvent of type Notification must have a "
-                "type of 'not.v1'",
+                f"Invalid CloudEvent type [{UCloudEvent.get_type(cl_event)}]. " +
+                "CloudEvent of type Notification must have a type of 'not.v1'",
             )
         )
 
@@ -404,8 +394,7 @@ class Request(CloudEventValidator):
         check_source = self.validate_rpc_topic_uri(source)
         if check_source.is_failure():
             return ValidationResult.failure(
-                "Invalid RPC Request CloudEvent source "
-                f"[{source}]. {check_source.get_message()}",
+                f"Invalid RPC Request CloudEvent source [{source}]. {check_source.get_message()}",
             )
         return ValidationResult.success()
 
@@ -413,29 +402,26 @@ class Request(CloudEventValidator):
         maybe_sink = UCloudEvent.get_sink(cl_event)
         if not maybe_sink:
             return ValidationResult.failure(
-                "Invalid RPC Request CloudEvent sink. Request CloudEvent "
-                "sink must be uri for the method to be called."
+                "Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called."
             )
         else:
             sink = maybe_sink
             check_sink = self.validate_rpc_method(sink)
             if check_sink.is_failure():
                 return ValidationResult.failure(
-                    "Invalid RPC Request CloudEvent sink "
-                    f"[{sink}]. {check_sink.get_message()}",
+                    f"Invalid RPC Request CloudEvent sink [{sink}]. {check_sink.get_message()}",
                 )
 
         return ValidationResult.success()
 
     def validate_type(self, cl_event: CloudEvent) -> ValidationResult:
-        type_val = cl_event.get_attributes().get("type")
+        type = cl_event.get_attributes().get("type")
 
         return (
             ValidationResult.success()
             if type == "req.v1"
             else ValidationResult.failure(
-                f"Invalid CloudEvent type [{type_val}]. CloudEvent of "
-                "type Request must have a type of 'req.v1'",
+                f"Invalid CloudEvent type [{type}]. CloudEvent of type Request must have a type of 'req.v1'",
             )
         )
 
@@ -453,8 +439,7 @@ class Response(CloudEventValidator):
         check_source = self.validate_rpc_method(source)
         if check_source.is_failure():
             return ValidationResult.failure(
-                "Invalid RPC Response CloudEvent source "
-                f"[{source}]. {check_source.get_message()}",
+                f"Invalid RPC Response CloudEvent source [{source}]. {check_source.get_message()}",
             )
 
         return ValidationResult.success()
@@ -463,29 +448,26 @@ class Response(CloudEventValidator):
         maybe_sink = UCloudEvent.get_sink(cl_event)
         if not maybe_sink:
             return ValidationResult.failure(
-                "Invalid CloudEvent sink. Response CloudEvent sink "
-                "must be uri the destination of the response.",
+                "Invalid CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.",
             )
         else:
             sink = maybe_sink
             check_sink = self.validate_rpc_topic_uri(sink)
             if check_sink.is_failure():
                 return ValidationResult.failure(
-                    "Invalid RPC Response CloudEvent sink "
-                    f"[{sink}]. {check_sink.get_message()}",
+                    f"Invalid RPC Response CloudEvent sink [{sink}]. {check_sink.get_message()}",
                 )
 
         return ValidationResult.success()
 
     def validate_type(self, cl_event: CloudEvent) -> ValidationResult:
-        type_val = cl_event.get_attributes().get("type")
+        type = cl_event.get_attributes().get("type")
 
         return (
             ValidationResult.success()
             if type == "res.v1"
             else ValidationResult.failure(
-                f"Invalid CloudEvent type [{type_val}]. CloudEvent of "
-                "type Response must have a type of 'res.v1'",
+                f"Invalid CloudEvent type [{type}]. CloudEvent of type Response must have a type of 'res.v1'",
             )
         )
 

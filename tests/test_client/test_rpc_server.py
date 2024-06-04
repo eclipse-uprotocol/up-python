@@ -50,9 +50,7 @@ class MyRequestListener(RequestListener):
 class RpcServerImpl(RpcServer):
 
     def __init__(self):
-        self.source = UUri(
-            authority_name="hartley", ue_id=1, ue_version_major=1
-        )
+        self.source = UUri(authority_name="hartley", ue_id=1, ue_version_major=1)
         self.transport = UTransportImpl(self.source)
 
     def get_transport(self) -> UTransport:
@@ -83,9 +81,7 @@ class TestRpcServer(unittest.TestCase):
         """
         server: RpcServer = RpcServerImpl()
         listener = MyRequestListener(server.get_transport())
-        status: UStatus = server.register_request_listener(
-            create_method_uri(), listener
-        )
+        status: UStatus = server.register_request_listener(create_method_uri(), listener)
         self.assertEqual(status.code, UCode.OK)
 
     def test_unregistering_request_listener(self):
@@ -94,7 +90,5 @@ class TestRpcServer(unittest.TestCase):
         """
         server: RpcServer = RpcServerImpl()
         listener = MyRequestListener(server.get_transport())
-        status: UStatus = server.unregister_request_listener(
-            create_method_uri(), listener
-        )
+        status: UStatus = server.unregister_request_listener(create_method_uri(), listener)
         self.assertEqual(status.code, UCode.OK)

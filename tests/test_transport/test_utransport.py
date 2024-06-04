@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -31,6 +31,7 @@ from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 class MyListener(UListener):
     def on_receive(self, message):
         super().on_receive(message)
+        pass
 
 
 class HappyUTransport(UTransport):

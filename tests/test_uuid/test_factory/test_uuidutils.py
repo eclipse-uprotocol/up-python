@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2024 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -47,29 +47,29 @@ class TestUUIDUtils(unittest.TestCase):
         self.assertIsNotNone(UUIDUtils.get_elapsed_time(id_val))
 
     def test_get_elapsed_time_creation_time_unknown(self):
-        self.assertIsNone(UUIDUtils.get_elapsed_time(UUID()))
+        self.assertFalse(UUIDUtils.get_elapsed_time(UUID()) is not None)
 
     def test_get_remaining_time_no_ttl(self):
-        id_val: UUID = create_id()
-        self.assertIsNone(UUIDUtils.get_remaining_time(id_val, 0))
-        self.assertIsNone(UUIDUtils.get_remaining_time(id_val, -1))
+        id: UUID = create_id()
+        self.assertFalse(UUIDUtils.get_remaining_time(id, 0) is not None)
+        self.assertFalse(UUIDUtils.get_remaining_time(id, -1) is not None)
 
     def test_remaining_time_none_uuid(self):
-        id_val: UUID = None
-        self.assertIsNone(UUIDUtils.get_remaining_time(id_val, 0))
+        id: UUID = None
+        self.assertFalse(UUIDUtils.get_remaining_time(id, 0) is not None)
 
     def test_get_remaining_time_expired(self):
-        id_val: UUID = create_id()
+        id: UUID = create_id()
         time.sleep(DELAY_MS / 1000)
-        self.assertIsNone(
-            UUIDUtils.get_remaining_time(id_val, DELAY_MS - DELTA)
+        self.assertFalse(
+            UUIDUtils.get_remaining_time(id, DELAY_MS - DELTA) is not None
         )
 
     def test_is_expired(self):
-        id_val: UUID = create_id()
-        self.assertFalse(UUIDUtils.is_expired(id_val, DELAY_MS - DELTA))
+        id: UUID = create_id()
+        self.assertFalse(UUIDUtils.is_expired(id, DELAY_MS - DELTA))
         time.sleep(DELAY_MS / 1000)
-        self.assertTrue(UUIDUtils.is_expired(id_val, DELAY_MS - DELTA))
+        self.assertTrue(UUIDUtils.is_expired(id, DELAY_MS - DELTA))
 
     def test_is_expired_no_ttl(self):
         id_val: UUID = create_id()
@@ -77,10 +77,10 @@ class TestUUIDUtils(unittest.TestCase):
         self.assertFalse(UUIDUtils.is_expired(id_val, -1))
 
     def test_get_elapsed_time_invalid_uuid(self):
-        self.assertIsNone(UUIDUtils.get_elapsed_time(None))
+        self.assertFalse(UUIDUtils.get_elapsed_time(None) is not None)
 
     def test_get_elapsed_time_past(self):
-        id_val: UUID = Factories.UPROTOCOL.create(
+        id: UUID = Factories.UPROTOCOL.create(
             datetime.datetime.now() + datetime.timedelta(minutes=1)
         )
-        self.assertIsNone(UUIDUtils.get_elapsed_time(id_val))
+        self.assertFalse(UUIDUtils.get_elapsed_time(id) is not None)

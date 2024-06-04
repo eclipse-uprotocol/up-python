@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -31,14 +31,10 @@ from uprotocol.cloudevent import cloudevents_pb2
 
 class CloudEventToProtobufSerializer(CloudEventSerializer):
     """
-    CloudEventSerializer to serialize and deserialize CloudEvents
-    to protobuf format.
+    CloudEventSerializer to serialize and deserialize CloudEvents to protobuf format.
     """
 
     def __init__(self):
-        """
-        Base init
-        """
         pass
 
     def serialize(self, http_event: CloudEvent) -> bytes:

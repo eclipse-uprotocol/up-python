@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -23,10 +23,10 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.cloudevent.datamodel.ucloudevent_attributes import (
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
-from uprotocol.cloudevent.factory.cloudevent_factory import CloudEventFactory
+from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.cloudevent.serialize.base64protobufserializer import (
     Base64ProtobufSerializer,
 )
@@ -65,8 +65,7 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
     def test_serialize_string_into_bytes(self):
         json_str = (
             "eyJzcGVjdmVyc2lvbiI6ICIxLjAiLCAiaWQiOiAiaGVsbG8iLCAic2"
-            + "91cmNlIjogImh0dHA6Ly9sb2NhbGhvc3QiLCAidHlwZSI6ICJleG"
-            + "FtcGxlLnZlcnR4IiwgImRhdGFfYmFzZTY0IjogIiJ9"
+            + "91cmNlIjogImh0dHA6Ly9sb2NhbGhvc3QiLCAidHlwZSI6ICJleGFtcGxlLnZlcnR4IiwgImRhdGFfYmFzZTY0IjogIiJ9"
         )
         bytes_json = Base64ProtobufSerializer().serialize(json_str)
 

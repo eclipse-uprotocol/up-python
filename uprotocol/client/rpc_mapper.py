@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +20,9 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 from concurrent.futures import Future
+
 from google.protobuf import any_pb2
 
 from uprotocol.client.upayload import UPayload
@@ -72,8 +74,7 @@ class RpcMapper:
             if payload is None or len(payload.get_data()) == 0:
                 response_future.set_exception(
                     RuntimeError(
-                        "Server returned a null payload. "
-                        f"Expected {expected_cls.__name__}"
+                        f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"
                     )
                 )
                 return response_future
@@ -87,8 +88,7 @@ class RpcMapper:
                 else:
                     response_future.set_exception(
                         RuntimeError(
-                            f"Unknown payload type [{any_message.type_url}]. "
-                            f"Expected [{expected_cls.__name__}]"
+                            f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.__name__}]"
                         )
                     )
 
@@ -124,8 +124,7 @@ class RpcMapper:
 
             if not payload or len(payload.get_data()) == 0:
                 exception = RuntimeError(
-                    "Server returned a null payload. "
-                    f"Expected {expected_cls.__name__}"
+                    f"Server returned a null payload. Expected {expected_cls.__name__}"
                 )
                 return RpcResult.failure(
                     value=exception, message=str(exception)
@@ -152,8 +151,7 @@ class RpcMapper:
                 )
 
             exception = RuntimeError(
-                f"Unknown payload type [{any_message.type_url}]. "
-                f"Expected [{expected_cls.DESCRIPTOR.full_name}]"
+                f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.DESCRIPTOR.full_name}]"
             )
             return RpcResult.failure(value=exception, message=str(exception))
 
@@ -178,12 +176,12 @@ class RpcMapper:
     @staticmethod
     def unpack_payload(payload, expected_cls):
         """
-        Unpack a payload of type Any into an object of type T,
-        which is what was packing into the Any object.
+        Unpack a payload of type Any into an object of type T, which is what was packing into the Any
+        object.<br><br>
         @param payload:an Any message containing a type of expectedClazz.
         @param expected_cls:The class name of the object packed into the Any
-        @return:Returns an object of type T and of the class name specified,
-        that was packed into the Any object.
+        @return:Returns an object of type T and of the class name specified, that was packed into the Any
+        object.
         """
         try:
             value = expected_cls()

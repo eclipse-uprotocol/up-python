@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -27,10 +27,10 @@ import unittest
 from cloudevents.http import CloudEvent as ApacheCloudEvent
 from google.protobuf import any_pb2
 
-from uprotocol.cloudevent.datamodel.ucloudevent_attributes import (
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
-from uprotocol.cloudevent.factory.cloudevent_factory import CloudEventFactory
+from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.cloudevent.serialize.base64protobufserializer import (
     Base64ProtobufSerializer,
@@ -42,12 +42,9 @@ from uprotocol.cloudevent.serialize.cloudeventtoprotobufserializer import (
     CloudEventToProtobufSerializer,
 )
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
-    UPriority,
-    UMessageType,
-)
+from uprotocol.proto.uprotocol.v1.uattributes_pb2 import UPriority, UMessageType
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
-from uprotocol.uri.serializer.uri_serializer import UriSerializer
+from uprotocol.uri.serializer.uriserializer import UriSerializer
 
 serializer = CloudEventSerializers.PROTOBUF.serializer()
 
@@ -89,25 +86,6 @@ def get_json_object():
 
 class TestCloudEventToProtobufSerializer(unittest.TestCase):
 
-    def _check_parts_of_ce(self, cloudevent, ce_json):
-
-        parts_map = {
-            "source": UCloudEvent.get_source,
-            "sink": UCloudEvent.get_sink,
-            "type": UCloudEvent.get_type,
-            "priority": UCloudEvent.get_priority,
-            "ttl": UCloudEvent.get_ttl,
-            "hash": UCloudEvent.get_hash,
-            "token": UCloudEvent.get_token,
-            "dataschema": UCloudEvent.get_data_schema,
-            "datacontenttype": UCloudEvent.get_data_content_type,
-            "commstatus": UCloudEvent.get_communication_status,
-        }
-
-        for key, value in parts_map.items():
-            if key in ce_json:
-                self.assertEqual(value(cloudevent), ce_json[key])
-
     def test_all_cloud_events_from_json(self):
         cloudevents = get_json_object()
         for ce_json in cloudevents:
@@ -119,7 +97,49 @@ class TestCloudEventToProtobufSerializer(unittest.TestCase):
             self.assertEqual(
                 UCloudEvent.get_specversion(cloudevent), ce_json["specversion"]
             )
-            self._check_parts_of_ce(cloudevent, ce_json)
+            if "source" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_source(cloudevent), ce_json["source"]
+                )
+            if "sink" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_sink(cloudevent), ce_json["sink"]
+                )
+            if "type" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_type(cloudevent), ce_json["type"]
+                )
+            if "priority" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_priority(cloudevent), ce_json["priority"]
+                )
+            if "ttl" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_ttl(cloudevent), ce_json["ttl"]
+                )
+            if "hash" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_hash(cloudevent), ce_json["hash"]
+                )
+            if "token" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_token(cloudevent), ce_json["token"]
+                )
+            if "dataschema" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_data_schema(cloudevent),
+                    ce_json["dataschema"],
+                )
+            if "datacontenttype" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_data_content_type(cloudevent),
+                    ce_json["datacontenttype"],
+                )
+            if "commstatus" in ce_json:
+                self.assertEqual(
+                    UCloudEvent.get_communication_status(cloudevent),
+                    ce_json["commstatus"],
+                )
 
     def test_serialize_and_deserialize_cloud_event_to_protobuf(self):
         proto_payload = build_proto_payload_for_test()
@@ -175,7 +195,7 @@ class TestCloudEventToProtobufSerializer(unittest.TestCase):
         serialized2 = serializer.serialize(cloud_event2)
         self.assertNotEqual(serialized1, serialized2)
 
-    def test_double_ser_protobuf_when_creating_cloud_event_factory_methods(
+    def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(
         self,
     ):
         proto_payload = build_proto_payload_for_test()

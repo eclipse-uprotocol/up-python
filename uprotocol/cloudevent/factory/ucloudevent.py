@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 import time
 from datetime import datetime, timedelta, timezone
 import copy
@@ -35,9 +36,9 @@ from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UPayloadFormat,
 )
-from uprotocol.uri.serializer.uri_serializer import UriSerializer
+from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
-from uprotocol.uuid.serializer.uuid_serializer import UuidSerializer
+from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.proto.uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.proto.uprotocol.v1.uuid_pb2 import UUID
 
@@ -217,10 +218,10 @@ class UCloudEvent:
         UCode.OK_VALUE.
         """
         try:
-            commstatus = UCloudEvent.extract_string_value_from_attributes(
+            comm_status = UCloudEvent.extract_string_value_from_attributes(
                 "commstatus", ce
             )
-            return int(commstatus) if commstatus is not None else UCode.OK
+            return int(comm_status) if comm_status is not None else UCode.OK
         except Exception:
             return UCode.OK
 
@@ -311,9 +312,9 @@ class UCloudEvent:
             return False
 
         now = datetime.now(timezone.utc)
-        creation_time_plus_ttl = datetime.fromisoformat(
-            cloud_event_creation_time
-        ) + timedelta(milliseconds=maybe_ttl)
+        creation_time_plus_ttl = datetime.fromisoformat(cloud_event_creation_time) + timedelta(
+            milliseconds=maybe_ttl
+        )
 
         return now > creation_time_plus_ttl
 
@@ -418,17 +419,12 @@ class UCloudEvent:
         if ce is not None:
             sink_str = UCloudEvent.get_sink(ce)
             sink_str = f", sink='{sink_str}'" if sink_str is not None else ""
-            id_val = UCloudEvent.extract_string_value_from_attributes("id", ce)
+            id = UCloudEvent.extract_string_value_from_attributes("id", ce)
             source = UCloudEvent.extract_string_value_from_attributes(
                 "source", ce
             )
-            type_val = UCloudEvent.extract_string_value_from_attributes(
-                "type", ce
-            )
-            return (
-                f"CloudEvent{{id='{id_val}', "
-                + f"source='{source}'{sink_str}, type='{type_val}'}}"
-            )
+            type = UCloudEvent.extract_string_value_from_attributes("type", ce)
+            return f"CloudEvent{{id='{id}', source='{source}'{sink_str}, type='{type}'}}"
         else:
             return "null"
 
@@ -512,13 +508,12 @@ class UCloudEvent:
         @return The corresponding content type string based on the
         payload format.
         """
-        someiptlv_format = UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV
         return {
             UPayloadFormat.UPAYLOAD_FORMAT_JSON: "application/json",
             UPayloadFormat.UPAYLOAD_FORMAT_RAW: "application/octet-stream",
             UPayloadFormat.UPAYLOAD_FORMAT_TEXT: "text/plain",
             UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP: "application/x-someip",
-            someiptlv_format: "application/x-someip_tlv",
+            UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV: "application/x-someip_tlv",
         }.get(payload_format, "")
 
     @staticmethod
@@ -536,13 +531,12 @@ class UCloudEvent:
         if contenttype is None:
             return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
 
-        someiptlv_format = UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV
         content_type_mapping = {
             "application/json": UPayloadFormat.UPAYLOAD_FORMAT_JSON,
             "application/octet-stream": UPayloadFormat.UPAYLOAD_FORMAT_RAW,
             "text/plain": UPayloadFormat.UPAYLOAD_FORMAT_TEXT,
             "application/x-someip": UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP,
-            "application/x-someip_tlv": someiptlv_format,
+            "application/x-someip_tlv": UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV,
         }
         return content_type_mapping.get(
             contenttype, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF
@@ -576,7 +570,7 @@ class UCloudEvent:
         return json_attributes
 
     @staticmethod
-    def from_message(message: UMessage) -> CloudEvent:
+    def fromMessage(message: UMessage) -> CloudEvent:
         """
         Get the Cloudevent from the UMessage<br>
         <b>Note: For now, only the value format of
@@ -645,7 +639,7 @@ class UCloudEvent:
         return attributes
 
     @staticmethod
-    def to_message(event: CloudEvent) -> UMessage:
+    def toMessage(event: CloudEvent) -> UMessage:
         """
 
         Get the UMessage from the cloud event

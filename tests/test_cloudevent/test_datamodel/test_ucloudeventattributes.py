@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.cloudevent.datamodel.ucloudevent_attributes import (
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
     UCloudEventAttributes,
 )
@@ -41,10 +41,7 @@ class TestUCloudEventAttributes(unittest.TestCase):
             .build()
         )
 
-        expected = (
-            "UCloudEventAttributes{hash='somehash', "
-            "priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}"
-        )
+        expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}"
         self.assertEqual(expected, str(u_cloud_event_attributes))
 
     def test_create_valid_with_blank_traceparent(self):
@@ -57,9 +54,11 @@ class TestUCloudEventAttributes(unittest.TestCase):
             .with_traceparent(" ")
             .build()
         )
-        self.assertIsNotNone(u_cloud_event_attributes.get_hash())
+        self.assertTrue(u_cloud_event_attributes.get_hash() is not None)
         self.assertEqual("somehash", u_cloud_event_attributes.get_hash())
-        self.assertIsNone(u_cloud_event_attributes.get_traceparent())
+        self.assertFalse(
+            u_cloud_event_attributes.get_traceparent() is not None
+        )
 
     def test_create_empty_with_only_traceparent(self):
         u_cloud_event_attributes = (
@@ -67,11 +66,11 @@ class TestUCloudEventAttributes(unittest.TestCase):
             .with_traceparent("someTraceParent")
             .build()
         )
-        self.assertIsNone(u_cloud_event_attributes.get_hash())
-        self.assertIsNone(u_cloud_event_attributes.get_priority())
-        self.assertIsNone(u_cloud_event_attributes.get_token())
-        self.assertIsNone(u_cloud_event_attributes.get_ttl())
-        self.assertIsNotNone(u_cloud_event_attributes.get_traceparent())
+        self.assertFalse(u_cloud_event_attributes.get_hash() is not None)
+        self.assertFalse(u_cloud_event_attributes.get_priority() is not None)
+        self.assertFalse(u_cloud_event_attributes.get_token() is not None)
+        self.assertFalse(u_cloud_event_attributes.get_ttl() is not None)
+        self.assertTrue(u_cloud_event_attributes.get_traceparent() is not None)
         self.assertFalse(u_cloud_event_attributes.is_empty())
         self.assertEqual(
             "someTraceParent", u_cloud_event_attributes.get_traceparent()
@@ -100,9 +99,9 @@ class TestUCloudEventAttributes(unittest.TestCase):
     def test_is_empty_function(self):
         u_cloud_event_attributes = UCloudEventAttributes.empty()
         self.assertTrue(u_cloud_event_attributes.is_empty())
-        self.assertIsNone(u_cloud_event_attributes.priority)
-        self.assertIsNone(u_cloud_event_attributes.token)
-        self.assertIsNone(u_cloud_event_attributes.ttl)
+        self.assertTrue(u_cloud_event_attributes.priority is None)
+        self.assertTrue(u_cloud_event_attributes.token is None)
+        self.assertTrue(u_cloud_event_attributes.ttl is None)
 
     def test_is_empty_function_when_built_with_blank_strings(self):
         u_cloud_event_attributes = (
@@ -113,9 +112,9 @@ class TestUCloudEventAttributes(unittest.TestCase):
         )
         self.assertTrue(u_cloud_event_attributes.is_empty())
         self.assertTrue(u_cloud_event_attributes.hash.isspace())
-        self.assertIsNone(u_cloud_event_attributes.priority)
+        self.assertTrue(u_cloud_event_attributes.priority is None)
         self.assertTrue(u_cloud_event_attributes.token.isspace())
-        self.assertIsNone(u_cloud_event_attributes.ttl)
+        self.assertTrue(u_cloud_event_attributes.ttl is None)
 
     def test_is_empty_function_permutations(self):
         u_cloud_event_attributes = (

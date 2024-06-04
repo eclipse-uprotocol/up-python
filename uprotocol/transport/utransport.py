@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 from abc import ABC, abstractmethod
 from multimethod import multimethod
 
@@ -31,12 +32,10 @@ from uprotocol.proto.uprotocol.v1.umessage_pb2 import UMessage
 
 class UTransport(ABC):
     """
-    UTransport is the  uP-L1 interface that provides a common API for uE
-    developers to send and receive messages.
-    UTransport implementations contain the details for connecting to the
-    underlying transport technology and sending UMessage using the configured
-    technology.
-    For more information please refer to the uP-L1 specification in up-spec.
+    UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive
+    messages.<br>UTransport implementations contain the details for connecting to the underlying transport technology
+    and sending UMessage using the configured technology.<br>For more information please refer to
+    <a href =https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc>link</a>
     """
 
     @abstractmethod
@@ -44,8 +43,7 @@ class UTransport(ABC):
         """
         Send a message (in parts) over the transport.
         @param message the UMessage to be sent.
-        @return Returns UStatus with UCode set to the status code
-        (successful or failure).
+        @return Returns UStatus with UCode set to the status code (successful or failure).
         """
         pass
 

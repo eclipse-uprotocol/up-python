@@ -19,6 +19,7 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
+
 from google.protobuf.any_pb2 import Any
 
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
@@ -54,12 +55,8 @@ class UTransportImpl(UTransport):
 
     def send(self, message):
         validator = UAttributesValidator.get_validator(message.attributes)
-        
-        if (
-            message is None
-            or validator.validate(message.attributes)
-            != ValidationResult.success()
-        ):
+
+        if message is None or validator.validate(message.attributes) != ValidationResult.success():
             return UStatus(
                 code=UCode.INVALID_ARGUMENT,
                 message="Invalid message attributes",
@@ -69,12 +66,9 @@ class UTransportImpl(UTransport):
         if message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
             serialized_status: bytes = UStatus(code=UCode.OK, message="nice").SerializeToString()
             print("serialized_status:", serialized_status)
-            response = UMessageBuilder.response(message.attributes).build(arg1= Any(value=serialized_status))
+            response = UMessageBuilder.response(message.attributes).build(arg1=Any(value=serialized_status))
             for key, listener in self.mlisteners.items():
-                if (
-                    key.source == message.attributes.source
-                    or key.sink == message.attributes.sink
-                ):
+                if key.source == message.attributes.source or key.sink == message.attributes.sink:
                     listener.on_receive(response)
 
         return UStatus(code=UCode.OK)

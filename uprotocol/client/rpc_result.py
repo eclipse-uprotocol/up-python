@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 from abc import ABC, abstractmethod
 from typing import Callable, TypeVar, Union
 
@@ -31,8 +32,7 @@ T = TypeVar("T")
 
 class RpcResult(ABC):
     """
-    Wrapper class for RPC Stub calls. It contains a Success with the type
-    of the RPC call, or a failure with the
+    Wrapper class for RPC Stub calls. It contains a Success with the type of the RPC call, or a failure with the
     UStatus returned by the failed call.
     """
 

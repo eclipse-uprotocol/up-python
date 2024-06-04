@@ -86,28 +86,6 @@ class Subscriber(RpcClient):
             return ue.get_status()
         except RuntimeError as re:
             raise re
-        
-        
-        '''
-        def handle_response(future):
-            status = future.result()
-            print("status:", status)
-            if status.code == UCode.OK:
-                return self.get_transport().register_listener(topic, listener)
-            return status
-
-        result.add_done_callback(handle_response)
-        
-        return result
-        
-        '''
-        
-        
-        # print("future result:", result.done())
-        # new_result = await result
-        # time.sleep(5)
-        # print("future result:", result.done())
-
 
     def unsubscribe(self, topic: UUri, listener: UListener) -> UStatus:
         """

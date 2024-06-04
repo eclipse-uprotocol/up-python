@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2024 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,9 +20,10 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 from datetime import datetime, timedelta, timezone
 import unittest
-from uprotocol.uuid.serializer.uuid_serializer import UuidSerializer
+from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
 from uprotocol.proto.uprotocol.v1.uuid_pb2 import UUID
@@ -195,11 +196,11 @@ class TestUUIDFactory(unittest.TestCase):
         past = now - timedelta(seconds=10)
         past = past.replace(tzinfo=timezone.utc)
         uuid = Factories.UPROTOCOL.create(past)
-        time_val = UUIDUtils.get_time(uuid)
+        time = UUIDUtils.get_time(uuid)
         self.assertTrue(UUIDUtils.is_uprotocol(uuid))
         self.assertTrue(UUIDUtils.is_uuid(uuid))
-        self.assertIsNotNone(time_val)
-        self.assertEqual(time_val, int(past.timestamp() * 1000))
+        self.assertTrue(time is not None)
+        self.assertEqual(time, int(past.timestamp() * 1000))
 
     def test_create_uprotocol_uuid_with_different_time_values(self):
         uuid = Factories.UPROTOCOL.create()
@@ -207,7 +208,7 @@ class TestUUIDFactory(unittest.TestCase):
 
         time.sleep(0.01)  # Sleep for 10 milliseconds
         uuid1 = Factories.UPROTOCOL.create()
-        time_val = UUIDUtils.get_time(uuid)
+        time = UUIDUtils.get_time(uuid)
         time1 = UUIDUtils.get_time(uuid1)
 
         self.assertTrue(UUIDUtils.is_uprotocol(uuid))
@@ -215,9 +216,9 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertTrue(UUIDUtils.is_uprotocol(uuid1))
         self.assertTrue(UUIDUtils.is_uuid(uuid1))
 
-        self.assertIsNotNone(time_val)
-        self.assertIsNotNone(time1)
-        self.assertNotEqual(time_val, time1)
+        self.assertTrue(time is not None)
+        self.assertTrue(time1 is not None)
+        self.assertNotEqual(time, time1)
 
     def test_create_both_uuidv6_and_v8_to_compare_performance(self):
         uuidv6_list = []
@@ -229,6 +230,8 @@ class TestUUIDFactory(unittest.TestCase):
 
         for _ in range(max_count):
             uuidv6_list.append(Factories.UUIDV6.create())
+        # print(
+        #     f"UUIDv8: [{v8_diff.total_seconds() / max_count}s] UUIDv6: [{v6_diff.total_seconds() / max_count}s]")
 
 
 if __name__ == "__main__":

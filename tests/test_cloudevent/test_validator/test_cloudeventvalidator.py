@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,28 +20,26 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+
 import unittest
 
 from google.protobuf import any_pb2
 
-from uprotocol.cloudevent.datamodel.ucloudevent_attributes import (
+from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
-from uprotocol.cloudevent.factory.cloudevent_factory import CloudEventFactory
+from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
-from uprotocol.cloudevent.validate.cloudevent_validator import (
+from uprotocol.cloudevent.validate.cloudeventvalidator import (
     CloudEventValidator,
     Validators,
 )
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
-    UPriority,
-    UMessageType,
-)
+from uprotocol.proto.uprotocol.v1.uattributes_pb2 import UPriority, UMessageType
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
-from uprotocol.uri.serializer.uri_serializer import UriSerializer
+from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uuid.factory.uuidfactory import Factories
-from uprotocol.uuid.serializer.uuid_serializer import UuidSerializer
+from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.validation.validationresult import ValidationResult
 
 
@@ -71,6 +69,8 @@ def build_base_publish_cloud_event_for_test():
     )
     return cloud_event
 
+    pass
+
 
 def build_base_notification_cloud_event_for_test():
     # uri
@@ -97,6 +97,8 @@ def build_base_notification_cloud_event_for_test():
         UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_NOTIFICATION),
     )
     return cloud_event
+
+    pass
 
 
 def build_proto_payload_for_test():
@@ -126,7 +128,7 @@ class TestCloudEventValidator(unittest.TestCase):
     def test_create_a_v6_cloudevent_and_validate_it_against_sdk(self):
         source = build_long_uri_for_test()
         uuid = Factories.UUIDV6.create()
-        id_val = UuidSerializer.serialize(uuid)
+        id = UuidSerializer.serialize(uuid)
         proto_payload = build_proto_payload_for_test()
         # additional attributes
         u_cloud_event_attributes = (
@@ -137,7 +139,7 @@ class TestCloudEventValidator(unittest.TestCase):
         )
         # build the cloud event
         cloud_event = CloudEventFactory.build_base_cloud_event(
-            id_val,
+            id,
             source,
             proto_payload.SerializeToString(),
             proto_payload.type_url,

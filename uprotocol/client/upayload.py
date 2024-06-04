@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -44,8 +44,7 @@ class UPayload:
     @staticmethod
     def pack_to_any(message):
         """
-        Build a uPayload from google.protobuf.Message by stuffing the
-        message into an Any.
+        Build a uPayload from google.protobuf.Message by stuffing the message into an Any.
         @param message the message to pack
         @return the UPayload
         """
@@ -59,8 +58,7 @@ class UPayload:
     @staticmethod
     def pack(message):
         """
-        Build a uPayload from google.protobuf.Message using protobuf
-        PayloadFormat.
+        Build a uPayload from google.protobuf.Message using protobuf PayloadFormat.
         @param message the message to pack
         @return the UPayload
         """

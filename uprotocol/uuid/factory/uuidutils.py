@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,6 +19,7 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
+
 
 import uuid
 import time
@@ -81,7 +82,9 @@ class UUIDUtils:
         """
         if uuid_obj is None:
             return None
-        python_uuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid_obj)
+        python_uuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(
+            uuid_obj
+        )
 
         return python_uuid.variant
 
@@ -95,7 +98,8 @@ class UUIDUtils:
         """
 
         return (
-            UUIDUtils.get_version(uuid_obj) == Version.VERSION_UPROTOCOL
+            UUIDUtils.get_version(uuid_obj)
+            == Version.VERSION_UPROTOCOL
             if uuid_obj is not None
             else False
         )
@@ -112,7 +116,8 @@ class UUIDUtils:
             return False
 
         return (
-            UUIDUtils.get_version(uuid_obj) == Version.VERSION_TIME_ORDERED
+            UUIDUtils.get_version(uuid_obj)
+            == Version.VERSION_TIME_ORDERED
             and UUIDUtils.get_variant(uuid_obj) == uuid.RFC_4122
             if uuid_obj is not None
             else False
@@ -127,7 +132,8 @@ class UUIDUtils:
         """
 
         return (
-            UUIDUtils.is_uprotocol(uuid_obj) or UUIDUtils.is_uuidv6(uuid_obj)
+            UUIDUtils.is_uprotocol(uuid_obj)
+            or UUIDUtils.is_uuidv6(uuid_obj)
             if uuid_obj is not None
             else False
         )
@@ -150,8 +156,8 @@ class UUIDUtils:
             time = uuid.msb >> 16
         elif version == Version.VERSION_TIME_ORDERED:
             try:
-                python_uuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(
-                    uuid
+                python_uuid = (
+                    UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
                 )
                 # Convert 100-nanoseconds ticks to milliseconds
                 time = python_uuid.time // 10000

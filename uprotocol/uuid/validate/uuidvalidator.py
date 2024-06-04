@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,14 +20,13 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from abc import ABC, abstractmethod
 from enum import Enum
 
+from uprotocol.proto.ustatus_pb2 import UCode, UStatus
 from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
 from uprotocol.validation.validationresult import ValidationResult
-from uprotocol.proto.ustatus_pb2 import UStatus, UCode
 
 
 class UuidVariant(Enum):
@@ -54,11 +53,7 @@ class UuidValidator(ABC):
             self.validate_variant(uuid),
             self.validate_time(uuid),
         ]
-        error_messages = [
-            result.get_message()
-            for result in error_messages
-            if result.is_failure()
-        ]
+        error_messages = [result.get_message() for result in error_messages if result.is_failure()]
         error_message = ",".join(error_messages)
         if not error_message:
             return ValidationResult.success().to_status()

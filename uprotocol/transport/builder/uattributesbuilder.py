@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,14 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-from multimethod import multimethod
 from typing import Union
+
+from multimethod import multimethod
 
 from uprotocol.proto.uattributes_pb2 import (
     UAttributes,
-    UPriority,
     UMessageType,
+    UPriority,
 )
 from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.proto.ustatus_pb2 import UCode
@@ -45,9 +46,7 @@ class UAttributesBuilder:
     @param priority uProtocol Prioritization classifications.
     """
 
-    def __init__(
-        self, source: UUri, id: UUID, type: UMessageType, priority: UPriority
-    ):
+    def __init__(self, source: UUri, id: UUID, type: UMessageType, priority: UPriority):
         self.source = source
         self.id = id
         self.type = UMessageType.Name(type)
@@ -100,7 +99,7 @@ class UAttributesBuilder:
             Factories.UPROTOCOL.create(),
             UMessageType.UMESSAGE_TYPE_NOTIFICATION,
             priority,
-        ).withSink(sink)
+        ).with_sink(sink)
 
     @staticmethod
     def request(source: UUri, sink: UUri, priority: UPriority, ttl: int):
@@ -129,13 +128,13 @@ class UAttributesBuilder:
                 UMessageType.UMESSAGE_TYPE_REQUEST,
                 priority,
             )
-            .withTtl(ttl)
-            .withSink(sink)
+            .with_ttl(ttl)
+            .with_sink(sink)
         )
 
     @multimethod
     def response(
-        source: Union[UUri, None],
+        source: Union[UUri, None],  # noqa: N805
         sink: Union[UUri, None],
         priority: Union[int, None],
         reqid: Union[UUID, None],
@@ -164,19 +163,17 @@ class UAttributesBuilder:
                 UMessageType.UMESSAGE_TYPE_RESPONSE,
                 priority,
             )
-            .withSink(sink)
-            .withReqId(reqid)
+            .with_sink(sink)
+            .with_req_id(reqid)
         )
 
     @multimethod
-    def response(request: Union[UAttributes, None]):
+    def response(request: Union[UAttributes, None]):  # noqa: N805
         if request is None:
             raise ValueError("request cannot be null.")
-        return UAttributesBuilder.response(
-            request.sink, request.source, request.priority, request.id
-        )
+        return UAttributesBuilder.response(request.sink, request.source, request.priority, request.id)
 
-    def withTtl(self, ttl: int):
+    def with_ttl(self, ttl: int):
         """
         Add the time to live in milliseconds.
 
@@ -186,7 +183,7 @@ class UAttributesBuilder:
         self.ttl = ttl
         return self
 
-    def withToken(self, token: str):
+    def with_token(self, token: str):
         """
         dd the authorization token used for TAP.
 
@@ -196,7 +193,7 @@ class UAttributesBuilder:
         self.token = token
         return self
 
-    def withSink(self, sink: UUri):
+    def with_sink(self, sink: UUri):
         """
         Add the explicit destination URI.
 
@@ -206,7 +203,7 @@ class UAttributesBuilder:
         self.sink = sink
         return self
 
-    def withPermissionLevel(self, plevel: int):
+    def with_permission_level(self, plevel: int):
         """
         Add the permission level of the message.
 
@@ -216,7 +213,7 @@ class UAttributesBuilder:
         self.plevel = plevel
         return self
 
-    def withCommStatus(self, commstatus: UCode):
+    def with_comm_status(self, commstatus: UCode):
         """
         Add the communication status of the message.
 
@@ -226,7 +223,7 @@ class UAttributesBuilder:
         self.commstatus = commstatus
         return self
 
-    def withReqId(self, reqid: UUID):
+    def with_req_id(self, reqid: UUID):
         """
         Add the request ID.
 
@@ -236,7 +233,7 @@ class UAttributesBuilder:
         self.reqid = reqid
         return self
 
-    def withTraceparent(self, traceparent: str):
+    def with_traceparent(self, traceparent: str):
         """
         Add the traceparent.
 

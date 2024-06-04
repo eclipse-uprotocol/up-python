@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,13 +22,13 @@ SPDX-License-Identifier: Apache-2.0
 
 from typing import Optional, Type
 
-from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
 from google.protobuf.any_pb2 import Any
 from google.protobuf.message import Message
 
+from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
+
 
 class UPayloadBuilder:
-
     @staticmethod
     def pack_to_any(message: Message) -> UPayload:
         """
@@ -70,10 +70,7 @@ class UPayloadBuilder:
                 message = clazz()
                 message.ParseFromString(payload.value)
                 return message
-            elif (
-                payload.format
-                == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
-            ):
+            elif payload.format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY:
                 any_message = Any()
                 any_message.ParseFromString(payload.value)
                 message = clazz()

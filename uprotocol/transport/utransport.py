@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from abc import ABC, abstractmethod
 
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.transport.ulistener import UListener
-from uprotocol.proto.ustatus_pb2 import UStatus
 from uprotocol.proto.umessage_pb2 import UMessage
+from uprotocol.proto.uri_pb2 import UUri
+from uprotocol.proto.ustatus_pb2 import UStatus
+from uprotocol.transport.ulistener import UListener
 
 
 class UTransport(ABC):

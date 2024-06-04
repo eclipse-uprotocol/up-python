@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,9 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import re
 
-from uprotocol.proto.uri_pb2 import UAuthority
-from uprotocol.proto.uri_pb2 import UEntity
-from uprotocol.proto.uri_pb2 import UResource
-from uprotocol.proto.uri_pb2 import UUri
+from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
 
@@ -51,11 +47,7 @@ class LongUriSerializer(UriSerializer):
 
         sb = []
 
-        if (
-            uri.HasField("authority")
-            and uri.authority.HasField("name")
-            and not uri.authority.name.strip() == ""
-        ):
+        if uri.HasField("authority") and uri.authority.HasField("name") and not uri.authority.name.strip() == "":
             sb.append("//")
             sb.append(uri.authority.name)
 
@@ -68,22 +60,15 @@ class LongUriSerializer(UriSerializer):
 
     @staticmethod
     def build_resource_part_of_uri(uuri: UUri) -> str:
-
         if not uuri.HasField("resource"):
             return ""
         u_resource = uuri.resource
 
         sb = "/" + u_resource.name
 
-        if (
-            u_resource.instance is not None
-            and not u_resource.instance.strip() == ""
-        ):
+        if u_resource.instance is not None and not u_resource.instance.strip() == "":
             sb += "." + u_resource.instance
-        if (
-            u_resource.message is not None
-            and not u_resource.message.strip() == ""
-        ):
+        if u_resource.message is not None and not u_resource.message.strip() == "":
             sb += "#" + u_resource.message
 
         return sb
@@ -186,15 +171,9 @@ class LongUriSerializer(UriSerializer):
         parts = LongUriSerializer.remove_empty(resource_string.split("#"))
         name_and_instance = parts[0]
 
-        name_and_instance_parts = LongUriSerializer.remove_empty(
-            name_and_instance.split(".")
-        )
+        name_and_instance_parts = LongUriSerializer.remove_empty(name_and_instance.split("."))
         resource_name = name_and_instance_parts[0]
-        resource_instance = (
-            name_and_instance_parts[1]
-            if len(name_and_instance_parts) > 1
-            else None
-        )
+        resource_instance = name_and_instance_parts[1] if len(name_and_instance_parts) > 1 else None
         resource_message = parts[1] if len(parts) > 1 else None
 
         u_resource = UResource(name=resource_name)
@@ -202,11 +181,7 @@ class LongUriSerializer(UriSerializer):
             u_resource.instance = resource_instance
         if resource_message is not None:
             u_resource.message = resource_message
-        if (
-            "rpc" in resource_name
-            and resource_instance is not None
-            and "response" in resource_instance
-        ):
+        if "rpc" in resource_name and resource_instance is not None and "response" in resource_instance:
             u_resource.id = 0
 
         return u_resource

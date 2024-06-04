@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,11 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from concurrent.futures import Future
 
 from google.protobuf import any_pb2
-from uprotocol.proto.ustatus_pb2 import UCode
-from uprotocol.proto.ustatus_pb2 import UStatus
 
+from uprotocol.proto.ustatus_pb2 import UCode, UStatus
 from uprotocol.rpc.rpcresult import RpcResult
 
 
@@ -61,18 +59,14 @@ class RpcMapper:
             message = message.result()
             if not message or not message.HasField("payload"):
                 response_future.set_exception(
-                    RuntimeError(
-                        f"Server returned a null payload. Expected {expected_cls.__name__}"
-                    )
+                    RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
                 )
                 return response_future
             try:
                 any_message = any_pb2.Any()
                 any_message.ParseFromString(message.payload.value)
                 if any_message.Is(expected_cls.DESCRIPTOR):
-                    response_future.set_result(
-                        RpcMapper.unpack_payload(any_message, expected_cls)
-                    )
+                    response_future.set_result(RpcMapper.unpack_payload(any_message, expected_cls))
                 else:
                     response_future.set_exception(
                         RuntimeError(
@@ -81,9 +75,7 @@ class RpcMapper:
                     )
 
             except Exception as e:
-                response_future.set_exception(
-                    RuntimeError(f"{str(e)} [{UStatus.__name__}]")
-                )
+                response_future.set_exception(RuntimeError(f"{str(e)} [{UStatus.__name__}]"))
 
         message_future.add_done_callback(handle_response)
 
@@ -103,18 +95,12 @@ class RpcMapper:
         def handle_response(message):
             if message.exception():
                 exception = message.exception()
-                return RpcResult.failure(
-                    value=exception, message=str(exception)
-                )
+                return RpcResult.failure(value=exception, message=str(exception))
 
             message = message.result()
             if not message or not message.HasField("payload"):
-                exception = RuntimeError(
-                    f"Server returned a null payload. Expected {expected_cls.__name__}"
-                )
-                return RpcResult.failure(
-                    value=exception, message=str(exception)
-                )
+                exception = RuntimeError(f"Server returned a null payload. Expected {expected_cls.__name__}")
+                return RpcResult.failure(value=exception, message=str(exception))
 
             try:
                 any_message = any_pb2.Any()
@@ -124,17 +110,13 @@ class RpcMapper:
                     if expected_cls == UStatus:
                         return RpcMapper.calculate_status_result(any_message)
                     else:
-                        return RpcResult.success(
-                            RpcMapper.unpack_payload(any_message, expected_cls)
-                        )
+                        return RpcResult.success(RpcMapper.unpack_payload(any_message, expected_cls))
 
                 if any_message.Is(UStatus.DESCRIPTOR):
                     return RpcMapper.calculate_status_result(any_message)
             except Exception as e:
                 exception = RuntimeError(f"{str(e)} [{UStatus.__name__}]")
-                return RpcResult.failure(
-                    value=exception, message=str(exception)
-                )
+                return RpcResult.failure(value=exception, message=str(exception))
 
             exception = RuntimeError(
                 f"Unknown payload type [{any_message.type_url}]. Expected [{expected_cls.DESCRIPTOR.full_name}]"
@@ -153,11 +135,7 @@ class RpcMapper:
     @staticmethod
     def calculate_status_result(payload):
         status = RpcMapper.unpack_payload(payload, UStatus)
-        return (
-            RpcResult.success(status)
-            if status.code == UCode.OK
-            else RpcResult.failure(status)
-        )
+        return RpcResult.success(status) if status.code == UCode.OK else RpcResult.failure(status)
 
     @staticmethod
     def unpack_payload(payload, expected_cls):
@@ -172,7 +150,6 @@ class RpcMapper:
         try:
             value = expected_cls()
             value.ParseFromString(payload.value)
-            # payload.Unpack(expected_cls)
             return value
         except Exception as e:
             raise RuntimeError(f"{str(e)} [{UStatus.__name__}]") from e

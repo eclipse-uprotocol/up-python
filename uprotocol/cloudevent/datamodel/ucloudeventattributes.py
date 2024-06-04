@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +19,6 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
-
 
 from uprotocol.proto.uattributes_pb2 import UPriority
 
@@ -107,11 +106,7 @@ class UCloudEventAttributes:
         Traceparent of the event.
         @return: Returns an optional traceparent attribute.
         """
-        return (
-            self.traceparent
-            if self.traceparent and self.traceparent.strip()
-            else None
-        )
+        return self.traceparent if self.traceparent and self.traceparent.strip() else None
 
     def __eq__(self, other):
         if self is other:
@@ -127,14 +122,10 @@ class UCloudEventAttributes:
         )
 
     def __hash__(self):
-        return hash(
-            (self.hash, self.priority, self.ttl, self.token, self.traceparent)
-        )
+        return hash((self.hash, self.priority, self.ttl, self.token, self.traceparent))
 
     def __str__(self):
-        traceparent_string = (
-            f", traceparent='{self.traceparent}'" if self.traceparent else ""
-        )
+        traceparent_string = f", traceparent='{self.traceparent}'" if self.traceparent else ""
         return (
             f"UCloudEventAttributes{{hash='{self.hash}', priority={self.priority},"
             f" ttl={self.ttl}, token='{self.token}'{traceparent_string}}}"
@@ -205,6 +196,4 @@ class UCloudEventAttributesBuilder:
         Construct the UCloudEventAttributes from the builder.<br><br>
         @return: Returns a constructed UProperty.
         """
-        return UCloudEventAttributes(
-            self.priority, self.hash, self.ttl, self.token, self.traceparent
-        )
+        return UCloudEventAttributes(self.priority, self.hash, self.ttl, self.token, self.traceparent)

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +19,6 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
-
 
 import struct
 
@@ -46,9 +45,7 @@ class MicroUuidSerializer(UuidSerializer):
         wire.
         """
         if not uuid_bytes or len(uuid_bytes) != 16:
-            return (
-                UUID()
-            )  # Return default UUID if bytes are empty or not 16 bytes
+            return UUID()  # Return default UUID if bytes are empty or not 16 bytes
 
         msb, lsb = struct.unpack(">QQ", uuid_bytes)
         return UUID(msb=msb, lsb=lsb)
@@ -61,8 +58,6 @@ class MicroUuidSerializer(UuidSerializer):
         """
         if uuid is None:
             return bytearray()
-        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(
-            uuid
-        )
+        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
         msb, lsb = divmod(pythonuuid.int, 2**64)
         return struct.pack(">QQ", msb, lsb)

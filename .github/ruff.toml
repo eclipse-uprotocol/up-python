@@ -8,7 +8,8 @@ exclude = [
     "dist/",
     ".venv/",
     "__pycache__/",
-    "uprotocol/cloudevent/cloudevents_pb2.py"
+    "uprotocol/cloudevent/cloudevents_pb2.py",
+    "uprotocol/proto/*"
 ]
 
 [lint]
@@ -34,5 +35,3 @@ quote-style = "preserve"
 indent-style = "space"
 docstring-code-format = true
 docstring-code-line-length = 100
-
-

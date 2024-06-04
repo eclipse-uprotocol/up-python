@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,11 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import re
-from uprotocol.proto.uri_pb2 import UResource
-from multimethod import multimethod
 from typing import Union
+
+from multimethod import multimethod
+
+from uprotocol.proto.uri_pb2 import UResource
 
 
 class UResourceBuilder:
@@ -38,7 +39,7 @@ class UResourceBuilder:
         return UResource(name="rpc", instance="response", id=0)
 
     @multimethod
-    def for_rpc_request(method: Union[str, None], id: int = None):
+    def for_rpc_request(method: Union[str, None], id: int = None):  # noqa: N805
         uresource = UResource(name="rpc")
         if method is not None:
             uresource.instance = method
@@ -48,8 +49,8 @@ class UResourceBuilder:
         return uresource
 
     @multimethod
-    def for_rpc_request(id: int):
-        return UResourceBuilder.for_rpc_request(None, id)
+    def for_rpc_request(id: int):  # noqa: N805
+        return UResourceBuilder.for_rpc_request(None, id)  # noqa: N805
 
     @staticmethod
     def from_id(id):
@@ -59,11 +60,7 @@ class UResourceBuilder:
         return (
             UResourceBuilder.for_rpc_response()
             if id == 0
-            else (
-                UResourceBuilder.for_rpc_request(id)
-                if id < UResourceBuilder.MIN_TOPIC_ID
-                else UResource(id=id)
-            )
+            else (UResourceBuilder.for_rpc_request(id) if id < UResourceBuilder.MIN_TOPIC_ID else UResource(id=id))
         )
 
     @staticmethod
@@ -78,15 +75,9 @@ class UResourceBuilder:
             raise ValueError("topic cannot be None.")
         name_and_instance_parts = re.split(r"[\\.]", topic.name)
         resource_name = name_and_instance_parts[0]
-        resource_instance = (
-            None
-            if len(name_and_instance_parts) <= 1
-            else name_and_instance_parts[1]
-        )
+        resource_instance = None if len(name_and_instance_parts) <= 1 else name_and_instance_parts[1]
 
-        resource = UResource(
-            name=resource_name, id=topic.id, message=topic.message
-        )
+        resource = UResource(name=resource_name, id=topic.id, message=topic.message)
         if resource_instance is not None:
             resource.instance = resource_instance
 

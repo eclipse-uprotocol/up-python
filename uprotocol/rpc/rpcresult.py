@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,12 +20,10 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from abc import ABC, abstractmethod
 from typing import Callable, TypeVar, Union
 
-from uprotocol.proto.ustatus_pb2 import UCode
-from uprotocol.proto.ustatus_pb2 import UStatus
+from uprotocol.proto.ustatus_pb2 import UCode, UStatus
 
 T = TypeVar("T")
 
@@ -37,15 +35,15 @@ class RpcResult(ABC):
     """
 
     @abstractmethod
-    def isSuccess(self) -> bool:
+    def is_success(self) -> bool:
         pass
 
     @abstractmethod
-    def isFailure(self) -> bool:
+    def is_failure(self) -> bool:
         pass
 
     @abstractmethod
-    def getOrElse(self, default_value: Callable[[], T]) -> T:
+    def get_or_else(self, default_value: Callable[[], T]) -> T:
         pass
 
     @abstractmethod
@@ -53,7 +51,7 @@ class RpcResult(ABC):
         pass
 
     @abstractmethod
-    def flatMap(self, f: Callable[[T], "RpcResult"]) -> "RpcResult":
+    def flat_map(self, f: Callable[[T], "RpcResult"]) -> "RpcResult":
         pass
 
     @abstractmethod
@@ -61,11 +59,11 @@ class RpcResult(ABC):
         pass
 
     @abstractmethod
-    def failureValue(self) -> UStatus:
+    def failure_value(self) -> UStatus:
         pass
 
     @abstractmethod
-    def successValue(self) -> T:
+    def success_value(self) -> T:
         pass
 
     @staticmethod
@@ -86,33 +84,31 @@ class RpcResult(ABC):
 
     @staticmethod
     def flatten(result: "RpcResult") -> "RpcResult":
-        return result.flatMap(lambda x: x)
+        return result.flat_map(lambda x: x)
 
 
 class Success(RpcResult):
-
     def __init__(self, value: T):
         self.value = value
 
-    def isSuccess(self) -> bool:
+    def is_success(self) -> bool:
         return True
 
-    def isFailure(self) -> bool:
+    def is_failure(self) -> bool:
         return False
 
-    def getOrElse(self, default_value: Callable[[], T]) -> T:
-        return self.successValue()
+    def get_or_else(self, default_value: Callable[[], T]) -> T:
+        return self.success_value()
 
     def map(self, f: Callable[[T], T]) -> RpcResult:
         try:
-
-            return self.success(f(self.successValue()))
+            return self.success(f(self.success_value()))
         except Exception as e:
             return self.failure(e)
 
-    def flatMap(self, f: Callable[[T], RpcResult]) -> RpcResult:
+    def flat_map(self, f: Callable[[T], RpcResult]) -> RpcResult:
         try:
-            return f(self.successValue())
+            return f(self.success_value())
         except Exception as e:
             return self.failure(e)
 
@@ -120,26 +116,23 @@ class Success(RpcResult):
         try:
             return (
                 self
-                if f(self.successValue())
-                else self.failure(
-                    code=UCode.FAILED_PRECONDITION, message="filtered out"
-                )
+                if f(self.success_value())
+                else self.failure(code=UCode.FAILED_PRECONDITION, message="filtered out")
             )
         except Exception as e:
             return self.failure(e)
 
-    def failureValue(self) -> UStatus:
-        raise ValueError("Method failureValue() called on a Success instance")
+    def failure_value(self) -> UStatus:
+        raise ValueError("Method failure_value() called on a Success instance")
 
-    def successValue(self) -> T:
+    def success_value(self) -> T:
         return self.value
 
     def __str__(self) -> str:
-        return f"Success({self.successValue()})"
+        return f"Success({self.success_value()})"
 
 
 class Failure(RpcResult):
-
     def __init__(
         self,
         value: Union[UStatus, "Failure", Exception, None] = None,
@@ -151,17 +144,17 @@ class Failure(RpcResult):
         elif isinstance(value, Exception):
             self.value = UStatus(code=code, message=str(value))
         elif isinstance(value, Failure):
-            self.value = value.failureValue()
+            self.value = value.failure_value()
         else:
             self.value = UStatus(code=code, message=message)
 
-    def isSuccess(self) -> bool:
+    def is_success(self) -> bool:
         return False
 
-    def isFailure(self) -> bool:
+    def is_failure(self) -> bool:
         return True
 
-    def getOrElse(self, default_value: Callable[[], T]) -> T:
+    def get_or_else(self, default_value: Callable[[], T]) -> T:
         if callable(default_value):
             return default_value()
         return default_value
@@ -169,17 +162,17 @@ class Failure(RpcResult):
     def map(self, f: Callable[[T], T]) -> RpcResult:
         return self.failure(self)
 
-    def flatMap(self, f: Callable[[T], RpcResult]) -> RpcResult:
-        return self.failure(self.failureValue())
+    def flat_map(self, f: Callable[[T], RpcResult]) -> RpcResult:
+        return self.failure(self.failure_value())
 
     def filter(self, f: Callable[[T], bool]) -> RpcResult:
         return self.failure(self)
 
-    def failureValue(self) -> UStatus:
+    def failure_value(self) -> UStatus:
         return self.value
 
-    def successValue(self) -> T:
-        raise ValueError("Method successValue() called on a Failure instance")
+    def success_value(self) -> T:
+        raise ValueError("Method success_value() called on a Failure instance")
 
     def __str__(self) -> str:
         return f"Failure({self.value})"

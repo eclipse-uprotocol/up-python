@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +19,6 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
-
 
 from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory import PythonUUID
@@ -45,16 +44,12 @@ class LongUuidSerializer(UuidSerializer):
         wire.
         """
         if not string_uuid or string_uuid.isspace():
-            return (
-                UUID()
-            )  # Return default UUID if string is empty or whitespace
+            return UUID()  # Return default UUID if string is empty or whitespace
         try:
             msb, lsb = UUIDUtils.get_msb_lsb(PythonUUID(string_uuid))
             return UUID(msb=msb, lsb=lsb)
         except ValueError:
-            return (
-                UUID()
-            )  # Return default UUID in case of parsing failure
+            return UUID()  # Return default UUID in case of parsing failure
 
     def serialize(self, uuid: UUID) -> str:
         """
@@ -65,7 +60,5 @@ class LongUuidSerializer(UuidSerializer):
         if uuid is None:
             return ""
 
-        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(
-            uuid
-        )
+        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
         return str(pythonuuid) if uuid else ""

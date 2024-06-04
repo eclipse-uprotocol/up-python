@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,10 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from enum import Enum
 
-from uprotocol.proto.uri_pb2 import UAuthority
-from uprotocol.proto.uri_pb2 import UEntity
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
+from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UUri
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
 
@@ -40,9 +37,6 @@ class AddressType(Enum):
     IPv4 = 1
     IPv6 = 2
     ID = 3
-
-    # def getValue(self):
-    #     return bytes(self.value)
 
     @classmethod
     def from_value(cls, value):
@@ -78,11 +72,7 @@ class MicroUriSerializer(UriSerializer):
         @return:Returns a byte[] representing the serialized UUri.
         """
 
-        if (
-            uri is None
-            or UriValidator.is_empty(uri)
-            or not UriValidator.is_micro_form(uri)
-        ):
+        if uri is None or UriValidator.is_empty(uri) or not UriValidator.is_micro_form(uri):
             return bytearray()
 
         maybe_ue_id: int = uri.entity.id
@@ -131,9 +121,7 @@ class MicroUriSerializer(UriSerializer):
                 # If the ID length is greater than the maximum allowed, return an empty byte[]
                 if len(uri.authority.id) > self.MAX_ID_LENGTH:
                     return bytearray()
-                byte_arr.append(
-                    keep_8_least_significant_bits(len(uri.authority.id))
-                )
+                byte_arr.append(keep_8_least_significant_bits(len(uri.authority.id)))
             try:
                 if uri.authority.HasField("ip"):
                     byte_arr.extend(bytearray(uri.authority.ip))
@@ -165,20 +153,11 @@ class MicroUriSerializer(UriSerializer):
 
         # Validate that the micro_uri is the correct length for the type
         address_type = addresstype
-        if (
-            address_type == AddressType.LOCAL
-            and len(micro_uri) != self.LOCAL_MICRO_URI_LENGTH
-        ):
+        if address_type == AddressType.LOCAL and len(micro_uri) != self.LOCAL_MICRO_URI_LENGTH:
             return UUri()
-        elif (
-            address_type == AddressType.IPv4
-            and len(micro_uri) != self.IPV4_MICRO_URI_LENGTH
-        ):
+        elif address_type == AddressType.IPv4 and len(micro_uri) != self.IPV4_MICRO_URI_LENGTH:
             return UUri()
-        elif (
-            address_type == AddressType.IPv6
-            and len(micro_uri) != self.IPV6_MICRO_URI_LENGTH
-        ):
+        elif address_type == AddressType.IPv6 and len(micro_uri) != self.IPV6_MICRO_URI_LENGTH:
             return UUri()
 
         # UENTITY_ID
@@ -190,11 +169,11 @@ class MicroUriSerializer(UriSerializer):
         u_authority = None
         if address_type in (AddressType.IPv4, AddressType.IPv6):
             length = 4 if address_type == AddressType.IPv4 else 16
-            data = micro_uri[8:8 + length]
+            data = micro_uri[8 : 8 + length]
             u_authority = UAuthority(ip=bytes(data))
         elif address_type == AddressType.ID:
             length = micro_uri[8]
-            u_authority = UAuthority(id=bytes(micro_uri[9:9 + length]))
+            u_authority = UAuthority(id=bytes(micro_uri[9 : 9 + length]))
 
         uri = UUri(
             entity=UEntity(id=ue_id, version_major=ui_version),

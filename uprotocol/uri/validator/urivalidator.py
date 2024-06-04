@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,10 +22,8 @@ SPDX-License-Identifier: Apache-2.0
 
 from multimethod import multimethod
 
-from uprotocol.proto.uri_pb2 import UAuthority
-from uprotocol.proto.uri_pb2 import UResource
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
+from uprotocol.proto.uri_pb2 import UAuthority, UResource, UUri
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
 from uprotocol.validation.validationresult import ValidationResult
 
 
@@ -46,17 +44,11 @@ class UriValidator:
         if UriValidator.is_empty(uri):
             return ValidationResult.failure("Uri is empty.")
 
-        if uri.HasField("authority") and not UriValidator.is_remote(
-            uri.authority
-        ):
-            return ValidationResult.failure(
-                "Uri is remote missing uAuthority."
-            )
+        if uri.HasField("authority") and not UriValidator.is_remote(uri.authority):
+            return ValidationResult.failure("Uri is remote missing u_authority.")
 
         if uri.entity.name.strip() == "":
-            return ValidationResult.failure(
-                "Uri is missing uSoftware Entity name."
-            )
+            return ValidationResult.failure("Uri is missing uSoftware Entity name.")
 
         return ValidationResult.success()
 
@@ -112,7 +104,7 @@ class UriValidator:
         return uri is None or uri == UUri()
 
     @multimethod
-    def is_rpc_method(uri: UUri) -> bool:
+    def is_rpc_method(uri: UUri) -> bool:  # noqa: N805
         """
         Returns true if URI is of type RPC. A UUri is of type RPC if it
         contains the word rpc in the resource name
@@ -124,7 +116,7 @@ class UriValidator:
         return uri is not None and UriValidator.is_rpc_method(uri.resource)
 
     @multimethod
-    def is_rpc_method(uri: None) -> bool:
+    def is_rpc_method(uri: None) -> bool:  # noqa: N805
         """
         Returns false if input is None.
         @param uri: None
@@ -133,7 +125,7 @@ class UriValidator:
         return False
 
     @multimethod
-    def is_rpc_method(resource: UResource) -> bool:
+    def is_rpc_method(resource: UResource) -> bool:  # noqa: N805
         """
         Returns true if Uresource is of type RPC.
         @param resource: UResource to check if it is of type RPC method
@@ -145,29 +137,20 @@ class UriValidator:
             and (
                 resource.HasField("instance")
                 and resource.instance.strip() != ""
-                or (
-                    resource.HasField("id")
-                    and resource.id < UResourceBuilder.MIN_TOPIC_ID
-                )
+                or (resource.HasField("id") and resource.id < UResourceBuilder.MIN_TOPIC_ID)
             )
         )
 
     @staticmethod
     def is_resolved(uri: UUri) -> bool:
-
-        return UriValidator.is_long_form(uri) and UriValidator.is_micro_form(
-            uri
-        )
+        return UriValidator.is_long_form(uri) and UriValidator.is_micro_form(uri)
 
     @staticmethod
     def is_rpc_response(uri: UUri) -> bool:
-        return (
-            uri is not None
-            and uri.resource == UResourceBuilder.for_rpc_response()
-        )
+        return uri is not None and uri.resource == UResourceBuilder.for_rpc_response()
 
     @multimethod
-    def is_micro_form(uri: UUri) -> bool:
+    def is_micro_form(uri: UUri) -> bool:  # noqa: N805
         """
         Determines if this UUri can be serialized into
         a micro form UUri.<br><br>
@@ -185,7 +168,7 @@ class UriValidator:
         )
 
     @multimethod
-    def is_micro_form(authority: UAuthority) -> bool:
+    def is_micro_form(authority: UAuthority) -> bool:  # noqa: N805
         """
         check if UAuthority can be represented in micro format.
         Micro UAuthorities are local or ones
@@ -194,12 +177,10 @@ class UriValidator:
         @return Returns true if UAuthority can be represented in micro format
         """
 
-        return UriValidator.is_local(authority) or (
-            authority.HasField("ip") or (authority.HasField("id"))
-        )
+        return UriValidator.is_local(authority) or (authority.HasField("ip") or (authority.HasField("id")))
 
     @multimethod
-    def is_long_form(uri: UUri) -> bool:
+    def is_long_form(uri: UUri) -> bool:  # noqa: N805
         """
         Determines if this UUri can be serialized into
         a long form UUri.<br><br>
@@ -217,7 +198,7 @@ class UriValidator:
         )
 
     @multimethod
-    def is_long_form(authority: UAuthority) -> bool:
+    def is_long_form(authority: UAuthority) -> bool:  # noqa: N805
         """
         Returns true if UAuthority is local contains names so
         that it can be serialized into long format.
@@ -226,8 +207,7 @@ class UriValidator:
         it can be serialized into long format.
         """
         return authority is not None and (
-            UriValidator.is_local(authority)
-            or (authority.HasField("name") and authority.name.strip() != "")
+            UriValidator.is_local(authority) or (authority.HasField("name") and authority.name.strip() != "")
         )
 
     @staticmethod

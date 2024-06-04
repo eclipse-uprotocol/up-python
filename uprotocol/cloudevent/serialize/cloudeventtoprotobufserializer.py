@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from cloudevents.http import CloudEvent
 
+from uprotocol.cloudevent import cloudevents_pb2
 from uprotocol.cloudevent.serialize.cloudeventserializer import (
     CloudEventSerializer,
 )
-from uprotocol.cloudevent import cloudevents_pb2
 
 
 # ToDo- convert cloud event to cloudevent proto

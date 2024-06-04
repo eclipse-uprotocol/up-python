@@ -1,4 +1,3 @@
-
 import secrets
 import time
 import uuid
@@ -17,7 +16,7 @@ class PythonUUID(uuid.UUID):
         int: int = None,
         version: int = None,
         *,
-        is_safe=uuid.SafeUUID.unknown
+        is_safe=uuid.SafeUUID.unknown,
     ) -> None:
         r"""Create a UUID."""
 
@@ -51,11 +50,7 @@ class PythonUUID(uuid.UUID):
     @property
     def time(self) -> int:
         if self.version == 6:
-            return (
-                (self.time_low << 28)
-                | (self.time_mid << 12)
-                | (self.time_hi_version & 0x0FFF)
-            )
+            return (self.time_low << 28) | (self.time_mid << 12) | (self.time_hi_version & 0x0FFF)
         if self.version == 7:
             return self.int >> 80
         if self.version == 8:

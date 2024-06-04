@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -21,14 +21,14 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import unittest
-from uprotocol.uri.serializer.shorturiserializer import ShortUriSerializer
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
-from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
 from socket import inet_aton
+
+from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
+from uprotocol.uri.serializer.shorturiserializer import ShortUriSerializer
 
 
 class ShortUriSerializerTest(unittest.TestCase):
-
     def test_serialize_with_null_uri(self):
         str_uri = ShortUriSerializer().serialize(None)
         self.assertEqual("", str_uri)

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +20,6 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import unittest
 
 from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
@@ -36,7 +35,6 @@ from uprotocol.cloudevent.serialize.cloudeventserializers import (
 
 
 class TestBase64ProtobufSerializer(unittest.TestCase):
-
     def test_deserialize_bytes_to_string(self):
         ce = CloudEventFactory.build_base_cloud_event(
             "hello",

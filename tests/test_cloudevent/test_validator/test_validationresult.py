@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,15 +20,13 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import unittest
 
+from uprotocol.proto.ustatus_pb2 import UCode, UStatus
 from uprotocol.validation.validationresult import ValidationResult
-from uprotocol.proto.ustatus_pb2 import UStatus, UCode
 
 
 class TestValidationResultTest(unittest.TestCase):
-
     def test_success_validation_result_to_string(self):
         success = ValidationResult.success()
         self.assertEqual("ValidationResult.Success()", str(success))

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,13 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-import unittest
-from uprotocol.uri.serializer.ipaddress import IpAddress
 import socket
+import unittest
+
+from uprotocol.uri.serializer.ipaddress import IpAddress
 
 
 class TestIpAddress(unittest.TestCase):
-
     def test_to_bytes_with_null_ip_address(self):
         bytes_ = IpAddress.to_bytes(None)
         self.assertEqual(len(bytes_), 0)
@@ -71,11 +71,7 @@ class TestIpAddress(unittest.TestCase):
         self.assertFalse(IpAddress.is_valid("192.168.1.2586"))
 
     def test_is_valid_with_invalid_ipv4_passing_large_number(self):
-        self.assertFalse(
-            IpAddress.is_valid(
-                "2875687346587326457836485623874658723645782364875623847562378465.1.1.abc"
-            )
-        )
+        self.assertFalse(IpAddress.is_valid("2875687346587326457836485623874658723645782364875623847562378465.1.1.abc"))
 
     def test_is_valid_with_invalid_ipv4_passing_negative(self):
         self.assertFalse(IpAddress.is_valid("-1.1.1.abc"))
@@ -92,9 +88,7 @@ class TestIpAddress(unittest.TestCase):
     def test_is_valid_with_invalid_ipv6_address_that_has_way_too_many_groups(
         self,
     ):
-        self.assertFalse(
-            IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370:7334:1234")
-        )
+        self.assertFalse(IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370:7334:1234"))
 
     def test_is_valid_with_valid_ipv6_address_that_has_8_groups(self):
         self.assertTrue(IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370:7334"))

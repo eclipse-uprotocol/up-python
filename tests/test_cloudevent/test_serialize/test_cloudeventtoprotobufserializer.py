@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -27,6 +27,7 @@ import unittest
 from cloudevents.http import CloudEvent as ApacheCloudEvent
 from google.protobuf import any_pb2
 
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
@@ -41,9 +42,8 @@ from uprotocol.cloudevent.serialize.cloudeventserializers import (
 from uprotocol.cloudevent.serialize.cloudeventtoprotobufserializer import (
     CloudEventToProtobufSerializer,
 )
-from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uattributes_pb2 import UPriority, UMessageType
-from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
+from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
+from uprotocol.proto.uri_pb2 import UEntity, UResource, UUri
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 
 serializer = CloudEventSerializers.PROTOBUF.serializer()
@@ -88,46 +88,27 @@ def get_json_object():
 
 
 class TestCloudEventToProtobufSerializer(unittest.TestCase):
-
     def test_all_cloud_events_from_json(self):
         cloudevents = get_json_object()
         for ce_json in cloudevents:
-            bytes_ce = Base64ProtobufSerializer().serialize(
-                ce_json["serialized_ce"]
-            )
+            bytes_ce = Base64ProtobufSerializer().serialize(ce_json["serialized_ce"])
             cloudevent = CloudEventToProtobufSerializer().deserialize(bytes_ce)
             self.assertEqual(UCloudEvent.get_id(cloudevent), ce_json["id"])
-            self.assertEqual(
-                UCloudEvent.get_specversion(cloudevent), ce_json["specversion"]
-            )
+            self.assertEqual(UCloudEvent.get_specversion(cloudevent), ce_json["specversion"])
             if "source" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_source(cloudevent), ce_json["source"]
-                )
+                self.assertEqual(UCloudEvent.get_source(cloudevent), ce_json["source"])
             if "sink" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_sink(cloudevent), ce_json["sink"]
-                )
+                self.assertEqual(UCloudEvent.get_sink(cloudevent), ce_json["sink"])
             if "type" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_type(cloudevent), ce_json["type"]
-                )
+                self.assertEqual(UCloudEvent.get_type(cloudevent), ce_json["type"])
             if "priority" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_priority(cloudevent), ce_json["priority"]
-                )
+                self.assertEqual(UCloudEvent.get_priority(cloudevent), ce_json["priority"])
             if "ttl" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_ttl(cloudevent), ce_json["ttl"]
-                )
+                self.assertEqual(UCloudEvent.get_ttl(cloudevent), ce_json["ttl"])
             if "hash" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_hash(cloudevent), ce_json["hash"]
-                )
+                self.assertEqual(UCloudEvent.get_hash(cloudevent), ce_json["hash"])
             if "token" in ce_json:
-                self.assertEqual(
-                    UCloudEvent.get_token(cloudevent), ce_json["token"]
-                )
+                self.assertEqual(UCloudEvent.get_token(cloudevent), ce_json["token"])
             if "dataschema" in ce_json:
                 self.assertEqual(
                     UCloudEvent.get_data_schema(cloudevent),
@@ -179,9 +160,7 @@ class TestCloudEventToProtobufSerializer(unittest.TestCase):
             "source": "/body.access/1/door.front_left",
             "type": "pub.v1",
         }
-        cloud_event1 = ApacheCloudEvent(
-            json_attributes1, proto_payload.SerializeToString()
-        )
+        cloud_event1 = ApacheCloudEvent(json_attributes1, proto_payload.SerializeToString())
         cloud_event1.__setitem__("datacontenttype", "application/protobuf")
         cloud_event1.__setitem__("dataschema", proto_payload.type_url)
         cloud_event1.__delitem__("time")
@@ -190,9 +169,7 @@ class TestCloudEventToProtobufSerializer(unittest.TestCase):
             "source": "/body.access/1/door.front_left",
             "type": "file.v1",
         }
-        cloud_event2 = ApacheCloudEvent(
-            json_attributes2, proto_payload.SerializeToString()
-        )
+        cloud_event2 = ApacheCloudEvent(json_attributes2, proto_payload.SerializeToString())
         cloud_event2.__delitem__("time")
         serialized1 = serializer.serialize(cloud_event1)
         serialized2 = serializer.serialize(cloud_event2)

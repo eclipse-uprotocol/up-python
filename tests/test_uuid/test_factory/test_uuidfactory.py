@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2024 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2024 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,18 +20,17 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
-from datetime import datetime, timedelta, timezone
 import unittest
-from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
-from uprotocol.uuid.serializer.microuuidserializer import MicroUuidSerializer
+from datetime import datetime, timedelta, timezone
+
+from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
-from uprotocol.proto.uuid_pb2 import UUID
+from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
+from uprotocol.uuid.serializer.microuuidserializer import MicroUuidSerializer
 
 
 class TestUUIDFactory(unittest.TestCase):
-
     def test_uuidv8_creation(self):
         now = datetime.now()
         uuid = Factories.UPROTOCOL.create(now)
@@ -103,7 +102,6 @@ class TestUUIDFactory(unittest.TestCase):
         now = datetime.now()
         uuid = Factories.UUIDV6.create(now)
         version = UUIDUtils.get_version(uuid)
-        # time = UUIDUtils.getTime(uuid)
         bytes_data = MicroUuidSerializer.instance().serialize(uuid)
         uuid_string = LongUuidSerializer.instance().serialize(uuid)
 
@@ -112,8 +110,6 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertTrue(UUIDUtils.is_uuid(uuid))
         self.assertFalse(UUIDUtils.is_uprotocol(uuid))
         self.assertTrue(version)
-        # self.assertTrue(time)
-        # self.assertEqual(time, int(17007094616498160 * 1000))
         self.assertGreater(len(bytes_data), 0)
         self.assertFalse(uuid_string.isspace())
 
@@ -149,10 +145,8 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertEqual(uuid, uuid1)
         self.assertEqual(uuid, uuid2)
 
-    def test_UUIDUtils_for_random_uuid(self):
-        uuid = LongUuidSerializer.instance().deserialize(
-            "195f9bd1-526d-4c28-91b1-ff34c8e3632d"
-        )
+    def test_uuid_utils_for_random_uuid(self):
+        uuid = LongUuidSerializer.instance().deserialize("195f9bd1-526d-4c28-91b1-ff34c8e3632d")
         version = UUIDUtils.get_version(uuid)
         time = UUIDUtils.get_time(uuid)
         bytes_data = MicroUuidSerializer.instance().serialize(uuid)
@@ -175,7 +169,7 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertEqual(uuid, uuid1)
         self.assertEqual(uuid, uuid2)
 
-    def test_UUIDUtils_for_empty_uuid(self):
+    def test_uuid_utils_for_empty_uuid(self):
         uuid = UUID()
         version = UUIDUtils.get_version(uuid)
         time = UUIDUtils.get_time(uuid)
@@ -203,11 +197,9 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertTrue(uuid2, UUID())
         self.assertEqual(uuid, uuid2)
 
-    def test_UUIDUtils_for_null_uuid(self):
+    def test_uuid_utils_for_null_uuid(self):
         self.assertFalse(UUIDUtils.get_version(None))
-        self.assertEqual(
-            len(MicroUuidSerializer.instance().serialize(None)), 0
-        )
+        self.assertEqual(len(MicroUuidSerializer.instance().serialize(None)), 0)
         self.assertEqual(len(LongUuidSerializer.instance().serialize(None)), 0)
         self.assertFalse(UUIDUtils.is_uuidv6(None))
         self.assertFalse(UUIDUtils.is_uprotocol(None))
@@ -218,12 +210,8 @@ class TestUUIDFactory(unittest.TestCase):
         uuid = UUID(msb=9 << 12, lsb=0)  # Invalid UUID type
         self.assertFalse(UUIDUtils.get_version(uuid))
         self.assertFalse(UUIDUtils.get_time(uuid))
-        self.assertTrue(
-            len(MicroUuidSerializer.instance().serialize(uuid)) > 0
-        )
-        self.assertFalse(
-            LongUuidSerializer.instance().serialize(uuid).isspace()
-        )
+        self.assertTrue(len(MicroUuidSerializer.instance().serialize(uuid)) > 0)
+        self.assertFalse(LongUuidSerializer.instance().serialize(uuid).isspace())
         self.assertFalse(UUIDUtils.is_uuidv6(uuid))
         self.assertFalse(UUIDUtils.is_uprotocol(uuid))
         self.assertFalse(UUIDUtils.is_uuid(uuid))

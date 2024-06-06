@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,11 +20,11 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import unittest
 
 from google.protobuf import any_pb2
 
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
@@ -33,10 +33,9 @@ from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
 from uprotocol.cloudevent.serialize.cloudeventserializers import (
     CloudEventSerializers,
 )
-from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uattributes_pb2 import UPriority, UMessageType
+from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
 
-protoContentType = CloudEventFactory.PROTOBUF_CONTENT_TYPE
+PROTO_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE
 serializer = CloudEventSerializers.JSON.serializer()
 
 
@@ -56,15 +55,11 @@ def build_proto_payload_for_test():
 
 
 class TestCloudEventToJsonSerializer(unittest.TestCase):
-
     def test_serialize_cloud_event_to_json(self):
         proto_payload = build_proto_payload_for_test()
         # additional attributes
         u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_priority(UPriority.UPRIORITY_CS1)
-            .with_ttl(3)
-            .build()
+            UCloudEventAttributesBuilder().with_priority(UPriority.UPRIORITY_CS1).with_ttl(3).build()
         )
 
         # build the cloud event
@@ -76,7 +71,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
             u_cloud_event_attributes,
             UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
-        cloud_event.__setitem__("datacontenttype", protoContentType)
+        cloud_event.__setitem__("datacontenttype", PROTO_CONTENT_TYPE)
         cloud_event.__setitem__("dataschema", proto_payload.type_url)
         cloud_event.__delitem__("time")
         bytes_data = serializer.serialize(cloud_event)
@@ -95,10 +90,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         proto_payload = build_proto_payload_for_test()
         # additional attributes
         u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_priority(UPriority.UPRIORITY_CS1)
-            .with_ttl(3)
-            .build()
+            UCloudEventAttributesBuilder().with_priority(UPriority.UPRIORITY_CS1).with_ttl(3).build()
         )
 
         # build the cloud event
@@ -110,7 +102,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
             u_cloud_event_attributes,
             UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
-        cloud_event.__setitem__("datacontenttype", protoContentType)
+        cloud_event.__setitem__("datacontenttype", PROTO_CONTENT_TYPE)
         cloud_event.__setitem__("dataschema", proto_payload.type_url)
         cloud_event.__delitem__("time")
         serialized_data = serializer.serialize(cloud_event)
@@ -125,10 +117,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         proto_payload = build_proto_payload_for_test()
         # additional attributes
         u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_priority(UPriority.UPRIORITY_CS1)
-            .with_ttl(3)
-            .build()
+            UCloudEventAttributesBuilder().with_priority(UPriority.UPRIORITY_CS1).with_ttl(3).build()
         )
 
         # build the cloud event
@@ -140,7 +129,7 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
             u_cloud_event_attributes,
             UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
-        cloud_event1.__setitem__("datacontenttype", protoContentType)
+        cloud_event1.__setitem__("datacontenttype", PROTO_CONTENT_TYPE)
         cloud_event1.__setitem__("dataschema", proto_payload.type_url)
         cloud_event1.__delitem__("time")
         serialized_data1 = serializer.serialize(cloud_event1)

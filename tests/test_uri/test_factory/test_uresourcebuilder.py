@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -21,12 +21,12 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import unittest
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
+
 from uprotocol.proto.uprotocol_options_pb2 import UServiceTopic
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
 
 
 class TestUResourceBuilder(unittest.TestCase):
-
     def test_from_id_valid_id(self):
         id = 0
         resource = UResourceBuilder.from_id(id)
@@ -55,9 +55,7 @@ class TestUResourceBuilder(unittest.TestCase):
         self.assertEqual(resource.id, 0x8000)
 
     def test_from_uservice_topic_valid_service_topic(self):
-        topic = UServiceTopic(
-            name="SubscriptionChange", id=0, message="Update"
-        )
+        topic = UServiceTopic(name="SubscriptionChange", id=0, message="Update")
         resource = UResourceBuilder.from_uservice_topic(topic)
         self.assertEqual(resource.name, "SubscriptionChange")
         self.assertEqual(resource.instance, "")
@@ -65,9 +63,7 @@ class TestUResourceBuilder(unittest.TestCase):
         self.assertEqual(resource.message, "Update")
 
     def test_from_uservice_topic_valid_service_topic_with_instance(self):
-        topic = UServiceTopic(
-            name="door.front_left", id=0x8000, message="Door"
-        )
+        topic = UServiceTopic(name="door.front_left", id=0x8000, message="Door")
         resource = UResourceBuilder.from_uservice_topic(topic)
         self.assertEqual(resource.name, "door")
         self.assertEqual(resource.instance, "front_left")

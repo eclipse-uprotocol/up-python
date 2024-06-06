@@ -77,7 +77,7 @@
     "priority": "UPRIORITY_CS2",
     "ttl": 3,
     "hash": "somehash",
-    "reqid": "requestIdFromRequestCloudEvent",
+    "reqid": "request_idFromRequestCloudEvent",
     "sink": "/body.access//door.front_left#Door",
     "test_detail": "test_create_response_cloud_event_originating_from_local_use"
   },
@@ -90,7 +90,7 @@
     "priority": "UPRIORITY_CS2",
     "ttl": 3,
     "hash": "somehash",
-    "reqid": "requestIdFromRequestCloudEvent",
+    "reqid": "request_idFromRequestCloudEvent",
     "sink": "/body.access//door.front_left#Door",
     "commstatus": 3,
     "test_detail": "test_create_a_failed_response_cloud_event"

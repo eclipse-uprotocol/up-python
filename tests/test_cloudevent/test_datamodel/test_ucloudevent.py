@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,26 +20,25 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-from datetime import datetime, timezone
-
-from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
-from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
-from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
-from uprotocol.proto.upayload_pb2 import UPayloadFormat
-from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
-from uprotocol.proto.ustatus_pb2 import UCode
-from uprotocol.uuid.factory.uuidfactory import Factories
-from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
 import time
 import unittest
+from datetime import datetime, timezone
 
 from google.protobuf import any_pb2
 
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
+from uprotocol.cloudevent.factory.cloudeventfactory import CloudEventFactory
 from uprotocol.cloudevent.factory.ucloudevent import UCloudEvent
+from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
+from uprotocol.proto.upayload_pb2 import UPayloadFormat
+from uprotocol.proto.uri_pb2 import UEntity, UResource, UUri
+from uprotocol.proto.ustatus_pb2 import UCode
+from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
+from uprotocol.uuid.factory.uuidfactory import Factories
+from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
 
 
 def build_uri_for_test():
@@ -133,18 +132,18 @@ class TestUCloudEvent(unittest.TestCase):
         cloud_event = build_cloud_event_for_test()
         self.assertEqual(None, UCloudEvent.get_sink(cloud_event))
 
-    def test_extract_requestId_from_cloudevent_when_requestId_exists(self):
+    def test_extract_request_id_from_cloudevent_when_request_id_exists(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("reqid", "somereqid")
         self.assertEqual("somereqid", UCloudEvent.get_request_id(cloud_event))
 
-    def test_extract_requestId_from_cloudevent_when_requestId_does_not_exist(
+    def test_extract_request_id_from_cloudevent_when_request_id_does_not_exist(
         self,
     ):
         cloud_event = build_cloud_event_for_test()
         self.assertEqual(None, UCloudEvent.get_request_id(cloud_event))
 
-    def test_extract_requestId_from_cloudevent_when_requestId_value_is_null(
+    def test_extract_request_id_from_cloudevent_when_request_id_value_is_null(
         self,
     ):
         cloud_event = build_cloud_event_for_test()
@@ -176,9 +175,7 @@ class TestUCloudEvent(unittest.TestCase):
 
     def test_extract_ttl_from_cloudevent_when_ttl_exists(self):
         cloud_event = build_cloud_event_for_test()
-        self.assertEqual(
-            UCode.INVALID_ARGUMENT, UCloudEvent.get_ttl(cloud_event)
-        )
+        self.assertEqual(UCode.INVALID_ARGUMENT, UCloudEvent.get_ttl(cloud_event))
 
     def test_extract_ttl_from_cloudevent_when_ttl_does_not_exists(self):
         cloud_event = build_cloud_event_for_test()
@@ -197,26 +194,20 @@ class TestUCloudEvent(unittest.TestCase):
     def test_cloudevent_has_platform_error_when_platform_error_exists(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("commstatus", UCode.ABORTED)
-        self.assertEqual(
-            UCode.ABORTED, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.ABORTED, UCloudEvent.get_communication_status(cloud_event))
 
     def test_cloudevent_has_platform_error_when_platform_error_does_not_exist(
         self,
     ):
         cloud_event = build_cloud_event_for_test()
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
     def test_extract_platform_error_from_cloudevent_when_platform_error_exists_in_wrong_format(
         self,
     ):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("commstatus", "boom")
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
     def test_extract_platform_error_from_cloudevent_when_platform_error_exists(
         self,
@@ -232,25 +223,17 @@ class TestUCloudEvent(unittest.TestCase):
         self,
     ):
         cloud_event = build_cloud_event_for_test()
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
     def test_adding_platform_error_to_existing_cloudevent(
         self,
     ):
         cloud_event = build_cloud_event_for_test()
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
-        cloud_event_1 = UCloudEvent.add_communication_status(
-            cloud_event, UCode.DEADLINE_EXCEEDED
-        )
+        cloud_event_1 = UCloudEvent.add_communication_status(cloud_event, UCode.DEADLINE_EXCEEDED)
 
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
         self.assertEqual(
             UCode.DEADLINE_EXCEEDED,
@@ -261,33 +244,27 @@ class TestUCloudEvent(unittest.TestCase):
         self,
     ):
         cloud_event = build_cloud_event_for_test()
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
         cloud_event_1 = UCloudEvent.add_communication_status(cloud_event, None)
 
-        self.assertEqual(
-            UCode.OK, UCloudEvent.get_communication_status(cloud_event)
-        )
+        self.assertEqual(UCode.OK, UCloudEvent.get_communication_status(cloud_event))
 
         self.assertEqual(cloud_event, cloud_event_1)
 
-    def test_extract_creation_timestamp_from_cloudevent_UUID_Id_when_not_a_UUIDV8_id(
+    def test_extract_creation_timestamp_from_cloudevent_uuid_id_when_not_a_uuid_v8_id(
         self,
     ):
         cloud_event = build_cloud_event_for_test()
         self.assertEqual(None, UCloudEvent.get_creation_timestamp(cloud_event))
 
-    def test_extract_creation_timestamp_from_cloudevent_UUIDV8_Id_when_UUIDV8_id_is_valid(
+    def test_extract_creation_timestamp_from_cloudevent_uuid_v8_id_when_uuid_v8_id_is_valid(
         self,
     ):
         uuid = Factories.UPROTOCOL.create()
         str_uuid = LongUuidSerializer.instance().serialize(uuid)
         cloud_event = build_cloud_event_for_test_with_id(str_uuid)
-        maybe_creation_timestamp = UCloudEvent.get_creation_timestamp(
-            cloud_event
-        )
+        maybe_creation_timestamp = UCloudEvent.get_creation_timestamp(cloud_event)
         self.assertIsNotNone(maybe_creation_timestamp)
         creation_timestamp = maybe_creation_timestamp / 1000
 
@@ -297,31 +274,23 @@ class TestUCloudEvent(unittest.TestCase):
     def test_cloudevent_is_not_expired_cd_when_no_ttl_configured(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__delitem__("ttl")
-        self.assertFalse(
-            UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event)
-        )
+        self.assertFalse(UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event))
 
     def test_cloudevent_is_not_expired_cd_when_ttl_is_zero(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("ttl", 0)
-        self.assertFalse(
-            UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event)
-        )
+        self.assertFalse(UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event))
 
     def test_cloudevent_is_not_expired_cd_when_ttl_is_minus_one(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("ttl", -1)
-        self.assertFalse(
-            UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event)
-        )
+        self.assertFalse(UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event))
 
     def test_cloudevent_is_expired_cd_when_ttl_is_one(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("ttl", 1)
         time.sleep(0.002)
-        self.assertTrue(
-            UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event)
-        )
+        self.assertTrue(UCloudEvent.is_expired_by_cloud_event_creation_date(cloud_event))
 
     def test_cloudevent_is_expired_when_ttl_1_mili(self):
         uuid = Factories.UPROTOCOL.create()
@@ -338,7 +307,7 @@ class TestUCloudEvent(unittest.TestCase):
         cloud_event.__setitem__("id", "")
         self.assertFalse(UCloudEvent.is_expired(cloud_event))
 
-    def test_cloudevent_has_a_UUIDV8_id(self):
+    def test_cloudevent_has_a_uuid_v8_id(self):
         uuid = Factories.UPROTOCOL.create()
         str_uuid = LongUuidSerializer.instance().serialize(uuid)
         cloud_event = build_cloud_event_for_test()
@@ -348,17 +317,14 @@ class TestUCloudEvent(unittest.TestCase):
     def test_to_message_with_valid_event(self):
         # additional attributes
         u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_priority(UPriority.UPRIORITY_CS2)
-            .with_ttl(3)
-            .build()
+            UCloudEventAttributesBuilder().with_priority(UPriority.UPRIORITY_CS2).with_ttl(3).build()
         )
         cloud_event = CloudEventFactory.publish(
             build_uri_for_test(),
             build_proto_payload_for_test(),
             u_cloud_event_attributes,
         )
-        u_message = UCloudEvent.toMessage(cloud_event)
+        u_message = UCloudEvent.to_message(cloud_event)
         self.assertIsNotNone(u_message)
 
     def test_from_message_with_valid_message(self):
@@ -375,9 +341,9 @@ class TestUCloudEvent(unittest.TestCase):
             build_proto_payload_for_test(),
             u_cloud_event_attributes,
         )
-        u_message = UCloudEvent.toMessage(cloud_event)
+        u_message = UCloudEvent.to_message(cloud_event)
         self.assertIsNotNone(u_message)
-        cloud_event1 = UCloudEvent.fromMessage(u_message)
+        cloud_event1 = UCloudEvent.from_message(u_message)
         self.assertIsNotNone(cloud_event1)
         cloud_event.__delitem__("time")
         cloud_event1.__delitem__("time")
@@ -395,9 +361,7 @@ class TestUCloudEvent(unittest.TestCase):
             UCloudEvent.get_priority(cloud_event),
             UCloudEvent.get_priority(cloud_event1),
         )
-        self.assertEqual(
-            UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1)
-        )
+        self.assertEqual(UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1))
         self.assertEqual(
             UCloudEvent.get_type(cloud_event),
             UCloudEvent.get_type(cloud_event1),
@@ -420,14 +384,10 @@ class TestUCloudEvent(unittest.TestCase):
             build_proto_payload_for_test(),
             u_cloud_event_attributes,
         )
-        result = UCloudEvent.toMessage(cloud_event)
+        result = UCloudEvent.to_message(cloud_event)
         self.assertIsNotNone(result)
-        self.assertEqual(
-            UCloudEvent.get_ttl(cloud_event), result.attributes.ttl
-        )
-        self.assertEqual(
-            UCloudEvent.get_token(cloud_event), result.attributes.token
-        )
+        self.assertEqual(UCloudEvent.get_ttl(cloud_event), result.attributes.ttl)
+        self.assertEqual(UCloudEvent.get_token(cloud_event), result.attributes.token)
         self.assertEqual(
             UCloudEvent.get_sink(cloud_event),
             LongUriSerializer().serialize(result.attributes.sink),
@@ -445,7 +405,7 @@ class TestUCloudEvent(unittest.TestCase):
             UPriority.Name(result.attributes.priority),
         )
 
-        cloud_event1 = UCloudEvent.fromMessage(result)
+        cloud_event1 = UCloudEvent.from_message(result)
         cloud_event.__delitem__("time")
         cloud_event1.__delitem__("time")
         self.assertEqual(cloud_event, cloud_event1)
@@ -466,9 +426,7 @@ class TestUCloudEvent(unittest.TestCase):
             UCloudEvent.get_priority(cloud_event),
             UCloudEvent.get_priority(cloud_event1),
         )
-        self.assertEqual(
-            UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1)
-        )
+        self.assertEqual(UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1))
         self.assertEqual(
             UCloudEvent.get_type(cloud_event),
             UCloudEvent.get_type(cloud_event1),
@@ -489,7 +447,7 @@ class TestUCloudEvent(unittest.TestCase):
             build_proto_payload_for_test(),
             u_cloud_event_attributes,
         )
-        result = UCloudEvent.toMessage(cloud_event)
+        result = UCloudEvent.to_message(cloud_event)
         self.assertIsNotNone(result)
         self.assertFalse(result.attributes.HasField("ttl"))
         self.assertEqual(
@@ -506,7 +464,7 @@ class TestUCloudEvent(unittest.TestCase):
         )
         self.assertEqual(result.attributes.priority, 0)
 
-        cloud_event1 = UCloudEvent.fromMessage(result)
+        cloud_event1 = UCloudEvent.from_message(result)
         self.assertEqual(cloud_event.get_data(), cloud_event1.get_data())
         self.assertEqual(
             UCloudEvent.get_source(cloud_event),
@@ -524,9 +482,7 @@ class TestUCloudEvent(unittest.TestCase):
             UCloudEvent.get_priority(cloud_event),
             UCloudEvent.get_priority(cloud_event1),
         )
-        self.assertEqual(
-            UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1)
-        )
+        self.assertEqual(UCloudEvent.get_id(cloud_event), UCloudEvent.get_id(cloud_event1))
         self.assertEqual(
             UCloudEvent.get_type(cloud_event),
             UCloudEvent.get_type(cloud_event1),
@@ -536,14 +492,9 @@ class TestUCloudEvent(unittest.TestCase):
             UCloudEvent.get_request_id(cloud_event1),
         )
 
-    def test_to_from_message_from_UCP_cloudevent(self):
+    def test_to_from_message_from_ucp_cloudevent(self):
         # additional attributes
-        u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_ttl(3)
-            .with_token("someOAuthToken")
-            .build()
-        )
+        u_cloud_event_attributes = UCloudEventAttributesBuilder().with_ttl(3).with_token("someOAuthToken").build()
 
         cloud_event = CloudEventFactory.request(
             build_uri_for_test(),
@@ -556,10 +507,10 @@ class TestUCloudEvent(unittest.TestCase):
         cloud_event.__setitem__("commstatus", 16)
         cloud_event.__setitem__("permission_level", 4)
 
-        result = UCloudEvent.toMessage(cloud_event)
+        result = UCloudEvent.to_message(cloud_event)
         self.assertIsNotNone(result)
         self.assertEqual(UPriority.UPRIORITY_CS4, result.attributes.priority)
-        cloud_event1 = UCloudEvent.fromMessage(result)
+        cloud_event1 = UCloudEvent.from_message(result)
         self.assertEqual(
             UCloudEvent.get_priority(cloud_event1),
             UPriority.Name(result.attributes.priority),
@@ -567,16 +518,11 @@ class TestUCloudEvent(unittest.TestCase):
 
     def test_from_message_with_null_message(self):
         with self.assertRaises(ValueError) as context:
-            UCloudEvent.fromMessage(None)
+            UCloudEvent.from_message(None)
             self.assertTrue("message cannot be null." in context.exception)
 
     def test_cloud_event_to_string(self):
-        u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_ttl(3)
-            .with_token("someOAuthToken")
-            .build()
-        )
+        u_cloud_event_attributes = UCloudEventAttributesBuilder().with_ttl(3).with_token("someOAuthToken").build()
 
         cloud_event = CloudEventFactory.request(
             build_uri_for_test(),
@@ -596,12 +542,10 @@ class TestUCloudEvent(unittest.TestCase):
         self.assertEqual(cloud_event_string, "null")
 
     def test_get_upayload_format_from_content_type(self):
-        new_format = UCloudEvent().get_upayload_format_from_content_type(
-            "application/json"
-        )
+        new_format = UCloudEvent().get_upayload_format_from_content_type("application/json")
         self.assertEqual(new_format, UPayloadFormat.UPAYLOAD_FORMAT_JSON)
 
     def test_to_message_none_entry(self):
         with self.assertRaises(ValueError) as context:
-            UCloudEvent().toMessage(None)
+            UCloudEvent().to_message(None)
             self.assertTrue("Cloud Event can't be None" in context.exception)

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,14 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import unittest
 
 from uprotocol.proto.uattributes_pb2 import CallOptions
 
 
 class TestCallOptions(unittest.TestCase):
-
     def test_to_string(self):
         call_options = CallOptions(ttl=30, token="someToken")
         self.assertEqual(30, call_options.ttl)

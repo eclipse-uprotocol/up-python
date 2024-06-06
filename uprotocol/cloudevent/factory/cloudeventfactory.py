@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -19,7 +19,6 @@ limitations under the License.
 SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
-
 
 from cloudevents.http import CloudEvent
 from google.protobuf import empty_pb2
@@ -145,9 +144,7 @@ class CloudEventFactory:
         return cloud_event
 
     @staticmethod
-    def publish(
-        source: str, proto_payload: Any, attributes: UCloudEventAttributes
-    ) -> CloudEvent:
+    def publish(source: str, proto_payload: Any, attributes: UCloudEventAttributes) -> CloudEvent:
         """
         Create a CloudEvent for an event for the use case of: Publish generic message.
         @param source:The  uri of the topic being published.

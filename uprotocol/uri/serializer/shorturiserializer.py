@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -24,13 +24,11 @@ import re
 import socket
 from typing import List
 
-from uprotocol.proto.uri_pb2 import UUri, UAuthority, UEntity
-from uprotocol.proto.uri_pb2 import UResource
-
+from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
 from uprotocol.uri.serializer.ipaddress import IpAddress
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 
 
 def convert_packed_ipaddr_to_string(packed_ipaddr: bytes):
@@ -68,9 +66,7 @@ class ShortUriSerializer(UriSerializer):
             if uri.authority.HasField("ip"):
                 try:
                     string_builder.append("//")
-                    string_builder.append(
-                        convert_packed_ipaddr_to_string(authority.ip)
-                    )
+                    string_builder.append(convert_packed_ipaddr_to_string(authority.ip))
                 except Exception:
                     return ""
             elif uri.authority.HasField("id"):
@@ -80,9 +76,7 @@ class ShortUriSerializer(UriSerializer):
                 return ""
 
         string_builder.append("/")
-        string_builder.append(
-            self.build_software_entity_part_of_uri(uri.entity)
-        )
+        string_builder.append(self.build_software_entity_part_of_uri(uri.entity))
         string_builder.append(self.build_resource_part_of_uri(uri))
 
         return re.sub("/+$", "", "".join(string_builder))
@@ -123,9 +117,7 @@ class ShortUriSerializer(UriSerializer):
             return UUri()
 
         uri = (
-            uprotocol_uri[uprotocol_uri.index(":") + 1:]
-            if ":" in uprotocol_uri
-            else uprotocol_uri.replace("\\", "/")
+            uprotocol_uri[uprotocol_uri.index(":") + 1 :] if ":" in uprotocol_uri else uprotocol_uri.replace("\\", "/")
         )
 
         is_local = not uri.startswith("//")
@@ -148,9 +140,7 @@ class ShortUriSerializer(UriSerializer):
                 ue_version = uri_parts[2]
 
                 if number_of_parts_in_uri > 3:
-                    resource = ShortUriSerializer.parse_from_string(
-                        uri_parts[3]
-                    )
+                    resource = ShortUriSerializer.parse_from_string(uri_parts[3])
 
                 if number_of_parts_in_uri > 4:
                     return UUri()
@@ -167,9 +157,7 @@ class ShortUriSerializer(UriSerializer):
                 if number_of_parts_in_uri > 4:
                     ue_version = uri_parts[4]
                     if number_of_parts_in_uri > 5:
-                        resource = ShortUriSerializer.parse_from_string(
-                            uri_parts[5]
-                        )
+                        resource = ShortUriSerializer.parse_from_string(uri_parts[5])
                     if number_of_parts_in_uri > 6:
                         return UUri()
             else:

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,19 +20,16 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from google.protobuf.descriptor import ServiceDescriptor
 from google.protobuf.descriptor_pb2 import ServiceOptions
 
+from uprotocol.proto.uprotocol_options_pb2 import (
+    id,
+    name,
+    version_major,
+    version_minor,
+)
 from uprotocol.proto.uri_pb2 import UEntity
-from uprotocol.proto.uprotocol_options_pb2 import name as Name
-from uprotocol.proto.uprotocol_options_pb2 import (
-    version_major as Version_Major,
-)
-from uprotocol.proto.uprotocol_options_pb2 import (
-    version_minor as Version_Minor,
-)
-from uprotocol.proto.uprotocol_options_pb2 import id as Id
 
 
 class UEntityFactory:
@@ -47,19 +44,19 @@ class UEntityFactory:
 
         options: ServiceOptions = service_descriptor.GetOptions()
 
-        name: str = options.Extensions[Name]
-        version_major: int = options.Extensions[Version_Major]
-        version_minor: int = options.Extensions[Version_Minor]
-        id: int = options.Extensions[Id]
+        name_ext: str = options.Extensions[name]
+        v_major: int = options.Extensions[version_major]
+        v_minor: int = options.Extensions[version_minor]
+        id_ext: int = options.Extensions[id]
 
         uentity = UEntity()
-        if name is not None:
-            uentity.name = name
-        if version_major is not None:
-            uentity.version_major = version_major
-        if version_minor is not None:
-            uentity.version_minor = version_minor
-        if id is not None:
-            uentity.id = id
+        if name_ext is not None:
+            uentity.name = name_ext
+        if v_major is not None:
+            uentity.version_major = v_major
+        if v_minor is not None:
+            uentity.version_minor = v_minor
+        if id_ext is not None:
+            uentity.id = id_ext
 
         return uentity

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,11 +20,11 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import unittest
 
 from google.protobuf import any_pb2
 
+from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.cloudevent.datamodel.ucloudeventattributes import (
     UCloudEventAttributesBuilder,
 )
@@ -34,9 +34,8 @@ from uprotocol.cloudevent.validate.cloudeventvalidator import (
     CloudEventValidator,
     Validators,
 )
-from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
-from uprotocol.proto.uattributes_pb2 import UPriority, UMessageType
-from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource
+from uprotocol.proto.uattributes_pb2 import UMessageType, UPriority
+from uprotocol.proto.uri_pb2 import UEntity, UResource, UUri
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uuid.factory.uuidfactory import Factories
@@ -128,7 +127,6 @@ def build_long_uri_for_test():
 
 
 class TestCloudEventValidator(unittest.TestCase):
-
     def test_get_a_publish_cloud_event_validator(self):
         cloud_event = build_base_publish_cloud_event_for_test()
         validator = CloudEventValidator.get_validator(cloud_event)
@@ -251,9 +249,7 @@ class TestCloudEventValidator(unittest.TestCase):
         status = CloudEventValidator.validate_id(cloud_event).to_status()
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
         self.assertEqual(
-            "Invalid CloudEvent Id ["
-            + str_uuid
-            + "]. CloudEvent Id must be of type UUIDv8.",
+            "Invalid CloudEvent Id [" + str_uuid + "]. CloudEvent Id must be of type UUIDv8.",
             status.message,
         )
 
@@ -276,9 +272,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "pub.v1")
-        cloud_event.__setitem__(
-            "source", "/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(ValidationResult.success(), result)
@@ -291,9 +285,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "pub.v1")
-        cloud_event.__setitem__(
-            "source", "//VCU.myvin/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/door.front_left#Door")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(ValidationResult.success(), result)
@@ -306,9 +298,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "pub.v1")
-        cloud_event.__setitem__(
-            "source", "//VCU.myvin/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/door.front_left#Door")
         cloud_event.__setitem__("sink", "//bo.cloud/petapp")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
@@ -322,9 +312,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "pub.v1")
-        cloud_event.__setitem__(
-            "source", "//VCU.myvin/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/door.front_left#Door")
         cloud_event.__setitem__("sink", "//bo.cloud")
         validator = Validators.PUBLISH.validator()
         result = validator.validate(cloud_event)
@@ -402,9 +390,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_notification_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "not.v1")
-        cloud_event.__setitem__(
-            "source", "/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         cloud_event.__setitem__("sink", "//bo.cloud/petapp")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
@@ -416,9 +402,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_notification_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "not.v1")
-        cloud_event.__setitem__(
-            "source", "/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(
@@ -433,9 +417,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "not.v1")
         cloud_event.__setitem__("sink", "//bo.cloud")
-        cloud_event.__setitem__(
-            "source", "/body.access/1/door.front_left#Door"
-        )
+        cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(
@@ -449,9 +431,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "req.v1")
-        cloud_event.__setitem__(
-            "sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor"
-        )
+        cloud_event.__setitem__("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
         cloud_event.__setitem__("source", "//bo.cloud/petapp//rpc.response")
         validator = Validators.REQUEST.validator()
         result = validator.validate(cloud_event)
@@ -463,9 +443,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "req.v1")
-        cloud_event.__setitem__(
-            "sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor"
-        )
+        cloud_event.__setitem__("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
         cloud_event.__setitem__("source", "//bo.cloud/petapp//dog")
         validator = Validators.REQUEST.validator()
         result = validator.validate(cloud_event)
@@ -516,9 +494,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "res.v1")
         cloud_event.__setitem__("sink", "//bo.cloud/petapp//rpc.response")
-        cloud_event.__setitem__(
-            "source", "//VCU.myvin/body.access/1/rpc.UpdateDoor"
-        )
+        cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(ValidationResult.success(), result)
@@ -530,9 +506,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "res.v1")
         cloud_event.__setitem__("sink", "//bo.cloud/petapp//rpc.response")
-        cloud_event.__setitem__(
-            "source", "//VCU.myvin/body.access/1/UpdateDoor"
-        )
+        cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(
@@ -550,9 +524,7 @@ class TestCloudEventValidator(unittest.TestCase):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
         cloud_event.__setitem__("type", "res.v1")
-        cloud_event.__setitem__(
-            "source", "//VCU.myvin/body.access/1/UpdateDoor"
-        )
+        cloud_event.__setitem__("source", "//VCU.myvin/body.access/1/UpdateDoor")
         validator = Validators.RESPONSE.validator()
         result = validator.validate(cloud_event)
         self.assertEqual(
@@ -612,10 +584,7 @@ class TestCloudEventValidator(unittest.TestCase):
         proto_payload = build_proto_payload_for_test()
         # additional attributes
         u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_priority(UPriority.UPRIORITY_CS0)
-            .with_ttl(1000)
-            .build()
+            UCloudEventAttributesBuilder().with_priority(UPriority.UPRIORITY_CS0).with_ttl(1000).build()
         )
         # build the cloud event
         cloud_event = CloudEventFactory.build_base_cloud_event(

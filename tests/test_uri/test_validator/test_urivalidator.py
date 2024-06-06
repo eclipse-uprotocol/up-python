@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -24,28 +24,27 @@ import json
 import os
 import unittest
 
+from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.validation.validationresult import ValidationResult
-from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource, UAuthority
 
 
 class TestUriValidator(unittest.TestCase):
-
     def test_validate_blank_uri(self):
         uri = LongUriSerializer().deserialize(None)
         status = UriValidator.validate(uri)
         self.assertTrue(UriValidator.is_empty(uri))
         self.assertEqual("Uri is empty.", status.get_message())
 
-    def test_validate_uri_with_no_entity_getName(self):
+    def test_validate_uri_with_no_entity_get_name(self):
         uri = LongUriSerializer().deserialize("//")
         status = UriValidator.validate(uri)
         self.assertTrue(UriValidator.is_empty(uri))
         self.assertEqual("Uri is empty.", status.get_message())
 
-    def test_validate_uri_with_getEntity(self):
+    def test_validate_uri_with_get_entity(self):
         uri = LongUriSerializer().deserialize("/neelam")
         status = UriValidator.validate(uri)
         self.assertTrue(ValidationResult.success().__eq__(status))
@@ -61,41 +60,41 @@ class TestUriValidator(unittest.TestCase):
         self.assertTrue(status.is_failure())
         self.assertEqual("Uri is empty.", status.get_message())
 
-    def test_validateRpcMethod_with_valid_uri(self):
+    def test_validate_rpc_method_with_valid_uri(self):
         uri = LongUriSerializer().deserialize("/neelam//rpc.echo")
         status = UriValidator.validate_rpc_method(uri)
         self.assertTrue(ValidationResult.success().__eq__(status))
 
-    def test_validateRpcMethod_with_invalid_uri(self):
+    def test_validate_rpc_method_with_invalid_uri(self):
         uri = LongUriSerializer().deserialize("/neelam/echo")
         status = UriValidator.validate_rpc_method(uri)
         self.assertTrue(status.is_failure())
         self.assertEqual("Uri is empty.", status.get_message())
 
-    def test_validateRpcMethod_with_malformed_uri(self):
+    def test_validate_rpc_method_with_malformed_uri(self):
         uri = LongUriSerializer().deserialize("neelam")
         status = UriValidator.validate_rpc_method(uri)
         self.assertTrue(UriValidator.is_empty(uri))
         self.assertEqual("Uri is empty.", status.get_message())
 
-    def test_validateRpcResponse_with_valid_uri(self):
+    def test_validate_rpc_response_with_valid_uri(self):
         uri = LongUriSerializer().deserialize("/neelam//rpc.response")
         status = UriValidator.validate_rpc_response(uri)
         self.assertTrue(ValidationResult.success().__eq__(status))
 
-    def test_validateRpcResponse_with_malformed_uri(self):
+    def test_validate_rpc_response_with_malformed_uri(self):
         uri = LongUriSerializer().deserialize("neelam")
         status = UriValidator.validate_rpc_response(uri)
         self.assertTrue(UriValidator.is_empty(uri))
         self.assertEqual("Uri is empty.", status.get_message())
 
-    def test_validateRpcResponse_with_rpc_type(self):
+    def test_validate_rpc_response_with_rpc_type(self):
         uri = LongUriSerializer().deserialize("/neelam//dummy.wrong")
         status = UriValidator.validate_rpc_response(uri)
         self.assertTrue(status.is_failure())
         self.assertEqual("Invalid RPC response type.", status.get_message())
 
-    def test_validateRpcResponse_with_invalid_rpc_response_type(self):
+    def test_validate_rpc_response_with_invalid_rpc_response_type(self):
         uri = LongUriSerializer().deserialize("/neelam//rpc.wrong")
         status = UriValidator.validate_rpc_response(uri)
         self.assertTrue(status.is_failure())
@@ -158,37 +157,27 @@ class TestUriValidator(unittest.TestCase):
 
     def test_rpc_topic_uri_with_version_when_it_is_valid_remote(self):
         uri = "//bo.cloud/petapp/1/rpc.response"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_topic_uri_no_version_when_it_is_valid_remote(self):
         uri = "//bo.cloud/petapp//rpc.response"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_topic_uri_with_version_when_it_is_valid_local(self):
         uri = "/petapp/1/rpc.response"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_topic_uri_no_version_when_it_is_valid_local(self):
         uri = "/petapp//rpc.response"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_topic_uri_invalid_when_uri_has_schema_only(self):
         uri = ":"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_local(self):
@@ -200,106 +189,78 @@ class TestUriValidator(unittest.TestCase):
         self,
     ):
         uri = "//petapp/1/dog"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority(self):
         uri = "//"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority_with_use(
         self,
     ):
         uri = "///body.access/1"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_topic_uri_invalid_when_uri_is_missing_use(self):
         uri = "//VCU.myvin"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_remote(self):
         uri = "/1"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_local(self):
         uri = "//VCU.myvin//1"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_with_version_when_it_is_valid_remote(self):
         uri = "//VCU.myvin/body.access/1/rpc.UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_method_uri_no_version_when_it_is_valid_remote(self):
         uri = "//VCU.myvin/body.access//rpc.UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_method_uri_with_version_when_it_is_valid_local(self):
         uri = "/body.access/1/rpc.UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_method_uri_no_version_when_it_is_valid_local(self):
         uri = "/body.access//rpc.UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_success)
 
     def test_rpc_method_uri_invalid_when_uri_has_schema_only(self):
         uri = ":"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_local(
         self,
     ):
         uri = "/body.access//UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_remote(
         self,
     ):
         uri = "//body.access/1/UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_invalid_when_uri_is_remote_no_authority(self):
         uri = "//"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_invalid_when_uri_is_remote_no_authority_with_use(
@@ -321,29 +282,21 @@ class TestUriValidator(unittest.TestCase):
         )
         status = UriValidator.validate_rpc_method(uuri)
         self.assertTrue(status.is_failure())
-        self.assertEqual(
-            "Uri is remote missing uAuthority.", status.get_message()
-        )
+        self.assertEqual("Uri is remote missing u_authority.", status.get_message())
 
     def test_rpc_method_uri_invalid_when_uri_is_missing_use(self):
         uri = "//VCU.myvin"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_invalid_when_uri_is_missing_use_name_local(self):
         uri = "/1/rpc.UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_rpc_method_uri_invalid_when_uri_is_missing_use_name_remote(self):
         uri = "//VCU.myvin//1/rpc.UpdateDoor"
-        status = UriValidator.validate_rpc_method(
-            LongUriSerializer().deserialize(uri)
-        )
+        status = UriValidator.validate_rpc_method(LongUriSerializer().deserialize(uri))
         self.assertTrue(status.is_failure())
 
     def test_all_valid_uris(self):
@@ -361,9 +314,7 @@ class TestUriValidator(unittest.TestCase):
             uuri = LongUriSerializer().deserialize(invalid_uri["uri"])
             status = UriValidator.validate(uuri)
             self.assertTrue(status.is_failure())
-            self.assertEqual(
-                status.get_message(), invalid_uri["status_message"]
-            )
+            self.assertEqual(status.get_message(), invalid_uri["status_message"])
 
     def test_all_valid_rpc_uris(self):
         valid_rpc_uris = self.get_json_object()["validRpcUris"]
@@ -378,14 +329,10 @@ class TestUriValidator(unittest.TestCase):
             uuri = LongUriSerializer().deserialize(invalid_rpc_uri["uri"])
             status = UriValidator.validate_rpc_method(uuri)
             self.assertTrue(status.is_failure())
-            self.assertEqual(
-                status.get_message(), invalid_rpc_uri["status_message"]
-            )
+            self.assertEqual(status.get_message(), invalid_rpc_uri["status_message"])
 
     def test_all_valid_rpc_response_uris(self):
-        valid_rpc_response_uris = self.get_json_object()[
-            "validRpcResponseUris"
-        ]
+        valid_rpc_response_uris = self.get_json_object()["validRpcResponseUris"]
         for valid_rpc_response_uri in valid_rpc_response_uris:
             uuri = LongUriSerializer().deserialize(valid_rpc_response_uri)
             status = UriValidator.validate_rpc_response(uuri)
@@ -402,9 +349,7 @@ class TestUriValidator(unittest.TestCase):
         self.assertTrue(status.is_success)
 
     def test_all_invalid_rpc_response_uris(self):
-        invalid_rpc_response_uris = self.get_json_object()[
-            "invalidRpcResponseUris"
-        ]
+        invalid_rpc_response_uris = self.get_json_object()["invalidRpcResponseUris"]
         for invalid_rpc_response_uri in invalid_rpc_response_uris:
             uuri = LongUriSerializer().deserialize(invalid_rpc_response_uri)
             status = UriValidator.validate_rpc_response(uuri)
@@ -510,24 +455,6 @@ class TestUriValidator(unittest.TestCase):
 
     def test_is_remote_when_authority_is_null(self):
         self.assertFalse(UriValidator.is_remote(None))
-
-    # def test_is_remote_when_authority_does_not_have_a_name_but_does_have_a_number_set(self):
-    #     authority = UAuthority(id=b"hello Jello")
-    #     self.assertTrue(UriValidator.is_remote(authority))
-    #     self.assertFalse(authority.name is not None)
-    #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.ID)
-
-    # def test_is_remote_when_authority_has_name_and_number_set(self):
-    #     authority = UAuthority(name="vcu.veh.gm.com", id=b"hello Jello")
-    #     self.assertTrue(UriValidator.is_remote(authority))
-    #     self.assertTrue(authority.name is not None)
-    #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.ID)
-
-    # def test_is_remote_when_authority_has_name_and_number_is_not_set(self):
-    #     authority = UAuthority(name="vcu.veh.gm.com")
-    #     self.assertTrue(UriValidator.is_remote(authority))
-    #     self.assertTrue(authority.name is not None)
-    #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.NUMBER_NOT_SET)
 
 
 if __name__ == "__main__":

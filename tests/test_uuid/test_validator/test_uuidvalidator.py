@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -23,14 +23,13 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 from datetime import datetime, timezone
 
+from uprotocol.proto.ustatus_pb2 import UCode
+from uprotocol.proto.uuid_pb2 import UUID
+from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
-
-from uprotocol.validation.validationresult import ValidationResult
-from uprotocol.proto.uuid_pb2 import UUID
-from uprotocol.proto.ustatus_pb2 import UCode
-from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.validate.uuidvalidator import UuidValidator, Validators
+from uprotocol.validation.validationresult import ValidationResult
 
 
 class TestUuidValidator(unittest.TestCase):
@@ -40,11 +39,8 @@ class TestUuidValidator(unittest.TestCase):
         self.assertEqual(ValidationResult.STATUS_SUCCESS, status)
 
     def test_good_uuid_string(self):
-        status = Validators.UPROTOCOL.validator().validate(
-            Factories.UPROTOCOL.create()
-        )
+        status = Validators.UPROTOCOL.validator().validate(Factories.UPROTOCOL.create())
         self.assertEqual(status, ValidationResult.STATUS_SUCCESS)
-        # self.assertTrue(ValidationResult.success().__eq__(status))
 
     def test_invalid_uuid(self):
         uuid = UUID(msb=0, lsb=0)
@@ -58,9 +54,7 @@ class TestUuidValidator(unittest.TestCase):
     def test_invalid_time_uuid(self):
         epoch_time = datetime.fromtimestamp(0, tz=timezone.utc)
 
-        uuid = Factories.UPROTOCOL.create(
-            epoch_time
-        )
+        uuid = Factories.UPROTOCOL.create(epoch_time)
         status = Validators.UPROTOCOL.validator().validate(uuid)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
         self.assertEqual("Invalid UUID Time", status.message)

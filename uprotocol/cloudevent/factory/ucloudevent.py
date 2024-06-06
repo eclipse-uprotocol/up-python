@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,28 +20,26 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
+import copy
 import time
 from datetime import datetime, timedelta, timezone
-import copy
 
 from cloudevents.http import CloudEvent
 from google.protobuf import any_pb2
 from google.protobuf.message import DecodeError
 
-from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.proto.uattributes_pb2 import (
+    UAttributes,
     UMessageType,
     UPriority,
-    UAttributes,
 )
-from uprotocol.proto.upayload_pb2 import UPayload
+from uprotocol.proto.umessage_pb2 import UMessage
+from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
+from uprotocol.proto.ustatus_pb2 import UCode
+from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
-from uprotocol.proto.upayload_pb2 import UPayloadFormat
-from uprotocol.proto.umessage_pb2 import UMessage
-from uprotocol.proto.uuid_pb2 import UUID
 
 
 class UCloudEvent:
@@ -73,9 +71,7 @@ class UCloudEvent:
         @return:Returns the String value of a CloudEvent source
         attribute.
         """
-        return UCloudEvent.extract_string_value_from_attributes(
-            "datacontenttype", ce
-        )
+        return UCloudEvent.extract_string_value_from_attributes("datacontenttype", ce)
 
     @staticmethod
     def get_data_schema(ce: CloudEvent) -> str:
@@ -88,9 +84,7 @@ class UCloudEvent:
         @return:Returns the String value of a CloudEvent source
         attribute.
         """
-        return UCloudEvent.extract_string_value_from_attributes(
-            "dataschema", ce
-        )
+        return UCloudEvent.extract_string_value_from_attributes("dataschema", ce)
 
     @staticmethod
     def get_type(ce: CloudEvent) -> str:
@@ -125,9 +119,7 @@ class UCloudEvent:
         @return:Returns the String
         value of a CloudEvent spec version attribute.
         """
-        return UCloudEvent.extract_string_value_from_attributes(
-            "specversion", ce
-        )
+        return UCloudEvent.extract_string_value_from_attributes("specversion", ce)
 
     @staticmethod
     def get_sink(ce: CloudEvent) -> str:
@@ -219,9 +211,7 @@ class UCloudEvent:
         UCode.OK_VALUE.
         """
         try:
-            comm_status = UCloudEvent.extract_string_value_from_attributes(
-                "commstatus", ce
-            )
+            comm_status = UCloudEvent.extract_string_value_from_attributes("commstatus", ce)
             return int(comm_status) if comm_status is not None else UCode.OK
         except Exception:
             return UCode.OK
@@ -236,9 +226,7 @@ class UCloudEvent:
         @return: Returns the string value of
         the traceparent if it exists, else returns None.
         """
-        return UCloudEvent.extract_string_value_from_attributes(
-            "traceparent", ce
-        )
+        return UCloudEvent.extract_string_value_from_attributes("traceparent", ce)
 
     @staticmethod
     def has_communication_status_problem(ce: CloudEvent) -> bool:
@@ -253,9 +241,7 @@ class UCloudEvent:
         return UCloudEvent.get_communication_status(ce) != UCode.OK
 
     @staticmethod
-    def add_communication_status(
-        ce: CloudEvent, communication_status
-    ) -> CloudEvent:
+    def add_communication_status(ce: CloudEvent, communication_status) -> CloudEvent:
         """
         Returns a new CloudEvent from the supplied CloudEvent, with the
         platform communication added.<br><br>
@@ -283,9 +269,7 @@ class UCloudEvent:
         timestamp from the UUIDV8 CloudEvent Id or an empty Optional if
         timestamp can't be extracted.
         """
-        cloud_event_id = UCloudEvent.extract_string_value_from_attributes(
-            "id", ce
-        )
+        cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
 
         return UUIDUtils.get_time(uuid) if uuid is not None else None
@@ -306,16 +290,12 @@ class UCloudEvent:
         if not maybe_ttl or maybe_ttl <= 0:
             return False
 
-        cloud_event_creation_time = (
-            UCloudEvent.extract_string_value_from_attributes("time", ce)
-        )
+        cloud_event_creation_time = UCloudEvent.extract_string_value_from_attributes("time", ce)
         if cloud_event_creation_time is None:
             return False
 
         now = datetime.now(timezone.utc)
-        creation_time_plus_ttl = datetime.fromisoformat(cloud_event_creation_time) + timedelta(
-            milliseconds=maybe_ttl
-        )
+        creation_time_plus_ttl = datetime.fromisoformat(cloud_event_creation_time) + timedelta(milliseconds=maybe_ttl)
 
         return now > creation_time_plus_ttl
 
@@ -333,9 +313,7 @@ class UCloudEvent:
         maybe_ttl = UCloudEvent.get_ttl(ce)
         if not maybe_ttl or maybe_ttl <= 0:
             return False
-        cloud_event_id = UCloudEvent.extract_string_value_from_attributes(
-            "id", ce
-        )
+        cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
 
         try:
             uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
@@ -354,9 +332,7 @@ class UCloudEvent:
         @param ce:The CloudEvent with the id to inspect.
         @return: Returns true if the CloudEvent is valid.
         """
-        cloud_event_id = UCloudEvent.extract_string_value_from_attributes(
-            "id", ce
-        )
+        cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
 
         return uuid is not None and UUIDUtils.is_uuid(uuid)
@@ -421,9 +397,7 @@ class UCloudEvent:
             sink_str = UCloudEvent.get_sink(ce)
             sink_str = f", sink='{sink_str}'" if sink_str is not None else ""
             id = UCloudEvent.extract_string_value_from_attributes("id", ce)
-            source = UCloudEvent.extract_string_value_from_attributes(
-                "source", ce
-            )
+            source = UCloudEvent.extract_string_value_from_attributes("source", ce)
             type = UCloudEvent.extract_string_value_from_attributes("type", ce)
             return f"CloudEvent{{id='{id}', source='{source}'{sink_str}, type='{type}'}}"
         else:
@@ -445,9 +419,7 @@ class UCloudEvent:
         return ce.get_attributes().get(attr_name)
 
     @staticmethod
-    def extract_integer_value_from_attributes(
-        attr_name, ce: CloudEvent
-    ) -> int:
+    def extract_integer_value_from_attributes(attr_name, ce: CloudEvent) -> int:
         """
 
         Utility for extracting the Integer value of an attribute.<br><br>
@@ -538,12 +510,10 @@ class UCloudEvent:
             "application/x-someip": UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP,
             "application/x-someip_tlv": UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV,
         }
-        return content_type_mapping.get(
-            contenttype, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF
-        )
+        return content_type_mapping.get(contenttype, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
 
     @staticmethod
-    def fromMessage(message: UMessage) -> CloudEvent:
+    def from_message(message: UMessage) -> CloudEvent:
         """
         Get the Cloudevent from the UMessage<br>
         <b>Note: For now, only the value format of
@@ -570,9 +540,7 @@ class UCloudEvent:
             "source": LongUriSerializer().serialize(message.attributes.source),
             "type": UCloudEvent.get_event_type(attributes.type),
         }
-        contenttype = UCloudEvent.get_content_type_from_upayload_format(
-            payload.format
-        )
+        contenttype = UCloudEvent.get_content_type_from_upayload_format(payload.format)
 
         if contenttype:
             json_attributes["datacontenttype"] = "application/x-protobuf"
@@ -587,15 +555,11 @@ class UCloudEvent:
         if attributes.HasField("token"):
             json_attributes["token"] = attributes.token
         if attributes.HasField("sink"):
-            json_attributes["sink"] = LongUriSerializer().serialize(
-                attributes.sink
-            )
+            json_attributes["sink"] = LongUriSerializer().serialize(attributes.sink)
         if attributes.HasField("commstatus"):
             json_attributes["commstatus"] = attributes.commstatus
         if attributes.HasField("reqid"):
-            json_attributes["reqid"] = LongUuidSerializer.instance().serialize(
-                attributes.reqid
-            )
+            json_attributes["reqid"] = LongUuidSerializer.instance().serialize(attributes.reqid)
         if attributes.HasField("permission_level"):
             json_attributes["plevel"] = attributes.permission_level
         if attributes.HasField("traceparent"):
@@ -605,7 +569,7 @@ class UCloudEvent:
         return cloud_event
 
     @staticmethod
-    def toMessage(event: CloudEvent) -> UMessage:
+    def to_message(event: CloudEvent) -> UMessage:
         """
 
         Get the UMessage from the cloud event
@@ -616,19 +580,13 @@ class UCloudEvent:
             raise ValueError("Cloud Event can't be None")
 
         payload = UPayload(
-            format=UCloudEvent.get_upayload_format_from_content_type(
-                UCloudEvent.get_data_content_type(event)
-            ),
+            format=UCloudEvent.get_upayload_format_from_content_type(UCloudEvent.get_data_content_type(event)),
             value=UCloudEvent.get_payload(event).SerializeToString(),
         )
         attributes = UAttributes(
-            id=LongUuidSerializer.instance().deserialize(
-                UCloudEvent.get_id(event)
-            ),
+            id=LongUuidSerializer.instance().deserialize(UCloudEvent.get_id(event)),
             type=UCloudEvent.get_message_type(UCloudEvent.get_type(event)),
-            source=LongUriSerializer().deserialize(
-                UCloudEvent.get_source(event)
-            ),
+            source=LongUriSerializer().deserialize(UCloudEvent.get_source(event)),
         )
         if UCloudEvent.has_communication_status_problem(event):
             attributes.commstatus = UCloudEvent.get_communication_status(event)
@@ -660,9 +618,7 @@ class UCloudEvent:
         if traceparent is not None:
             attributes.traceparent = traceparent
 
-        plevel = UCloudEvent.extract_integer_value_from_attributes(
-            "plevel", event
-        )
+        plevel = UCloudEvent.extract_integer_value_from_attributes("plevel", event)
         if plevel is not None:
             attributes.permission_level = plevel
 

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -21,17 +21,17 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import unittest
+
 from google.protobuf.any_pb2 import Any
-from google.protobuf.wrappers_pb2 import BoolValue
 from google.protobuf.api_pb2 import Method
 from google.protobuf.message import Message
-from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
+from google.protobuf.wrappers_pb2 import BoolValue
 
+from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
 from uprotocol.transport.builder.upayloadbuilder import UPayloadBuilder
 
 
 class TestUPayloadBuilder(unittest.TestCase):
-
     def _create_upayload_builder(self):
         return UPayloadBuilder()
 
@@ -86,9 +86,7 @@ class TestUPayloadBuilder(unittest.TestCase):
         self._assert_pack_to_any(any_message, upayload)
 
     def _assert_pack(self, expected: Message, actual: UPayload):
-        self.assertEqual(
-            UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, actual.format
-        )
+        self.assertEqual(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, actual.format)
         self.assertEqual(0, actual.length)
         self.assertEqual(0, actual.reference)
         self.assertEqual(expected.SerializeToString(), actual.value)
@@ -260,9 +258,7 @@ class TestUPayloadBuilder(unittest.TestCase):
     def test_unpack_given_no_upayload_value_returns_none(self):
         builder = self._create_upayload_builder()
 
-        upayload: UPayload = UPayload(
-            format=UPayloadFormat.UPAYLOAD_FORMAT_JSON
-        )
+        upayload: UPayload = UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_JSON)
 
         unpacked_msg: Any = builder.unpack(upayload, Any)
 

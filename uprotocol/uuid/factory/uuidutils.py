@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,16 +20,15 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
-import uuid
 import time
+import uuid
 from enum import Enum
 from typing import Optional, Union
 
 from multimethod import multimethod
 
-from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.proto.uattributes_pb2 import UAttributes
+from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory import PythonUUID
 
 
@@ -85,9 +84,7 @@ class UUIDUtils:
         """
         if uuid_obj is None:
             return None
-        python_uuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(
-            uuid_obj
-        )
+        python_uuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid_obj)
 
         return python_uuid.variant
 
@@ -100,12 +97,7 @@ class UUIDUtils:
         passed is null or the UUID is not uProtocol format.
         """
 
-        return (
-            UUIDUtils.get_version(uuid_obj)
-            == Version.VERSION_UPROTOCOL
-            if uuid_obj is not None
-            else False
-        )
+        return UUIDUtils.get_version(uuid_obj) == Version.VERSION_UPROTOCOL if uuid_obj is not None else False
 
     @staticmethod
     def is_uuidv6(uuid_obj: UUID) -> bool:
@@ -119,8 +111,7 @@ class UUIDUtils:
             return False
 
         return (
-            UUIDUtils.get_version(uuid_obj)
-            == Version.VERSION_TIME_ORDERED
+            UUIDUtils.get_version(uuid_obj) == Version.VERSION_TIME_ORDERED
             and UUIDUtils.get_variant(uuid_obj) == uuid.RFC_4122
             if uuid_obj is not None
             else False
@@ -134,12 +125,7 @@ class UUIDUtils:
         @return:true if is UUID version 6 or 8
         """
 
-        return (
-            UUIDUtils.is_uprotocol(uuid_obj)
-            or UUIDUtils.is_uuidv6(uuid_obj)
-            if uuid_obj is not None
-            else False
-        )
+        return UUIDUtils.is_uprotocol(uuid_obj) or UUIDUtils.is_uuidv6(uuid_obj) if uuid_obj is not None else False
 
     @staticmethod
     def get_time(uuid: UUID):
@@ -159,9 +145,7 @@ class UUIDUtils:
             time = uuid.msb >> 16
         elif version == Version.VERSION_TIME_ORDERED:
             try:
-                python_uuid = (
-                    UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
-                )
+                python_uuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
                 # Convert 100-nanoseconds ticks to milliseconds
                 time = python_uuid.time // 10000
             except ValueError:
@@ -186,7 +170,7 @@ class UUIDUtils:
         return now - creation_time if now >= creation_time else None
 
     @multimethod
-    def get_remaining_time(id: Union[UUID, None], ttl: int):
+    def get_remaining_time(id: Union[UUID, None], ttl: int):  # noqa: N805
         """
         Calculates the remaining time until the expiration of the event
         identified by the given UUID.
@@ -204,7 +188,7 @@ class UUIDUtils:
         return ttl - elapsed_time if ttl > elapsed_time else None
 
     @multimethod
-    def get_remaining_time(attributes: Union[UAttributes, None]):
+    def get_remaining_time(attributes: Union[UAttributes, None]):  # noqa: N805
         """
         Calculates the remaining time until the expiration of the event
         identified by the given UAttributes.
@@ -214,16 +198,10 @@ class UUIDUtils:
         or None if the attributes do not contain TTL information or the
         creation time cannot be determined.
         """
-        return (
-            UUIDUtils.get_remaining_time(
-                attributes.id, attributes.ttl
-            )
-            if attributes.HasField("ttl")
-            else None
-        )
+        return UUIDUtils.get_remaining_time(attributes.id, attributes.ttl) if attributes.HasField("ttl") else None
 
     @multimethod
-    def is_expired(id: Union[UUID, None], ttl: int):
+    def is_expired(id: Union[UUID, None], ttl: int):  # noqa: N805
         """
         Checks if the event identified by the given UUID has expired based
         on the specified time-to-live (TTL).
@@ -234,12 +212,10 @@ class UUIDUtils:
         if TTL is non-positive or creation time
         cannot be determined.
         """
-        return (
-            ttl > 0 and UUIDUtils.get_remaining_time(id, ttl) is None
-        )
+        return ttl > 0 and UUIDUtils.get_remaining_time(id, ttl) is None
 
     @multimethod
-    def is_expired(attributes: Union[UAttributes, None]):
+    def is_expired(attributes: Union[UAttributes, None]):  # noqa: N805
         """
         Checks if the event identified by the given UAttributes has expired.
 
@@ -249,9 +225,7 @@ class UUIDUtils:
         if the attributes do not contain TTL
         information or creation time cannot be determined.
         """
-        return attributes.HasField("ttl") and UUIDUtils.is_expired(
-            attributes.id, attributes.ttl
-        )
+        return attributes.HasField("ttl") and UUIDUtils.is_expired(attributes.id, attributes.ttl)
 
     @staticmethod
     def get_msb_lsb(uuid: PythonUUID):

@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +20,6 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 import random
 from datetime import datetime
 
@@ -40,9 +39,7 @@ class UUIDFactory:
 
 
 class UUIDv6Factory(UUIDFactory):
-
     def _create(self, instant) -> UUID:
-
         python_uuid = uuid6()
         msb, lsb = UUIDUtils.get_msb_lsb(python_uuid)
         return UUID(msb=msb, lsb=lsb)
@@ -55,11 +52,7 @@ class UUIDv8Factory(UUIDFactory):
     _msb = UUIDV8_VERSION << 12
 
     def _create(self, instant) -> UUID:
-        time = (
-            int(instant.timestamp() * 1000)
-            if instant
-            else int(datetime.now().timestamp() * 1000)
-        )
+        time = int(instant.timestamp() * 1000) if instant else int(datetime.now().timestamp() * 1000)
 
         if time == (self._msb >> 16):
             if (self._msb & 0xFFF) < self.MAX_COUNT:
@@ -68,7 +61,6 @@ class UUIDv8Factory(UUIDFactory):
             self._msb = (time << 16) | (8 << 12)
 
         return UUID(msb=self._msb, lsb=self._lsb)
-        # return UUID(msb=msb, lsb=lsb)
 
 
 class Factories:

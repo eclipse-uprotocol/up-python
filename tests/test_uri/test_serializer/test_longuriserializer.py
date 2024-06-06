@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,14 +22,13 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.proto.uri_pb2 import UEntity, UUri, UAuthority, UResource
-from uprotocol.uri.factory.uresource_builder import UResourceBuilder
+from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
+from uprotocol.uri.factory.uresourcebuilder import UResourceBuilder
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
 
 
 class TestLongUriSerializer(unittest.TestCase):
-
     def test_using_the_serializers(self):
         uri = UUri(
             entity=UEntity(name="hartley"),
@@ -165,7 +164,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("front_left", uuri.resource.instance)
         self.assertTrue(len(uuri.resource.message) == 0)
 
-    def test_parse_protocol_uri_with_local_service_with_version_with_resource_with_getMessage(
+    def test_parse_protocol_uri_with_local_service_with_version_with_resource_with_get_message(
         self,
     ):
         uri = "/body.access/1/door.front_left"
@@ -179,7 +178,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("front_left", uuri.resource.instance)
         self.assertTrue(len(uuri.resource.message) == 0)
 
-    def test_parse_protocol_uri_with_local_service_no_version_with_resource_with_instance_and_getMessage(
+    def test_parse_protocol_uri_with_local_service_no_version_with_resource_with_instance_and_get_message(
         self,
     ):
         uri = "/body.access//door.front_left#Door"
@@ -193,7 +192,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertFalse(len(uuri.resource.message) == 0)
         self.assertEqual("Door", uuri.resource.message)
 
-    def test_parse_protocol_uri_with_local_service_with_version_with_resource_with_instance_and_getMessage(
+    def test_parse_protocol_uri_with_local_service_with_version_with_resource_with_instance_and_get_message(
         self,
     ):
         uri = "/body.access/1/door.front_left#Door"
@@ -359,7 +358,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertTrue(len(uuri.resource.instance) == 0)
         self.assertTrue(len(uuri.resource.message) == 0)
 
-    def test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_no_getMessage(
+    def test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_no_get_message(
         self,
     ):
         uri = "//VCU.MY_CAR_VIN/body.access//door.front_left"
@@ -375,7 +374,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("front_left", uuri.resource.instance)
         self.assertTrue(len(uuri.resource.message) == 0)
 
-    def test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_no_getMessage(
+    def test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_no_get_message(
         self,
     ):
         uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left"
@@ -392,7 +391,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("front_left", uuri.resource.instance)
         self.assertTrue(len(uuri.resource.message) == 0)
 
-    def test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_and_getMessage(
+    def test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_and_get_message(
         self,
     ):
         uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door"
@@ -409,7 +408,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertFalse(len(uuri.resource.message) == 0)
         self.assertEqual("Door", uuri.resource.message)
 
-    def test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_and_instance_and_getMessage(
+    def test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_and_instance_and_get_message(
         self,
     ):
         uri = "//cloud.uprotocol.example.com/body.access//door.front_left#Door"
@@ -426,7 +425,7 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertFalse(len(uuri.resource.message) == 0)
         self.assertEqual("Door", uuri.resource.message)
 
-    def test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_and_getMessage(
+    def test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_and_get_message(
         self,
     ):
         uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door"
@@ -444,12 +443,10 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertFalse(len(uuri.resource.message) == 0)
         self.assertEqual("Door", uuri.resource.message)
 
-    def test_parse_protocol_uri_with_remote_cloud_service_with_version_with_resource_and_instance_and_getMessage(
+    def test_parse_protocol_uri_with_remote_cloud_service_with_version_with_resource_and_instance_and_get_message(
         self,
     ):
-        uri = (
-            "//cloud.uprotocol.example.com/body.access/1/door.front_left#Door"
-        )
+        uri = "//cloud.uprotocol.example.com/body.access/1/door.front_left#Door"
         uuri = LongUriSerializer().deserialize(uri)
         self.assertTrue(UriValidator.is_remote(uuri.authority))
         self.assertFalse(len(uuri.authority.name) == 0)
@@ -514,7 +511,7 @@ class TestLongUriSerializer(unittest.TestCase):
         uprotocol_uri = LongUriSerializer().serialize(None)
         self.assertEqual("", uprotocol_uri)
 
-    def test_build_protocol_uri_from__uri_when__uri_isEmpty(self):
+    def test_build_protocol_uri_from__uri_when__uri_is_empty(self):
         uuri = UUri()
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("", uprotocol_uri)
@@ -555,48 +552,40 @@ class TestLongUriSerializer(unittest.TestCase):
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("/body.access/1/door", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_service_n_vsn_with_rsrc_with_instance_n_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_service_n_vsn_with_rsrc_with_instance_n_get_message(
         self,
     ):
         use = UEntity(name="body.access")
-        uuri = UUri(
-            entity=use, resource=UResource(name="door", instance="front_left")
-        )
+        uuri = UUri(entity=use, resource=UResource(name="door", instance="front_left"))
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("/body.access//door.front_left", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_service_and_vsn_with_rsrc_with_instance_n_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_service_and_vsn_with_rsrc_with_instance_n_get_message(
         self,
     ):
         use = UEntity(name="body.access", version_major=1)
-        uuri = UUri(
-            entity=use, resource=UResource(name="door", instance="front_left")
-        )
+        uuri = UUri(entity=use, resource=UResource(name="door", instance="front_left"))
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("/body.access/1/door.front_left", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_svc_no_vsn_with_rsrc_with_instance_with_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_svc_no_vsn_with_rsrc_with_instance_with_get_message(
         self,
     ):
         use = UEntity(name="body.access")
         uuri = UUri(
             entity=use,
-            resource=UResource(
-                name="door", instance="front_left", message="Door"
-            ),
+            resource=UResource(name="door", instance="front_left", message="Door"),
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("/body.access//door.front_left#Door", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_svc_and_vsn_with_rsrc_with_instance_with_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_l_authority_svc_and_vsn_with_rsrc_with_instance_with_get_message(
         self,
     ):
         use = UEntity(name="body.access", version_major=1)
         uuri = UUri(
             entity=use,
-            resource=UResource(
-                name="door", instance="front_left", message="Door"
-            ),
+            resource=UResource(name="door", instance="front_left", message="Door"),
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("/body.access/1/door.front_left#Door", uprotocol_uri)
@@ -626,9 +615,7 @@ class TestLongUriSerializer(unittest.TestCase):
             entity=use,
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
-        self.assertEqual(
-            "//cloud.uprotocol.example.com/body.access/1", uprotocol_uri
-        )
+        self.assertEqual("//cloud.uprotocol.example.com/body.access/1", uprotocol_uri)
 
     def test_build_protocol_uri_from_uri_when_uri_has_remote_authority_service_and_version_with_resource(
         self,
@@ -654,7 +641,7 @@ class TestLongUriSerializer(unittest.TestCase):
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual("//vcu.my_car_vin/body.access//door", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_and_vsn_with_rsrc_with_instance_no_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_and_vsn_with_rsrc_with_instance_no_get_message(
         self,
     ):
         use = UEntity(name="body.access", version_major=1)
@@ -664,11 +651,9 @@ class TestLongUriSerializer(unittest.TestCase):
             resource=UResource(name="door", instance="front_left"),
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
-        self.assertEqual(
-            "//vcu.my_car_vin/body.access/1/door.front_left", uprotocol_uri
-        )
+        self.assertEqual("//vcu.my_car_vin/body.access/1/door.front_left", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_r_cld_authority_svc_and_vsn_with_rsrc_with_instance_n_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_r_cld_authority_svc_and_vsn_with_rsrc_with_instance_n_get_message(
         self,
     ):
         use = UEntity(name="body.access", version_major=1)
@@ -683,7 +668,7 @@ class TestLongUriSerializer(unittest.TestCase):
             uprotocol_uri,
         )
 
-    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_no_vsn_with_resource_with_instance_n_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_no_vsn_with_resource_with_instance_n_get_message(
         self,
     ):
         use = UEntity(name="body.access")
@@ -693,20 +678,16 @@ class TestLongUriSerializer(unittest.TestCase):
             resource=UResource(name="door", instance="front_left"),
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
-        self.assertEqual(
-            "//vcu.my_car_vin/body.access//door.front_left", uprotocol_uri
-        )
+        self.assertEqual("//vcu.my_car_vin/body.access//door.front_left", uprotocol_uri)
 
-    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_and_version_with_rsrc_with_i_and_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_and_version_with_rsrc_with_i_and_get_message(
         self,
     ):
         use = UEntity(name="body.access", version_major=1)
         uuri = UUri(
             authority=UAuthority(name="vcu.my_car_vin"),
             entity=use,
-            resource=UResource(
-                name="door", instance="front_left", message="Door"
-            ),
+            resource=UResource(name="door", instance="front_left", message="Door"),
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
         self.assertEqual(
@@ -714,45 +695,35 @@ class TestLongUriSerializer(unittest.TestCase):
             uprotocol_uri,
         )
 
-    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_no_version_with_rsrc_with_i_and_getMessage(
+    def test_build_protocol_uri_from_uri_when_uri_has_r_authority_svc_no_version_with_rsrc_with_i_and_get_message(
         self,
     ):
         use = UEntity(name="body.access")
         uuri = UUri(
             authority=UAuthority(name="vcu.my_car_vin"),
             entity=use,
-            resource=UResource(
-                name="door", instance="front_left", message="Door"
-            ),
+            resource=UResource(name="door", instance="front_left", message="Door"),
         )
         uprotocol_uri = LongUriSerializer().serialize(uuri)
-        self.assertEqual(
-            "//vcu.my_car_vin/body.access//door.front_left#Door", uprotocol_uri
-        )
+        self.assertEqual("//vcu.my_car_vin/body.access//door.front_left#Door", uprotocol_uri)
 
     def test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_local(
         self,
     ):
         use = UEntity(name="petapp", version_major=1)
         resource = UResource(name="rpc", instance="response")
-        uprotocol_uri = LongUriSerializer().serialize(
-            UUri(entity=use, resource=resource)
-        )
+        uprotocol_uri = LongUriSerializer().serialize(UUri(entity=use, resource=resource))
         self.assertEqual("/petapp/1/rpc.response", uprotocol_uri)
 
     def test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_remote(
         self,
     ):
-        uAuthority = UAuthority(name="cloud.uprotocol.example.com")
+        u_authority = UAuthority(name="cloud.uprotocol.example.com")
         use = UEntity(name="petapp")
         resource = UResource(name="rpc", instance="response")
 
-        uprotocol_uri = LongUriSerializer().serialize(
-            UUri(authority=uAuthority, entity=use, resource=resource)
-        )
-        self.assertEqual(
-            "//cloud.uprotocol.example.com/petapp//rpc.response", uprotocol_uri
-        )
+        uprotocol_uri = LongUriSerializer().serialize(UUri(authority=u_authority, entity=use, resource=resource))
+        self.assertEqual("//cloud.uprotocol.example.com/petapp//rpc.response", uprotocol_uri)
 
     def test_build_protocol_uri_from_uri_parts_when_uri_has_remote_authority_service_and_version_with_resource(
         self,
@@ -760,18 +731,14 @@ class TestLongUriSerializer(unittest.TestCase):
         u_authority = UAuthority(name="vcu.my_car_vin")
         use = UEntity(name="body.access", version_major=1)
         resource = UResource(name="door")
-        uprotocol_uri = LongUriSerializer().serialize(
-            UUri(authority=u_authority, entity=use, resource=resource)
-        )
+        uprotocol_uri = LongUriSerializer().serialize(UUri(authority=u_authority, entity=use, resource=resource))
         self.assertEqual("//vcu.my_car_vin/body.access/1/door", uprotocol_uri)
 
     def test_custom_scheme_no_scheme(self):
         u_authority = UAuthority(name="vcu.my_car_vin")
         use = UEntity(name="body.access", version_major=1)
         resource = UResource(name="door")
-        ucustom_uri = LongUriSerializer().serialize(
-            UUri(authority=u_authority, entity=use, resource=resource)
-        )
+        ucustom_uri = LongUriSerializer().serialize(UUri(authority=u_authority, entity=use, resource=resource))
         self.assertEqual("//vcu.my_car_vin/body.access/1/door", ucustom_uri)
 
     def test_parse_local_protocol_uri_with_custom_scheme(self):
@@ -803,33 +770,21 @@ class TestLongUriSerializer(unittest.TestCase):
         u_authority = UAuthority(name="vcu.my_car_vin")
         use = UEntity(name="body.access", version_major=1)
         resource = UResource(name="door", instance="", message="Door")
-        ucustom_uri = LongUriSerializer().serialize(
-            UUri(authority=u_authority, entity=use, resource=resource)
-        )
-        self.assertEqual(
-            "//vcu.my_car_vin/body.access/1/door#Door", ucustom_uri
-        )
+        ucustom_uri = LongUriSerializer().serialize(UUri(authority=u_authority, entity=use, resource=resource))
+        self.assertEqual("//vcu.my_car_vin/body.access/1/door#Door", ucustom_uri)
 
     def test_b_prtcl_uri__uri__uri_rmte_auth_srvc_vsn_rsrc_emp_msg(self):
         u_authority = UAuthority(name="vcu.my_car_vin")
         use = UEntity(name="body.access", version_major=1)
         resource = UResource(name="door", instance="front_left", message="")
-        ucustom_uri = LongUriSerializer().serialize(
-            UUri(authority=u_authority, entity=use, resource=resource)
-        )
-        self.assertEqual(
-            "//vcu.my_car_vin/body.access/1/door.front_left", ucustom_uri
-        )
+        ucustom_uri = LongUriSerializer().serialize(UUri(authority=u_authority, entity=use, resource=resource))
+        self.assertEqual("//vcu.my_car_vin/body.access/1/door.front_left", ucustom_uri)
 
     def test_b_prtcl_uri__uri__uri_empty_auth_service_ver_w_rsrc(self):
         u_authority = UAuthority(name="")
         use = UEntity(name="body.access", version_major=1)
-        resource = UResource(
-            name="door", instance="front_left", message="Door"
-        )
-        ucustom_uri = LongUriSerializer().serialize(
-            UUri(authority=u_authority, entity=use, resource=resource)
-        )
+        resource = UResource(name="door", instance="front_left", message="Door")
+        ucustom_uri = LongUriSerializer().serialize(UUri(authority=u_authority, entity=use, resource=resource))
         self.assertEqual("/body.access/1/door.front_left#Door", ucustom_uri)
 
 

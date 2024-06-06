@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -20,13 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-
 from abc import ABC, abstractmethod
 from concurrent.futures import Future
 
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.proto.upayload_pb2 import UPayload
 from uprotocol.proto.uattributes_pb2 import CallOptions
+from uprotocol.proto.upayload_pb2 import UPayload
+from uprotocol.proto.uri_pb2 import UUri
 
 
 class RpcClient(ABC):
@@ -41,16 +40,14 @@ class RpcClient(ABC):
     """
 
     @abstractmethod
-    def invoke_method(
-        self, methodUri: UUri, request_payload: UPayload, options: CallOptions
-    ) -> Future:
+    def invoke_method(self, method_uri: UUri, request_payload: UPayload, options: CallOptions) -> Future:
         """
         API for clients to invoke a method (send an RPC request) and
         receive the response (the returned Future UMessage. <br>
         Client will set method to be the URI of the method they want to invoke,
         payload to the request message, and attributes
         with the various metadata for the method invocation.
-        @param methodUri The method URI to be invoked,
+        @param method_uri The method URI to be invoked,
         ex (long form): /example.hello_world/1/rpc.SayHello.
         @param requestPayload The request
         message to be sent to the server.

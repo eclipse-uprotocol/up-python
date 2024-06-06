@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the 
+SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
 Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
@@ -22,23 +22,22 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.proto.core.usubscription.v3.usubscription_pb2 import (
-    DESCRIPTOR as USubscriptionFileDescriptor,
-)
+from google.protobuf.descriptor import FileDescriptor, ServiceDescriptor
+
 from uprotocol.proto.core.udiscovery.v3.udiscovery_pb2 import (
-    DESCRIPTOR as UDiscoveryFileDescriptor,
+    DESCRIPTOR as U_DISCOVERY_FILE_DESCRIPTOR,
+)
+from uprotocol.proto.core.usubscription.v3.usubscription_pb2 import (
+    DESCRIPTOR as U_SUBSCRIPTION_FILE_DESCRIPTOR,
 )
 from uprotocol.proto.core.utwin.v2.utwin_pb2 import (
-    DESCRIPTOR as UTwinFileDescriptor,
+    DESCRIPTOR as U_TWIN_FILE_DESCRIPTOR,
 )
 from uprotocol.proto.uri_pb2 import UEntity
-from uprotocol.uri.factory.uentity_factory import UEntityFactory
-
-from google.protobuf.descriptor import ServiceDescriptor, FileDescriptor
+from uprotocol.uri.factory.uentityfactory import UEntityFactory
 
 
 class TestUEntityFactory(unittest.TestCase):
-
     def test_from_proto_given_usubscription_descriptor_return_uentity(self):
         """
         Get default service values:
@@ -53,10 +52,8 @@ class TestUEntityFactory(unittest.TestCase):
             ...
         }
         """
-        file_descriptor: FileDescriptor = USubscriptionFileDescriptor
-        service_descriptor: ServiceDescriptor = (
-            file_descriptor.services_by_name["uSubscription"]
-        )
+        file_descriptor: FileDescriptor = U_SUBSCRIPTION_FILE_DESCRIPTOR
+        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uSubscription"]
         default_service_name: str = "core.usubscription"
         default_version_major: str = 3
         default_version_minor: str = 0
@@ -71,13 +68,11 @@ class TestUEntityFactory(unittest.TestCase):
         self.assertEqual(default_id, actual_uentity.id)
 
     def test_from_proto_given_udiscovery_descriptor_return_uentity(self):
-        file_descriptor: FileDescriptor = UDiscoveryFileDescriptor
-        service_descriptor: ServiceDescriptor = (
-            file_descriptor.services_by_name["uDiscovery"]
-        )
+        file_descriptor: FileDescriptor = U_DISCOVERY_FILE_DESCRIPTOR
+        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uDiscovery"]
         default_service_name: str = "core.udiscovery"
-        default_version_major: str = 3
-        default_version_minor: str = 0
+        default_version_major: int = 3
+        default_version_minor: int = 0
         default_id = 1
 
         actual_uentity: UEntity = UEntityFactory.from_proto(service_descriptor)
@@ -89,10 +84,8 @@ class TestUEntityFactory(unittest.TestCase):
         self.assertEqual(default_id, actual_uentity.id)
 
     def test_from_proto_given_utwin_descriptor_return_uentity(self):
-        file_descriptor: FileDescriptor = UTwinFileDescriptor
-        service_descriptor: ServiceDescriptor = (
-            file_descriptor.services_by_name["uTwin"]
-        )
+        file_descriptor: FileDescriptor = U_TWIN_FILE_DESCRIPTOR
+        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uTwin"]
         default_service_name: str = "core.utwin"
         default_version_major: str = 2
         default_version_minor: str = 0

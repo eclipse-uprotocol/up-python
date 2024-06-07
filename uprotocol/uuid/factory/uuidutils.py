@@ -155,14 +155,11 @@ class UUIDUtils:
         if version == Version.VERSION_UPROTOCOL:
             time = uuid.msb >> 16
         elif version == Version.VERSION_TIME_ORDERED:
-            try:
-                python_uuid = (
-                    UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
-                )
-                # Convert 100-nanoseconds ticks to milliseconds
-                time = python_uuid.time // 10000
-            except ValueError:
-                return None
+            python_uuid = (
+                UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
+            )
+            # Convert 100-nanoseconds ticks to milliseconds
+            time = python_uuid.time // 10000
 
         return time
 

@@ -23,6 +23,7 @@ SPDX-License-Identifier: Apache-2.0
 from multimethod import multimethod
 
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
+from uprotocol.proto.uprotocol.v1 import uri_pb2
 
 
 class UriValidator:
@@ -33,11 +34,8 @@ class UriValidator:
     # The minimum publish/notification topic id for a URI.
     MIN_TOPIC_ID = 0x8000
 
-    # The wildcard id for a field.
-    WILDCARD_ID = 0xFFFF
-
-    # The id for a RPC response URI.
-    RPC_RESPONSE_ID = 0
+    # The Default resource id.
+    DEFAULT_RESOURCE_ID = 0
 
     # The major version wildcard.
     MAJOR_VERSION_WILDCARD = 0xFF
@@ -65,7 +63,7 @@ class UriValidator:
         """
         return (
             uri is not None
-            and uri.resource_id != 0
+            and uri.resource_id != UriValidator.DEFAULT_RESOURCE_ID
             and uri.resource_id < UriValidator.MIN_TOPIC_ID
         )
 
@@ -80,6 +78,24 @@ class UriValidator:
 
     @staticmethod
     def is_rpc_response(uri: UUri) -> bool:
-        return (
-            uri is not None and uri.resource_id == UriValidator.RPC_RESPONSE_ID
-        )
+        """
+        @return Returns true if URI is of type RPC response.
+        """
+        return UriValidator.is_default_resource_id(uri)
+
+    @staticmethod
+    def is_default_resource_id(uri: UUri) -> bool:
+        """
+        Returns true if URI is of type RPC response.
+        """
+        return not UriValidator.is_empty(uri) and uri.resource_id == UriValidator.DEFAULT_RESOURCE_ID
+    
+    @staticmethod
+    def is_topic(uri: UUri) -> bool:
+        """
+        Returns true if URI is of type Topic used for publish and notifications.
+
+        @param uri {@link UUri} to check if it is of type Topic
+        @return Returns true if URI is of type Topic.
+        """
+        return not UriValidator.is_empty(uri) and uri.resource_id >= UriValidator.MIN_TOPIC_ID

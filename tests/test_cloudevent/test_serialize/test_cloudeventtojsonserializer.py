@@ -54,6 +54,20 @@ def build_proto_payload_for_test():
     any_obj.Pack(ce_proto)
     return any_obj
 
+def build_proto_payload_for_test1():
+    ce_proto = CloudEvent(
+        spec_version="1.0",
+        source="//VCU.VIN/body.access",
+        id="hello",
+        type="example.demo",
+        proto_data=any_pb2.Any(),
+        attributes={"ttl": CloudEvent.CloudEventAttributeValue(ce_string="3")},
+    )
+
+    any_obj = any_pb2.Any()
+    any_obj.Pack(ce_proto)
+    return any_obj
+
 
 class TestCloudEventToJsonSerializer(unittest.TestCase):
 
@@ -71,11 +85,10 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         cloud_event = CloudEventFactory.build_base_cloud_event(
             "hello",
             "/12345/1/door.front_left",
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
+            proto_payload,
             u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
+        cloud_event.__setitem__("type", "pub.v1")
         cloud_event.__setitem__("datacontenttype", protoContentType)
         cloud_event.__setitem__("dataschema", proto_payload.type_url)
         cloud_event.__delitem__("time")
@@ -105,11 +118,10 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
         cloud_event = CloudEventFactory.build_base_cloud_event(
             "hello",
             "/12345/1/door.front_left",
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
+            proto_payload,
             u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
+        cloud_event.__setitem__("type", "pub.v1")
         cloud_event.__setitem__("datacontenttype", protoContentType)
         cloud_event.__setitem__("dataschema", proto_payload.type_url)
         cloud_event.__delitem__("time")
@@ -119,42 +131,50 @@ class TestCloudEventToJsonSerializer(unittest.TestCase):
 
         self.assertEqual(cloud_event, deserialized_data)
 
-    def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(
-        self,
-    ):
-        proto_payload = build_proto_payload_for_test()
-        # additional attributes
+    def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(self):
+        # Assuming serializer and other necessary components are correctly set up in Python
+        serializer = CloudEventSerializers.JSON.serializer()
+
+        source = "/body.access//door.front_left#Door"
+
+        # Fake payload, assuming buildProtoPayloadForTest1 is correctly defined in Python
+        proto_payload = build_proto_payload_for_test1()
+
+        # Additional attributes, assuming a similar builder pattern or direct object creation in Python
         u_cloud_event_attributes = (
             UCloudEventAttributesBuilder()
             .with_priority(UPriority.UPRIORITY_CS1)
             .with_ttl(3)
+            .with_token("someOAuthToken")
+            .with_hash("somehash")
             .build()
         )
 
-        # build the cloud event
+        # Build the cloud event, assuming a similar factory method exists in Python
         cloud_event1 = CloudEventFactory.build_base_cloud_event(
-            "hello",
-            "/12345/1/door.front_left",
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
-            u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
+            "testme", source, proto_payload, u_cloud_event_attributes
         )
-        cloud_event1.__setitem__("datacontenttype", protoContentType)
-        cloud_event1.__setitem__("dataschema", proto_payload.type_url)
-        cloud_event1.__delitem__("time")
-        serialized_data1 = serializer.serialize(cloud_event1)
-        cloud_event2 = serializer.deserialize(serialized_data1)
-        cloud_event2.__delitem__("time")
-        self.assertEqual(cloud_event2, cloud_event1)
-        serialized_data2 = serializer.serialize(cloud_event2)
-        self.assertEqual(serialized_data1, serialized_data2)
-        cloud_event3 = serializer.deserialize(serialized_data2)
-        cloud_event3.__delitem__("time")
+        cloud_event1.__setitem__("type", "pub.v1")
 
-        payload1 = UCloudEvent.unpack(cloud_event3, CloudEvent)
+        # Serialize the cloud event
+        bytes1 = serializer.serialize(cloud_event1)
+
+        # Deserialize the cloud event
+        cloud_event2 = serializer.deserialize(bytes1)
+
+        self.assertEqual(cloud_event2, cloud_event1)
+
+        # Serialize the deserialized cloud event
+        bytes2 = serializer.serialize(cloud_event2)
+
+        self.assertEqual(bytes1, bytes2)
+
+        # Deserialize again
+        cloud_event3 = serializer.deserialize(bytes2)
+        cloud_event3_payload = UCloudEvent.get_payload(cloud_event3)
+
+        # Assuming unpacking logic is correctly implemented in Python
+        self.assertEqual(cloud_event3_payload, proto_payload)
+
         self.assertEqual(cloud_event2, cloud_event3)
-        payload2 = CloudEvent()
-        payload2.ParseFromString(proto_payload.value)
-        self.assertEqual(payload1, payload2)
         self.assertEqual(cloud_event1, cloud_event3)

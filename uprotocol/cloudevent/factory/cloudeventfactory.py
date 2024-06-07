@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+from typing import Optional
 
 from cloudevents.http import CloudEvent
 from google.protobuf import empty_pb2
@@ -45,8 +46,7 @@ class CloudEventFactory:
     def request(
         application_uri_for_rpc: str,
         service_method_uri: str,
-        request_id: str,
-        proto_payload: Any,
+        proto_payload: Optional[Any],
         attributes: UCloudEventAttributes,
     ) -> CloudEvent:
         """
@@ -62,13 +62,11 @@ class CloudEventFactory:
         cloud_event = CloudEventFactory.build_base_cloud_event(
             event_id,
             application_uri_for_rpc,
-            proto_payload.SerializeToString(),
-            proto_payload.DESCRIPTOR.full_name,
-            attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_REQUEST),
+            proto_payload,
+            attributes
         )
         cloud_event.__setitem__("sink", service_method_uri)
-        cloud_event.__setitem__("reqid", request_id)
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_REQUEST))
 
         return cloud_event
 
@@ -77,7 +75,7 @@ class CloudEventFactory:
         application_uri_for_rpc: str,
         service_method_uri: str,
         request_id: str,
-        proto_payload: Any,
+        proto_payload: Optional[Any],
         attributes: UCloudEventAttributes,
     ) -> CloudEvent:
         """
@@ -96,13 +94,12 @@ class CloudEventFactory:
         cloud_event = CloudEventFactory.build_base_cloud_event(
             event_id,
             service_method_uri,
-            proto_payload.SerializeToString(),
-            proto_payload.DESCRIPTOR.full_name,
-            attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_RESPONSE),
+            proto_payload,
+            attributes
         )
         cloud_event.__setitem__("sink", application_uri_for_rpc)
         cloud_event.__setitem__("reqid", request_id)
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_RESPONSE))
 
         return cloud_event
 
@@ -127,26 +124,22 @@ class CloudEventFactory:
         @return:Returns an  response CloudEvent Response for the use case of RPC Response message that failed.
         """
         event_id = CloudEventFactory.generate_cloud_event_id()
-        # Create an Any message packing an Empty message
-        empty_proto_payload = Any()
-        empty_proto_payload.Pack(empty_pb2.Empty())
         cloud_event = CloudEventFactory.build_base_cloud_event(
             event_id,
             service_method_uri,
-            empty_proto_payload.SerializeToString(),  # Empty payload
-            "google.protobuf.Empty",
-            attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_RESPONSE),
+            None,
+            attributes
         )
         cloud_event.__setitem__("sink", application_uri_for_rpc)
         cloud_event.__setitem__("reqid", request_id)
         cloud_event.__setitem__("commstatus", communication_status)
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_RESPONSE))
 
         return cloud_event
 
     @staticmethod
     def publish(
-        source: str, proto_payload: Any, attributes: UCloudEventAttributes
+        source: str, proto_payload: Optional[Any], attributes: UCloudEventAttributes
     ) -> CloudEvent:
         """
         Create a CloudEvent for an event for the use case of: Publish generic message.
@@ -159,11 +152,11 @@ class CloudEventFactory:
         cloud_event = CloudEventFactory.build_base_cloud_event(
             event_id,
             source,
-            proto_payload.SerializeToString(),
-            proto_payload.DESCRIPTOR.full_name,
-            attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
+            proto_payload,
+            attributes
         )
+
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH))
 
         return cloud_event
 
@@ -188,12 +181,11 @@ class CloudEventFactory:
         cloud_event = CloudEventFactory.build_base_cloud_event(
             event_id,
             source,
-            proto_payload.SerializeToString(),
-            proto_payload.DESCRIPTOR.full_name,
-            attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
+            proto_payload,
+            attributes
         )
         cloud_event.__setitem__("sink", sink)
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_NOTIFICATION))
 
         return cloud_event
 
@@ -210,10 +202,8 @@ class CloudEventFactory:
     def build_base_cloud_event(
         id: str,
         source: str,
-        proto_payload_bytes: bytes,
-        proto_payload_schema: str,
-        attributes: UCloudEventAttributes,
-        type,
+        proto_payload: Optional[Any],
+        attributes: UCloudEventAttributes
     ) -> CloudEvent:
         """
         Base CloudEvent builder that is the same for all CloudEvent types.
@@ -221,9 +211,7 @@ class CloudEventFactory:
         @param id:Event unique identifier.
         @param source: Identifies who is sending this event in the format of a uProtocol URI that can be built from a
         UUri object.
-        @param proto_payload_bytes:The serialized Event data with the content type of "application/x-protobuf".
-        @param proto_payload_schema:The schema of the proto payload bytes, for example you can use
-        <code>protoPayload.getTypeUrl()</code> on your service/app object.
+        @param proto_payload: Optional payload for the message
         @param attributes:Additional cloud event attributes that can be passed in. All attributes are optional and
         will be added only if they were configured.
         @param type: Type of the cloud event
@@ -242,6 +230,10 @@ class CloudEventFactory:
         if attributes.get_traceparent() is not None:
             json_attributes["traceparent"] = attributes.get_traceparent()
 
-        cloud_event = CloudEvent(json_attributes, proto_payload_bytes)
+
+        if proto_payload is not None:
+            cloud_event = CloudEvent(json_attributes, proto_payload.SerializeToString())
+        else:
+            cloud_event = CloudEvent(json_attributes, None)
 
         return cloud_event

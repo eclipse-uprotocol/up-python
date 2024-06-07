@@ -22,6 +22,8 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
+from uprotocol.uri.serializer.uriserializer import UriSerializer
+from uprotocol.uri.validator import urivalidator
 from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 
@@ -54,15 +56,15 @@ class TestUriValidator(unittest.TestCase):
     def test_is_rpc_response_with_null_uri(self):
         self.assertFalse(UriValidator.is_rpc_response(None))
 
-    # def test_is_rpc_response_with_default_uri(self):
-    #     self.assertFalse(UriValidator.is_rpc_response(UUri()))
+    def test_is_rpc_method_none(self):
+        self.assertFalse(UriValidator.is_rpc_method(None))
 
     def test_is_rpc_response_with_resourceid_equal_rpcresponseid(self):
-        uri = UUri(resource_id=UriValidator.RPC_RESPONSE_ID)
+        uri = UUri(authority_name="hi",resource_id=UriValidator.DEFAULT_RESOURCE_ID)
         self.assertTrue(UriValidator.is_rpc_response(uri))
 
     def test_is_rpc_response_with_resourceid_greater_rpcresponseid(self):
-        uri = UUri(resource_id=UriValidator.RPC_RESPONSE_ID + 1)
+        uri = UUri(resource_id=UriValidator.DEFAULT_RESOURCE_ID + 1)
         self.assertFalse(UriValidator.is_rpc_response(uri))
 
 

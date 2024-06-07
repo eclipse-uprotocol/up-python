@@ -20,6 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+from typing import Optional
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.proto.uprotocol.v1.ustatus_pb2 import UStatus, UCode
@@ -37,35 +38,41 @@ class MyListener(UListener):
 class HappyUTransport(UTransport):
 
     def send(self, message):
-        super().send(message)
+        # super().send(message)
 
         return UStatus(
             code=UCode.INVALID_ARGUMENT if message is None else UCode.OK
         )
 
-    def register_listener(self, source_filter, sink_filter, listener):
-        super().register_listener(source_filter, sink_filter, listener)
+    def register_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener):
+        # super().register_listener(source_filter, sink_filter, listener)
         listener.on_receive(UMessage())
         return UStatus(code=UCode.OK)
 
-    def unregister_listener(self, source_filter, sink_filter, listener):
-        super().unregister_listener(source_filter, sink_filter, listener)
+    def unregister_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener):
+        # super().unregister_listener(source_filter, sink_filter, listener)
         return UStatus(code=UCode.OK)
+    
+    def get_source(self):
+        return UUri()
 
 
 class SadUTransport(UTransport):
     def send(self, message):
-        super().send(message)
+        # super().send(message)
         return UStatus(code=UCode.INTERNAL)
 
-    def register_listener(self, source_filter, sink_filter, listener):
-        super().register_listener(source_filter, sink_filter, listener)
+    def register_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener):
+        # super().register_listener(source_filter, sink_filter, listener)
         listener.on_receive(None)
         return UStatus(code=UCode.INTERNAL)
 
-    def unregister_listener(self, source_filter, sink_filter, listener):
-        super().unregister_listener(source_filter, sink_filter, listener)
+    def unregister_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener):
+        # super().unregister_listener(source_filter, sink_filter, listener)
         return UStatus(code=UCode.INTERNAL)
+    
+    def get_source(self):
+        return UUri()
 
 
 class UTransportTest(unittest.TestCase):
@@ -103,7 +110,6 @@ class UTransportTest(unittest.TestCase):
         transport = SadUTransport()
         status = transport.unregister_listener(UUri(), UUri(), MyListener())
         self.assertEqual(status.code, UCode.INTERNAL)
-
 
 if __name__ == "__main__":
     unittest.main()

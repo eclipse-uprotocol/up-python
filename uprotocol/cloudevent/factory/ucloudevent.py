@@ -41,6 +41,7 @@ from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.proto.uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.proto.uprotocol.v1.uuid_pb2 import UUID
+from uprotocol.proto.uprotocol.uoptions_pb2 import ce_name
 
 
 class UCloudEvent:
@@ -336,14 +337,11 @@ class UCloudEvent:
             "id", ce
         )
 
-        try:
-            uuid = UuidSerializer.deserialize(cloud_event_id)
-            if uuid is None or uuid == UUID():
-                return False
-            delta = int(round(time.time() * 1000)) - UUIDUtils.get_time(uuid)
-        except ValueError:
-            # Invalid UUID, handle accordingly
-            delta = 0
+        uuid = UuidSerializer.deserialize(cloud_event_id)
+        if uuid is None or uuid == UUID():
+            return False
+        delta = int(round(time.time() * 1000)) - UUIDUtils.get_time(uuid)
+
         return delta >= maybe_ttl
 
     @staticmethod
@@ -376,34 +374,11 @@ class UCloudEvent:
         if data is None:
             return any_pb2.Any()
         try:
-            return any_pb2.Any().FromString(data)
+            unpacked_data = any_pb2.Any()
+            unpacked_data.ParseFromString(data)
+            return unpacked_data
         except DecodeError:
             return any_pb2.Any()
-
-    @staticmethod
-    def unpack(ce: CloudEvent, clazz):
-        """
-        Extract the payload from the CloudEvent as a protobuf Message of the
-        provided class. The protobuf of this message class must be loaded on
-        the client for this to work. <br>  An all or nothing error handling
-        strategy is implemented. If anything goes wrong, an empty optional will
-        be returned. <br><br> Example: <br> <pre>Optional&lt;SomeMessage&gt;
-        unpacked = UCloudEvent.unpack(cloudEvent,
-        SomeMessage.class);</pre><br><br>
-        @param ce:CloudEvent containing the
-        payload to extract.
-        @param clazz:The class that extends Message that
-        the payload is extracted into.
-        @return:  Returns a Message payload of
-        the class type that is provided.
-        """
-        try:
-            any_obj = UCloudEvent.get_payload(ce)
-            value = clazz()
-            value.ParseFromString(any_obj.value)
-            return value
-        except DecodeError:
-            return None
 
     @staticmethod
     def to_string(ce: CloudEvent) -> str:
@@ -478,6 +453,16 @@ class UCloudEvent:
         }.get(type, "")
 
     @staticmethod
+    def get_ce_priority(priority):
+        """
+        Get the string representation of the UPriority
+        @param priority
+        @return returns the string representation of the UPriority
+        """
+        return UPriority.Name(priority)
+
+
+    @staticmethod
     def get_message_type(ce_type):
         """
         Get the UMessageType from the string representation. Note: The
@@ -514,6 +499,7 @@ class UCloudEvent:
             UPayloadFormat.UPAYLOAD_FORMAT_TEXT: "text/plain",
             UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP: "application/x-someip",
             UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV: "application/x-someip_tlv",
+            UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF: "application/protobuf",
         }.get(payload_format, "")
 
     @staticmethod
@@ -594,11 +580,12 @@ class UCloudEvent:
             "source": UriSerializer().serialize(message.attributes.source),
             "type": UCloudEvent.get_event_type(attributes.type),
         }
+
         contenttype = UCloudEvent.get_content_type_from_upayload_format(
             message.attributes.payload_format
         )
 
-        if message.HasField("payload"):
+        if message.payload is not None:
             data = message.payload
 
         json_attributes = UCloudEvent.build_json_attributes(

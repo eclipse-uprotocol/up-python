@@ -34,6 +34,7 @@ from uprotocol.cloudevent.serialize.cloudeventserializers import (
     CloudEventSerializers,
 )
 
+from google.protobuf.any_pb2 import Any
 
 class TestBase64ProtobufSerializer(unittest.TestCase):
 
@@ -41,16 +42,15 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         ce = CloudEventFactory.build_base_cloud_event(
             "hello",
             "http://localhost",
-            bytearray(),
-            "",
+            Any(),
             UCloudEventAttributesBuilder().build(),
-            "example.vertx",
         )
+        ce.__setitem__("type", "example.vertx")
         ce.__delitem__("time")
         bytes_data = CloudEventSerializers.PROTOBUF.serializer().serialize(ce)
         payload = Base64ProtobufSerializer().deserialize(bytes_data)
         self.assertEqual(
-            "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4",
+            "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4MgA=",
             payload,
         )
 
@@ -72,11 +72,10 @@ class TestBase64ProtobufSerializer(unittest.TestCase):
         ce = CloudEventFactory.build_base_cloud_event(
             "hello",
             "http://localhost",
-            bytearray(),
-            "",
-            UCloudEventAttributesBuilder().build(),
-            "example.vertx",
+            Any(),
+            UCloudEventAttributesBuilder().build()
         )
+        ce.__setitem__("type", "example.vertx")
         ce.__delitem__("time")
 
         bytes_data = CloudEventSerializers.JSON.serializer().serialize(ce)

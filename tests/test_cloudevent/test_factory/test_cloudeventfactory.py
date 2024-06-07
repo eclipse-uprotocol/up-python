@@ -159,11 +159,11 @@ class TestCloudEventFactory(unittest.TestCase):
         cloud_event = CloudEventFactory.build_base_cloud_event(
             "testme",
             source,
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
+            proto_payload,
             u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
+
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH))
 
         self.assertEqual("1.0", UCloudEvent.get_specversion(cloud_event))
         self.assertEqual("testme", UCloudEvent.get_id(cloud_event))
@@ -204,16 +204,15 @@ class TestCloudEventFactory(unittest.TestCase):
         cloud_event = CloudEventFactory.build_base_cloud_event(
             "testme",
             source,
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
+            proto_payload,
             u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
 
         cloud_event.__setitem__(
             "datacontenttype", CloudEventFactory.PROTOBUF_CONTENT_TYPE
         )
         cloud_event.__setitem__("dataschema", proto_payload.type_url)
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH))
 
         # test all attributes
         self.assertEqual("1.0", UCloudEvent.get_specversion(cloud_event))
@@ -256,11 +255,11 @@ class TestCloudEventFactory(unittest.TestCase):
         cloud_event = CloudEventFactory.build_base_cloud_event(
             "testme",
             source,
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
+            proto_payload,
             u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
         )
+
+        cloud_event.__setitem__("type", UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH))
 
         # test all attributes
         self.assertEqual("1.0", UCloudEvent.get_specversion(cloud_event))
@@ -352,7 +351,7 @@ class TestCloudEventFactory(unittest.TestCase):
         self.assertEqual(sink, UCloudEvent.get_sink(cloud_event))
 
         self.assertEqual(
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
+            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_NOTIFICATION),
             UCloudEvent.get_type(cloud_event),
         )
         self.assertEqual("somehash", UCloudEvent.get_hash(cloud_event))
@@ -390,7 +389,6 @@ class TestCloudEventFactory(unittest.TestCase):
         cloud_event = CloudEventFactory.request(
             application_uri_for_rpc,
             service_method_uri,
-            CloudEventFactory.generate_cloud_event_id(),
             proto_payload,
             u_cloud_event_attributes,
         )

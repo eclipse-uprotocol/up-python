@@ -34,6 +34,9 @@ class UriSerializer:
     serialization formats.
     """
 
+    # The wildcard id for a field.
+    WILDCARD_ID = 0xFFFF
+
     def serialize(self, uri: Optional[UUri]) -> str:
         """
         Support for serializing UUri objects into their String format.
@@ -139,7 +142,7 @@ class UriSerializer:
             return UUri()
 
         # Ensure that the resource id is less than the wildcard
-        if new_uri.resource_id > UriValidator.WILDCARD_ID:
+        if new_uri.resource_id > self.WILDCARD_ID:
             return UUri()
 
         return new_uri

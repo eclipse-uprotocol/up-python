@@ -33,7 +33,7 @@ class TestUriFactory(unittest.TestCase):
         service_descriptor = usubscription_pb2.DESCRIPTOR.services_by_name[
             "uSubscription"
         ]
-        uri = UriFactory.from_proto(service_descriptor, 0)
+        uri = UriFactory.from_proto(service_descriptor, 0, "")
 
         self.assertIsNotNone(uri)
         self.assertEqual(uri.resource_id, 0)
@@ -50,7 +50,7 @@ class TestUriFactory(unittest.TestCase):
         self.assertEqual(uri.authority_name, "*")
 
     def test_from_proto_with_null_descriptor(self):
-        uri = UriFactory.from_proto(None, 0)
+        uri = UriFactory.from_proto(None, 0, "")
 
         self.assertIsNotNone(uri)
         self.assertEqual(uri.resource_id, 0)

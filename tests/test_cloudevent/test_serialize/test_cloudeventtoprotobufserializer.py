@@ -68,6 +68,19 @@ def build_proto_payload_for_test():
     any_obj.Pack(ce_proto)
     return any_obj
 
+def build_proto_payload_for_test1():
+    ce_proto = CloudEvent(
+        spec_version="1.0",
+        source="//VCU.VIN/body.access",
+        id="hello",
+        type="example.demo",
+        proto_data=any_pb2.Any(),
+        attributes={"ttl": CloudEvent.CloudEventAttributeValue(ce_string="3")},
+    )
+
+    any_obj = any_pb2.Any()
+    any_obj.Pack(ce_proto)
+    return any_obj
 
 def get_json_object():
     current_directory = os.getcwd()
@@ -156,12 +169,29 @@ class TestCloudEventToProtobufSerializer(unittest.TestCase):
         cloud_event = CloudEventFactory.build_base_cloud_event(
             "hello",
             "/12345/1/door.front_left",
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
-            u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
+            proto_payload,
+            u_cloud_event_attributes
         )
+        cloud_event.__setitem__("type", "pub.v1")
+        cloud_event.__setitem__("is_true", True)
+        cloud_event.__setitem__("is_false", b"12345")
+        cloud_event.__delitem__("time")
+        serialized_data = serializer.serialize(cloud_event)
 
+        deserialized_data = serializer.deserialize(serialized_data)
+        deserialized_data.__delitem__("time")
+        self.assertEqual(cloud_event, deserialized_data)
+
+    def test_serialize_and_deserialize_cloud_event_to_proto_str_data(self):
+        # additional attributes
+        json_attributes1 = {
+            "id": "hello",
+            "source": "/12345/1/door.front_left",
+            "type": "pub.v1",
+        }
+
+        # build the cloud event
+        cloud_event = ApacheCloudEvent(json_attributes1, "hi")
         cloud_event.__delitem__("time")
         serialized_data = serializer.serialize(cloud_event)
 
@@ -195,33 +225,43 @@ class TestCloudEventToProtobufSerializer(unittest.TestCase):
         serialized2 = serializer.serialize(cloud_event2)
         self.assertNotEqual(serialized1, serialized2)
 
-    def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(
-        self,
-    ):
-        proto_payload = build_proto_payload_for_test()
-        source = build_uuri_for_test()
+    def test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods(self):
+        serializer = CloudEventSerializers.JSON.serializer()
+
+        source = "/body.access//door.front_left#Door"
+
+        # fake payload
+        proto_payload = build_proto_payload_for_test1()
+
         # additional attributes
-        u_cloud_event_attributes = (
-            UCloudEventAttributesBuilder()
-            .with_hash("somehash")
-            .with_priority(UPriority.UPRIORITY_CS1)
-            .with_ttl(3)
-            .with_token("someOAuthToken")
+        u_cloud_event_attributes = UCloudEventAttributesBuilder()\
+            .with_hash("somehash")\
+            .with_priority(UPriority.UPRIORITY_CS1)\
+            .with_ttl(3)\
+            .with_token("someOAuthToken")\
             .build()
-        )
 
         # build the cloud event
-        cloud_event = CloudEventFactory.build_base_cloud_event(
-            "testme",
-            source,
-            proto_payload.SerializeToString(),
-            proto_payload.type_url,
-            u_cloud_event_attributes,
-            UCloudEvent.get_event_type(UMessageType.UMESSAGE_TYPE_PUBLISH),
-        )
-        cloud_event.__delitem__("time")
+        cloud_event_builder = CloudEventFactory.build_base_cloud_event(
+            "testme", source, proto_payload, u_cloud_event_attributes)
+        cloud_event_builder.__setitem__("type", "pub.v1")
 
-        serialized_data = serializer.serialize(cloud_event)
-        deserialized_data = serializer.deserialize(serialized_data)
-        deserialized_data.__delitem__("time")
-        self.assertEqual(cloud_event, deserialized_data)
+        cloud_event1 = cloud_event_builder
+
+        bytes1 = serializer.serialize(cloud_event1)
+
+        cloud_event2 = serializer.deserialize(bytes1)
+
+        self.assertEqual(cloud_event2, cloud_event1)
+
+        bytes2 = serializer.serialize(cloud_event2)
+
+        self.assertEqual(bytes1, bytes2)
+
+        cloud_event3 = serializer.deserialize(bytes2)
+        cloud_event3_payload = UCloudEvent.get_payload(cloud_event3)
+
+        self.assertEqual(cloud_event3_payload, proto_payload)
+
+        self.assertEqual(cloud_event2, cloud_event3)
+        self.assertEqual(cloud_event1, cloud_event3)

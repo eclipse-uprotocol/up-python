@@ -24,7 +24,7 @@ import unittest
 
 from google.protobuf.any_pb2 import Any
 
-from uprotocol.transport.builder.umessage_builder import UMessageBuilder
+from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.proto.uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UPriority,
@@ -289,3 +289,66 @@ class TestUMessageBuilder(unittest.TestCase):
             UMessageType.UMESSAGE_TYPE_PUBLISH, publish.attributes.type
         )
         self.assertEqual(UPriority.UPRIORITY_CS4, publish.attributes.priority)
+
+    def test_publish_source_is_none(self):
+        """
+        Test publish with source is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.publish(None)
+
+    def test_notification_source_is_none(self):
+        """
+        Test notification with source is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.notification(None, build_sink())
+
+    def test_notification_sink_is_none(self):
+        """
+        Test notification with sink is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.notification(build_source(), None)
+
+    def test_request_source_is_none(self):
+        """
+        Test request with source is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(None, build_sink(), 1000)
+
+    def test_request_sink_is_none(self):
+        """
+        Test request with sink is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_source(), None, 1000)
+    
+    def test_request_ttl_is_none(self):
+        """
+        Test request with ttl is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_source(), build_sink(), None)
+
+    def test_response_source_is_none(self):
+        """
+        Test response with source is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(None, build_sink(), get_uuid())
+    
+    def test_response_sink_is_none(self):
+        """
+        Test response with sink is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_source(), None, get_uuid())
+
+    def test_response_req_id_is_none(self):
+        """
+        Test response with req_id is None
+        """
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_source(), build_sink(), None)

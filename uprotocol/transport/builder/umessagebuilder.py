@@ -49,27 +49,12 @@ class UMessageBuilder:
     Builder for easy construction of the UAttributes object.
     """
 
-    # private final UUri source;
-    # private final UUID id;
-    # private final UMessageType type;
-    # private UPriority priority;
-    # private Integer ttl;
-    # private String token;
-    # private UUri sink;
-    # private Integer plevel;
-    # private UCode commstatus;
-    # private UUID reqid;
-    # private String traceparent;
-
-    # private UPayloadFormat format;
-    # private ByteString payload;
-
     @staticmethod
     def publish(source: UUri) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a publish message.
 
-        @param source   Source address of the message.
+        @param source   The topic the message is published to (a.k.a Source address).
         @return Returns the UMessageBuilder with the configured priority.
         """
         if source is None:
@@ -85,8 +70,8 @@ class UMessageBuilder:
         """
         Construct a UMessageBuilder for a notification message.
 
-        @param source   Source address of the message.
-        @param sink The destination URI.
+        @param source   The topic the message is published to (a.k.a Source address).
+        @param sink     The destination address for the notification (who will receive the notification).
         @return Returns the UMessageBuilder with the configured priority
         and sink.
         """
@@ -105,8 +90,8 @@ class UMessageBuilder:
         """
         Construct a UMessageBuilder for a request message.
 
-        @param source   Source address of the message.
-        @param sink The destination URI.
+        @param source  Source address for the message (address of the client sending the request message).
+        @param sink The method that is being requested (a.k.a. destination address).
         @param ttl The time to live in milliseconds.
         @return Returns the UMessageBuilder with the configured priority,
         sink and ttl.
@@ -128,12 +113,12 @@ class UMessageBuilder:
         )
 
     @multimethod
-    def response(source: UUri, sink: UUri, reqid: UUID) -> "UMessageBuilder":
+    def response(source, sink, reqid) -> "UMessageBuilder":
         """
         Construct a UMessageBuilder for a response message.
 
-        @param source   Source address of the message.
-        @param sink The destination URI.
+        @param source The source address of the method that was requested
+        @param sink The destination of the client thatsend the request.
         @param reqid The original request UUID used to correlate the
         response to the request.
         @return Returns the UMessageBuilder with the configured source,
@@ -175,7 +160,7 @@ class UMessageBuilder:
                 UMessageType.UMESSAGE_TYPE_RESPONSE,
             )
             .with_priority(UPriority.UPRIORITY_CS4)
-            .with_sink(request.sink)
+            .with_sink(request.source)
             .with_reqid(request.id)
         )
 
@@ -324,24 +309,16 @@ class UMessageBuilder:
         if arg1 is None and arg2 is None:
             return self._build_static()
         elif isinstance(arg1, Any) and arg2 is None:
-            if arg1 is None:
-                raise ValueError("Any cannot be null.")
             self.format = (
                 UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
             )
             self.payload = arg1.SerializeToString()
             return self._build_static()
         elif isinstance(arg1, Message) and arg2 is None:
-            if arg1 is None:
-                raise ValueError("Protobuf Message cannot be null.")
             self.format = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF
             self.payload = arg1.SerializeToString()
             return self._build_static()
         elif isinstance(arg2, bytes):
-            if arg1 is None:
-                raise ValueError("Format cannot be null.")
-            if arg2 is None:
-                raise ValueError("Payload cannot be null.")
             self.format = arg1
             self.payload = arg2
             return self._build_static()

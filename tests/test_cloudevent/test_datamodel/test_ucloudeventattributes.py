@@ -164,6 +164,17 @@ class TestUCloudEventAttributes(unittest.TestCase):
             u_cloud_event_attributes.__eq__(u_cloud_event_attributes)
         )
 
+    def test__eq__other_is_not_attributes(self):
+        u_cloud_event_attributes = (
+            UCloudEventAttributesBuilder()
+            .with_hash("  ")
+            .with_token("  ")
+            .build()
+        )
+        self.assertFalse(
+            u_cloud_event_attributes.__eq__("hiya")
+        )
+
     def test__eq__is_equal(self):
         u_cloud_event_attributes_1 = (
             UCloudEventAttributesBuilder()

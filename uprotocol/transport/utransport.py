@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 
 
 from abc import ABC, abstractmethod
-from multimethod import multimethod
+from typing import Optional
 
 from uprotocol.proto.uprotocol.v1.uri_pb2 import UUri
 from uprotocol.transport.ulistener import UListener
@@ -38,6 +38,8 @@ class UTransport(ABC):
     <a href =https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc>link</a>
     """
 
+    TRANSPORT_NULL_ERROR = "Transport cannot be null"
+
     @abstractmethod
     def send(self, message: UMessage) -> UStatus:
         """
@@ -47,7 +49,6 @@ class UTransport(ABC):
         """
         pass
 
-    @multimethod
     def register_listener(
         self, source_filter: UUri, listener: UListener
     ) -> UStatus:
@@ -62,12 +63,11 @@ class UTransport(ABC):
         @return Returns UStatus with UCode.OK if the listener is registered
         correctly, otherwise it returns with the appropriate failure.
         """
-        return UTransport.register_listener(source_filter, UUri(), listener)
+        return self.register_listener(source_filter, UUri(), listener)
 
-    @multimethod
     @abstractmethod
     def register_listener(
-        self, source_filter: UUri, sink_filter: UUri, listener: UListener
+        self, source_filter: UUri, sink_filter: Optional[UUri], listener: UListener
     ) -> UStatus:
         """
         Register UListener for UUri source and sink filters to be called when
@@ -84,7 +84,6 @@ class UTransport(ABC):
         """
         pass
 
-    @multimethod
     def unregister_listener(
         self, source_filter: UUri, listener: UListener
     ) -> UStatus:
@@ -99,12 +98,11 @@ class UTransport(ABC):
         @return Returns UStatus with UCode.OK if the listener is registered
         correctly, otherwise it returns with the appropriate failure.
         """
-        return UTransport.register_listener(source_filter, UUri(), listener)
+        return UTransport.unregister_listener(source_filter, UUri(), listener)
 
-    @multimethod
     @abstractmethod
     def unregister_listener(
-        self, source_filter: UUri, sink_filter: UUri, listener: UListener
+        self, source_filter: UUri, sink_filter: Optional[UUri], listener: UListener
     ) -> UStatus:
         """
         Unregister UListener for UUri source and sink filters. Messages
@@ -118,5 +116,14 @@ class UTransport(ABC):
         registered to receive messages.
         @return Returns UStatus with UCode.OK if the listener is unregistered
         correctly, otherwise it returns with the appropriate failure.
+        """
+        pass
+
+    @abstractmethod
+    def get_source(self) -> UUri:
+        """
+        Get the source URI of the transport.
+
+        @return Returns the source URI of the transport.
         """
         pass

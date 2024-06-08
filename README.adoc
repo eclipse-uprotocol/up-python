@@ -50,7 +50,7 @@ This script automates the following tasks:
 +
 [source]
 ----
-python -m pip install .
+python -m pip install ../
 ----
 
 *This will install the up-python, making its classes and modules available for import in your python code.*

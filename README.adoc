@@ -23,7 +23,7 @@ mvn -version
 ----
 If Maven is properly installed, you should see information about the Maven version and configuration.
 
-=== Importing the sdk
+=== Importing the Library
 
 To set up SDK, follow the steps below:
 
@@ -50,12 +50,12 @@ This script automates the following tasks:
 +
 [source]
 ----
-python -m pip install .
+python -m pip install ../
 ----
 
 *This will install the up-python, making its classes and modules available for import in your python code.*
 
-=== Using The Library
+=== Using the Library
 
 The Library is broken up into different packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it. Packages are organized into the following directories:
 

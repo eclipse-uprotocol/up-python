@@ -1,22 +1,14 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
-Eclipse Foundation
+SPDX-FileCopyrightText: 2023 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program and the accompanying materials are made available under the
+terms of the Apache License Version 2.0 which is available at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
@@ -28,10 +20,10 @@ import subprocess
 import git
 from git import Repo
 
-REPO_URL = "https://github.com/eclipse-uprotocol/up-core-api.git"
+REPO_URL = "https://github.com/eclipse-uprotocol/up-spec.git"
 PROTO_REPO_DIR = os.path.abspath("../target")
-TAG_NAME = "uprotocol-core-api-1.5.7"
-PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/proto")
+TAG_NAME = "main"
+PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/")
 
 
 def clone_or_pull(repo_url, proto_repo_dir):
@@ -67,7 +59,7 @@ def execute_maven_command(project_dir, command):
             else:
                 print("Maven command executed successfully.")
                 src_directory = os.path.join(
-                    os.getcwd(), project_dir, "target", "generated-sources", "protobuf", "python"
+                    os.getcwd(), project_dir, "target", "generated-sources", "protobuf", "python", "uprotocol"
                 )
 
                 shutil.copytree(src_directory, PROTO_OUTPUT_DIR, dirs_exist_ok=True)
@@ -89,19 +81,6 @@ def replace_in_file(file_path, search_pattern, replace_pattern):
 def process_python_protofiles(directory):
     for root, dirs, files in os.walk(directory):
         create_init_py(root)
-        for file in files:
-            if file.endswith('.py'):
-                file_path = os.path.join(root, file)
-                replace_in_file(file_path, r'import uri_pb2', 'import uprotocol.proto.uri_pb2')
-                replace_in_file(file_path, r'import uuid_pb2', 'import uprotocol.proto.uuid_pb2')
-                replace_in_file(
-                    file_path, r'import uprotocol_options_pb2', 'import uprotocol.proto.uprotocol_options_pb2'
-                )
-                replace_in_file(file_path, r'import uattributes_pb2', 'import uprotocol.proto.uattributes_pb2')
-                replace_in_file(file_path, r'import upayload_pb2', 'import uprotocol.proto.upayload_pb2')
-                replace_in_file(file_path, r'import ustatus_pb2', 'import uprotocol.proto.ustatus_pb2')
-                replace_in_file(file_path, r'import upayload_pb2', 'import uprotocol.proto.upayload_pb2')
-                replace_in_file(file_path, r'import umessage_pb2', 'import uprotocol.proto.umessage_pb2')
 
 
 def create_init_py(directory):

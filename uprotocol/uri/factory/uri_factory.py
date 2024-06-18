@@ -36,6 +36,7 @@ class UriFactory:
         @param resource_id The resource id.
         @param authority_name The authority name.
         @return Returns a URI for a protobuf generated code
+
         Service Descriptor.
         """
         if service_descriptor is None:
@@ -46,6 +47,7 @@ class UriFactory:
         version_major: int = options.Extensions[service_version_major]
         id_val: int = options.Extensions[service_id]
 
+
         uuri = UUri()
         if version_major is not None:
             uuri.ue_version_major = version_major
@@ -53,6 +55,7 @@ class UriFactory:
             uuri.resource_id = resource_id
         if id_val is not None:
             uuri.ue_id = id_val
+
         if authority_name is not None:
             uuri.authority_name = authority_name
 

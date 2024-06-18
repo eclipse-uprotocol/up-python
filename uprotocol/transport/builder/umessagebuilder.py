@@ -143,6 +143,7 @@ class UMessageBuilder:
                 UMessageType.UMESSAGE_TYPE_RESPONSE,
             )
             .with_priority(request.priority)
+
             .with_sink(request.source)
             .with_reqid(request.id)
         )
@@ -154,6 +155,7 @@ class UMessageBuilder:
         @param source   Source address of the message.
         @param id_val       Unique identifier for the message.
         @param type_val     Message type such as Publish a state change,
+
         RPC request or RPC response.
         """
         self.source = source

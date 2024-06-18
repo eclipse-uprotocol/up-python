@@ -48,6 +48,7 @@ class UTransport(ABC):
         @param sink_filter The UAttributes sink address pattern that the
         message to receive needs to match or None to match messages that do not contain any sink address.
         @param listener The UListener that will execute when the message is
+
         received on the given UUri.
         @return Returns UStatus with UCode.OK if the listener is registered
         correctly, otherwise it returns with the appropriate failure.
@@ -58,6 +59,7 @@ class UTransport(ABC):
     def unregister_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener: UListener) -> UStatus:
         """Unregister UListener for UUri source and sink filters. Messages
         arriving at this topic will no longer be processed by this listener.
+
 
         @param source_filter The UAttributes source address pattern that the
         message to receive needs to match.

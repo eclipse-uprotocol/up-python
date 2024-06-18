@@ -160,6 +160,7 @@ class UUIDUtils:
 
     @staticmethod
     def get_remaining_time(id_val: Union[UUID, None], ttl: int):
+
         """
         Calculates the remaining time until the expiration of the event
         identified by the given UUID.

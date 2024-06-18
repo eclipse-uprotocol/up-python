@@ -7,7 +7,9 @@
 .vscode
 .coverage
 target
-#**/proto
+#uprotocol/core
+#uprotocol/v1
+#uprotocol/uoptions_pb2.py
 poetry.lock
 htmlcov
 coverage_report.txt

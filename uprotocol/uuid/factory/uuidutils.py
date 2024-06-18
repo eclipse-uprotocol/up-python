@@ -1,22 +1,14 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
-Eclipse Foundation
+SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program and the accompanying materials are made available under the
+terms of the Apache License Version 2.0 which is available at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
@@ -25,11 +17,8 @@ import uuid
 from enum import Enum
 from typing import Optional, Union
 
-from multimethod import multimethod
-
-from uprotocol.proto.uattributes_pb2 import UAttributes
-from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory import PythonUUID
+from uprotocol.v1.uuid_pb2 import UUID
 
 
 class Version(Enum):
@@ -169,8 +158,8 @@ class UUIDUtils:
         now = int(time.time() * 1000)
         return now - creation_time if now >= creation_time else None
 
-    @multimethod
-    def get_remaining_time(id: Union[UUID, None], ttl: int):  # noqa: N805
+    @staticmethod
+    def get_remaining_time(id: Union[UUID, None], ttl: int):
         """
         Calculates the remaining time until the expiration of the event
         identified by the given UUID.
@@ -187,21 +176,8 @@ class UUIDUtils:
         elapsed_time = UUIDUtils.get_elapsed_time(id)
         return ttl - elapsed_time if ttl > elapsed_time else None
 
-    @multimethod
-    def get_remaining_time(attributes: Union[UAttributes, None]):  # noqa: N805
-        """
-        Calculates the remaining time until the expiration of the event
-        identified by the given UAttributes.
-        @param attributes The attributes containing information about
-        the event, including its ID and TTL.
-        @return The remaining time in milliseconds until the event expires,
-        or None if the attributes do not contain TTL information or the
-        creation time cannot be determined.
-        """
-        return UUIDUtils.get_remaining_time(attributes.id, attributes.ttl) if attributes.HasField("ttl") else None
-
-    @multimethod
-    def is_expired(id: Union[UUID, None], ttl: int):  # noqa: N805
+    @staticmethod
+    def is_expired(id: Union[UUID, None], ttl: int):
         """
         Checks if the event identified by the given UUID has expired based
         on the specified time-to-live (TTL).
@@ -213,19 +189,6 @@ class UUIDUtils:
         cannot be determined.
         """
         return ttl > 0 and UUIDUtils.get_remaining_time(id, ttl) is None
-
-    @multimethod
-    def is_expired(attributes: Union[UAttributes, None]):  # noqa: N805
-        """
-        Checks if the event identified by the given UAttributes has expired.
-
-        @param attributes The attributes containing information about the
-        event, including its ID and TTL.
-        @return true if the event has expired, false otherwise.Returns false
-        if the attributes do not contain TTL
-        information or creation time cannot be determined.
-        """
-        return attributes.HasField("ttl") and UUIDUtils.is_expired(attributes.id, attributes.ttl)
 
     @staticmethod
     def get_msb_lsb(uuid: PythonUUID):

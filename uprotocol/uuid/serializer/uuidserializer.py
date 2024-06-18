@@ -1,54 +1,55 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
-Eclipse Foundation
+SPDX-FileCopyrightText: 2023 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program and the accompanying materials are made available under the
+terms of the Apache License Version 2.0 which is available at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Optional
 
-from uprotocol.proto.uuid_pb2 import UUID
+from uprotocol.uuid.factory import PythonUUID
+from uprotocol.uuid.factory.uuidutils import UUIDUtils
+from uprotocol.v1.uuid_pb2 import UUID
 
-T = TypeVar("T")
 
-
-class UuidSerializer(ABC, Generic[T]):
+class UuidSerializer:
     """
     UUID Serializer interface used to serialize/deserialize UUIDs
     to/from either Long (string) or micro (bytes) form
     """
 
-    @abstractmethod
-    def deserialize(self, uuid: T) -> UUID:
+    @staticmethod
+    def deserialize(string_uuid: Optional[str]) -> UUID:
         """
-        Deserialize from the format to a UUID.
-        :param uuid: Serialized UUID.
-        :return: Returns a UUID object from the
-        serialized format from the wire.
+        Deserialize from the string format to a UUID.
+        :param string_uuid: Serialized UUID in string format.
+        :return: Returns a UUID object from the serialized format from the
+        wire.
         """
-        pass  # Implement your deserialization logic here
+        if not string_uuid or string_uuid.isspace():
+            return UUID()  # Return default UUID if string is empty or whitespace
+        try:
+            msb, lsb = UUIDUtils.get_msb_lsb(PythonUUID(string_uuid))
+            return UUID(msb=msb, lsb=lsb)
+        except ValueError:
+            return UUID()  # Return default UUID in case of parsing failure
 
-    @abstractmethod
-    def serialize(self, uuid: UUID) -> T:
+    @staticmethod
+    def serialize(uuid: UUID) -> str:
         """
-        Serialize from a UUID to a specific serialization format.
-        :param uuid: UUID object to be serialized to the format T.
-        :return: Returns the UUID in the transport serialized format.
+        Serialize from a UUID to a string format.
+        :param uuid: UUID object to be serialized to a string.
+        :return: Returns the UUID in the string serialized format.
         """
-        pass  # Implement your serialization logic here
+        if uuid is None:
+            return ""
+
+        pythonuuid = UUIDUtils.create_pythonuuid_from_eclipseuuid(uuid)
+        return str(pythonuuid) if uuid else ""

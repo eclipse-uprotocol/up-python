@@ -14,7 +14,7 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
     version = UUIDUtils.getVersion(uuid)
     time = UUIDUtils.getTime(uuid)
     bytes_uuid = MicroUuidSerializer.instance().serialize(uuid)
-    str_uuid = LongUuidSerializer.instance().serialize(uuid)
+    str_uuid = UuidSerializer.serialize(uuid)
 
     assertTrue(UUIDUtils.isUProtocol(uuid))
     assertTrue(UUIDUtils.isuuid(uuid))
@@ -25,7 +25,7 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
     assertFalse(str_uuid.isspace())
 
     uuid1 = MicroUuidSerializer.instance().deserialize(bytes_data)
-    uuid2 = LongUuidSerializer.instance().deserialize(uuid_string)
+    uuid2 = UuidSerializer.deserialize(uuid_string)
     assertNotEqual(uuid1, UUID())
     assertNotEqual(uuid2, UUID())
     assertEqual(uuid, uuid1)

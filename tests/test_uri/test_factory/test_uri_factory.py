@@ -30,7 +30,7 @@ class TestUriFactory(unittest.TestCase):
         self.assertEqual(uri.authority_name, "")
 
     def test_any(self):
-        uri = UriFactory.any_func()
+        uri = UriFactory.ANY
         self.assertIsNotNone(uri)
         self.assertEqual(uri.resource_id, 65535)
         self.assertEqual(uri.ue_id, 65535)

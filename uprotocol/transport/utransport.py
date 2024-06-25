@@ -13,7 +13,6 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from uprotocol.transport.ulistener import UListener
 from uprotocol.v1.umessage_pb2 import UMessage
@@ -29,6 +28,7 @@ class UTransport(ABC):
     """
 
     TRANSPORT_NULL_ERROR = "Transport cannot be null"
+    TRANSPORT_NOT_INSTANCE_ERROR = "Transport must be an instance of UTransport"
 
     @abstractmethod
     def send(self, message: UMessage) -> UStatus:
@@ -39,7 +39,7 @@ class UTransport(ABC):
         pass
 
     @abstractmethod
-    def register_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener: UListener) -> UStatus:
+    def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         """Register UListener for UUri source and sink filters to be called when
         a message is received.
 
@@ -56,10 +56,9 @@ class UTransport(ABC):
         pass
 
     @abstractmethod
-    def unregister_listener(self, source_filter: UUri, sink_filter: Optional[UUri], listener: UListener) -> UStatus:
+    def unregister_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         """Unregister UListener for UUri source and sink filters. Messages
         arriving at this topic will no longer be processed by this listener.
-
 
         @param source_filter The UAttributes source address pattern that the
         message to receive needs to match.

@@ -12,14 +12,11 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
-from google.protobuf.any_pb2 import Any
-from google.protobuf.message import Message
-
+from uprotocol.communication.upayload import UPayload
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UMessageType,
-    UPayloadFormat,
     UPriority,
 )
 from uprotocol.v1.ucode_pb2 import UCode
@@ -244,7 +241,7 @@ class UMessageBuilder:
         self.sink = sink
         return self
 
-    def _build_static(self):
+    def build(self):
         """Construct the UMessage from the builder.
 
         @return Returns a constructed
@@ -278,29 +275,11 @@ class UMessageBuilder:
             message_builder.payload = self.payload
         return message_builder
 
-    def build(self, arg1=None, arg2=None):
-        if arg1 is None and arg2 is None:
-            return self._build_static()
-        elif isinstance(arg1, Any) and arg2 is None:
-            if arg1 is None:
-                raise ValueError("Any cannot be null.")
-            self.format = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
-            self.payload = arg1.SerializeToString()
-            return self._build_static()
-        elif isinstance(arg1, Message) and arg2 is None:
-            if arg1 is None:
-                raise ValueError("Protobuf Message cannot be null.")
-            self.format = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF
-            self.payload = arg1.SerializeToString()
-            return self._build_static()
-        elif isinstance(arg2, bytes):
-            if arg1 is None:
-                raise ValueError("Format cannot be null.")
-            if arg2 is None:
-                raise ValueError("Payload cannot be null.")
-            self.format = arg1
-            self.payload = arg2
-            return self._build_static()
+    def build_from_upayload(self, payload: UPayload):
+        if payload is not None:
+            self.payload = payload.data
+            self.format = payload.format
+        return self.build()
 
     def _calculate_priority(self):
         if self.type in [

@@ -43,7 +43,6 @@ class HandleRequestListener(UListener):
         # Only handle request messages, ignore all other messages like notifications
         if request.attributes.type != UMessageType.UMESSAGE_TYPE_REQUEST:
             return
-        print('generic request received')
 
         request_attributes = request.attributes
 

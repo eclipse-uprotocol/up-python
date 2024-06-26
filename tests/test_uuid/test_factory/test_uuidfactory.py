@@ -63,7 +63,6 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertNotEqual(uuid2, UUID())
         self.assertEqual(uuid, uuid2)
 
-
     def test_uuidv6_creation_with_instant(self):
         now = datetime.now()
         uuid = Factories.UUIDV6.create(now)

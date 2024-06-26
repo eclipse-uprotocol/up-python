@@ -43,7 +43,7 @@ class RpcMapper:
         except Exception as e:
             raise RuntimeError(f"Unexpected exception: {str(e)}") from e
 
-        if payload is not None :
+        if payload is not None:
             if not payload.data:
                 return expected_cls()
             else:
@@ -74,7 +74,7 @@ class RpcMapper:
         except Exception as e:
             if isinstance(e, UStatusError):
                 return RpcResult.failure(value=e.status)
-            elif isinstance(e, TimeoutError) or isinstance(e, asyncio.TimeoutError):
+            elif isinstance(e, asyncio.TimeoutError):
                 return RpcResult.failure(code=UCode.DEADLINE_EXCEEDED, message="Request timed out")
             else:
                 return RpcResult.failure(code=UCode.INVALID_ARGUMENT, message=str(e))

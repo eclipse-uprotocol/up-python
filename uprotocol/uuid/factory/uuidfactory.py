@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 import random
 from datetime import datetime
 
-from uprotocol.uuid.factory import uuid6, uuid7
+from uprotocol.uuid.factory import uuid6
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.v1.uuid_pb2 import UUID
 

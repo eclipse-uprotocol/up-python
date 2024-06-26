@@ -88,7 +88,8 @@ class MockUTransport(UTransport):
             if message is None or validator.validate(message.attributes) != ValidationResult.success():
                 return UStatus(code=UCode.INVALID_ARGUMENT, message="Invalid message attributes")
 
-            threading.Thread(target=self._notify_listeners, args=(message,)).start()
+            executor = ThreadPoolExecutor(max_workers=5)
+            executor.submit(self._notify_listeners, message)
 
         return UStatus(code=UCode.OK)
 
@@ -113,9 +114,10 @@ class MockUTransport(UTransport):
                 # this is for response type,handle response
                 serialized_uri = UriSerializer().serialize(UriFactory.ANY)
 
-            for listener in self.listeners[serialized_uri]:
-                listener.on_receive(umsg)
-                break  # as there will be only one listener for method uri
+            if serialized_uri in self.listeners:
+                for listener in self.listeners[serialized_uri]:
+                    listener.on_receive(umsg)
+                    break  # as there will be only one listener for method uri
 
 
 class TimeoutUTransport(MockUTransport, ABC):

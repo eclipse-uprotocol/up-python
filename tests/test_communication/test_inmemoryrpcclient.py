@@ -39,7 +39,6 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         response = await future_result
         self.assertIsNotNone(response)
         self.assertFalse(future_result.done() and future_result.exception() is not None)
-        print("test case 1")
 
     async def test_invoke_method_with_payload_and_call_options(self):
         payload = UPayload.pack_to_any(UUri())
@@ -49,7 +48,6 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         response = await future_result
         self.assertIsNotNone(response)
         self.assertFalse(future_result.done() and future_result.exception() is not None)
-        print("test case 2")
 
     async def test_invoke_method_with_null_payload(self):
         rpc_client = InMemoryRpcClient(MockUTransport())
@@ -59,7 +57,6 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         response = await future_result
         self.assertIsNotNone(response)
         self.assertFalse(future_result.done() and future_result.exception() is not None)
-        print("test case 3")
 
     async def test_invoke_method_with_timeout_transport(self):
         payload = UPayload.pack_to_any(UUri())
@@ -84,7 +81,6 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(future_result1.done() and future_result1.exception() is not None)
         self.assertFalse(future_result2.done() and future_result2.exception() is not None)
-        print("test case 5")
 
     async def test_close_with_multiple_listeners(self):
         rpc_client = InMemoryRpcClient(MockUTransport())
@@ -98,7 +94,6 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(response1)
         self.assertIsNotNone(response2)
         rpc_client.close()
-        print("test case 6")
 
     async def test_invoke_method_with_comm_status_transport(self):
         rpc_client = InMemoryRpcClient(CommStatusTransport())
@@ -109,7 +104,6 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(future_result.done() and future_result.exception() is not None)
         self.assertIn("Communication error [FAILED_PRECONDITION]", str(context.exception))
-        print("test case 7")
 
     async def test_invoke_method_with_error_transport(self):
         class ErrorUTransport(MockUTransport):
@@ -121,11 +115,9 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), payload, None))
         with self.assertRaises(Exception) as context:
             await future_result
-            print("test case 8")
 
         self.assertTrue(future_result.done() and future_result.exception() is not None)
-        self.assertTrue(isinstance(context.exception,UStatusError))
-        print("test case 8  1")
+        self.assertTrue(isinstance(context.exception, UStatusError))
 
 
 if __name__ == '__main__':

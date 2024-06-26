@@ -29,7 +29,7 @@ class Version(Enum):
     VERSION_UNKNOWN = 0
     VERSION_RANDOM_BASED = 4
     VERSION_TIME_ORDERED = 6
-    VERSION_UPROTOCOL = 8
+    VERSION_UPROTOCOL = 7
 
     @staticmethod
     def get_version(value: int):
@@ -80,7 +80,7 @@ class UUIDUtils:
     @staticmethod
     def is_uprotocol(uuid_obj: UUID) -> bool:
         """
-        Verify if version is a formal UUIDv8 uProtocol ID.<br><br>
+        Verify if version is a formal UUIDv7 uProtocol ID.<br><br>
         @param uuid_obj:UUID object
         @return:true if is a uProtocol UUID or false if uuid
         passed is null or the UUID is not uProtocol format.
@@ -109,9 +109,9 @@ class UUIDUtils:
     @staticmethod
     def is_uuid(uuid_obj: UUID) -> bool:
         """
-        Verify uuid is either v6 or v8<br><br>
+        Verify uuid is either v6 or v7<br><br>
         @param uuid_obj: UUID object
-        @return:true if is UUID version 6 or 8
+        @return:true if is UUID version 6 or 7
         """
 
         return UUIDUtils.is_uprotocol(uuid_obj) or UUIDUtils.is_uuidv6(uuid_obj) if uuid_obj is not None else False

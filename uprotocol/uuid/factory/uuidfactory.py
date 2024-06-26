@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 import random
 from datetime import datetime
 
-from uprotocol.uuid.factory import uuid6
+from uprotocol.uuid.factory import uuid6, uuid7
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.v1.uuid_pb2 import UUID
 
@@ -37,24 +37,23 @@ class UUIDv6Factory(UUIDFactory):
         return UUID(msb=msb, lsb=lsb)
 
 
-class UUIDv8Factory(UUIDFactory):
-    MAX_COUNT = 0xFFF
-    _lsb = (random.getrandbits(63) & 0x3FFFFFFFFFFFFFFF) | 0x8000000000000000
-    UUIDV8_VERSION = 8
-    _msb = UUIDV8_VERSION << 12
-
+class UUIDv7Factory(UUIDFactory):
     def _create(self, instant) -> UUID:
-        time = int(instant.timestamp() * 1000) if instant else int(datetime.now().timestamp() * 1000)
+        if instant is None:
+            instant = datetime.utcnow()
+        time = int(instant.timestamp() * 1000)  # milliseconds since epoch
 
-        if time == (self._msb >> 16):
-            if (self._msb & 0xFFF) < self.MAX_COUNT:
-                self._msb += 1
-        else:
-            self._msb = (time << 16) | (8 << 12)
+        rand_a = random.getrandbits(12)  # 12 bits for random part
+        rand_b = random.getrandbits(62)  # 62 bits for random part
 
-        return UUID(msb=self._msb, lsb=self._lsb)
+        # Construct the MSB (most significant bits)
+        msb = (time << 16) | (7 << 12) | rand_a  # version 7 in the 12th bit
+
+        # Construct the LSB (least significant bits)
+        lsb = rand_b | (1 << 63)  # set the variant to '1'
+        return UUID(msb=msb, lsb=lsb)
 
 
 class Factories:
     UUIDV6 = UUIDv6Factory()
-    UPROTOCOL = UUIDv8Factory()
+    UPROTOCOL = UUIDv7Factory()

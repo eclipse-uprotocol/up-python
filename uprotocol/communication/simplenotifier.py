@@ -55,7 +55,7 @@ class SimpleNotifier(Notifier):
         :return: Returns the UStatus with the status of the notification.
         """
         builder = UMessageBuilder.notification(topic, destination)
-        return self.transport.send(builder.build() if payload is None else builder.build(payload))
+        return self.transport.send(builder.build() if payload is None else builder.build_from_upayload(payload))
 
     def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """

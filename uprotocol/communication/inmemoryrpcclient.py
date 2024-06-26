@@ -44,8 +44,8 @@ class HandleResponsesListener(UListener):
         """
         if umsg.attributes.type != UMessageType.UMESSAGE_TYPE_RESPONSE:
             return
-        time.sleep(1)
-        print("received rpc request")
+        time.sleep(2)
+        print("received rpc response")
 
         response_attributes = umsg.attributes
         future = self.requests.pop(UuidSerializer.serialize(response_attributes.reqid), None)
@@ -55,7 +55,9 @@ class HandleResponsesListener(UListener):
 
         if response_attributes.commstatus:
             code = response_attributes.commstatus
-            future.set_exception(UStatusError.from_code_message(code=code, message=f"Communication error [{code}]"))
+            future.set_exception(
+                UStatusError.from_code_message(code=code, message=f"Communication error [{UCode.Name(code)}]")
+            )
             return
 
         future.set_result(umsg)
@@ -88,7 +90,7 @@ class InMemoryRpcClient(RpcClient):
         self.requests: Dict[str, asyncio.Future] = {}
         self.response_handler: UListener = HandleResponsesListener(self.requests)
 
-        status = self.transport.register_listener(UriFactory.ANY, self.response_handler, self.transport.get_source())
+        status = self.transport.register_listener(UriFactory.ANY, self.response_handler, None)
         if status.code != UCode.OK:
             raise UStatusError.from_code_message(status.code, "Failed to register listener")
 
@@ -157,6 +159,7 @@ class InMemoryRpcClient(RpcClient):
         except Exception as e:
             if not future.done():
                 future.set_exception(e)
+            raise
 
     def close(self):
         """

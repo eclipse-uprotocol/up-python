@@ -116,13 +116,11 @@ class InMemorySubscriber(Subscriber):
         if not listener:
             raise ValueError("Listener missing")
         service_descriptor = usubscription_pb2.DESCRIPTOR.services_by_name["uSubscription"]
-
         unsubscribe_uri = UriFactory.from_proto(service_descriptor, self.METHOD_UNSUBSCRIBE, None)
         unsubscribe_request = UnsubscribeRequest(topic=topic)
         future_result = asyncio.ensure_future(
             self.rpc_client.invoke_method(unsubscribe_uri, UPayload.pack(unsubscribe_request), options)
         )
-
         response_future = RpcMapper.map_response_to_result(future_result, UnsubscribeResponse)
         response = await response_future
         if response.is_success():

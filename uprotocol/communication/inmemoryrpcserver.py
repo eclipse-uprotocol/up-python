@@ -19,6 +19,7 @@ from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.factory.uri_factory import UriFactory
+from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.v1.uattributes_pb2 import (
     UMessageType,
 )
@@ -42,11 +43,12 @@ class HandleRequestListener(UListener):
         # Only handle request messages, ignore all other messages like notifications
         if request.attributes.type != UMessageType.UMESSAGE_TYPE_REQUEST:
             return
+        print('generic request received')
 
         request_attributes = request.attributes
 
         # Check if the request is for one that we have registered a handler for, if not ignore it
-        handler = self.request_handlers.pop(request_attributes.sink, None)
+        handler = self.request_handlers.get(UriSerializer().serialize(request_attributes.sink))
         if handler is None:
             return
 
@@ -58,10 +60,10 @@ class HandleRequestListener(UListener):
             code = UCode.INTERNAL
             response_payload = None
             if isinstance(e, UStatusError):
-                code = e.get_status().get_code()
-            response_builder.with_comm_status(code)
+                code = e.get_code()
+            response_builder.with_commstatus(code)
 
-        self.transport.send(response_builder.build(response_payload))
+        self.transport.send(response_builder.build_from_upayload(response_payload))
 
 
 class InMemoryRpcServer(RpcServer):
@@ -89,19 +91,10 @@ class InMemoryRpcServer(RpcServer):
         if handler is None:
             raise ValueError("Request listener missing")
 
-        # Ensure the method URI matches the transport source URI
-        if (
-            method_uri.authority_name != self.transport.get_source().authority_name
-            or method_uri.ue_id != self.transport.get_source().ue_id
-            or method_uri.ue_version_major != self.transport.get_source().ue_version_major
-        ):
-            raise UStatusError.from_code_message(
-                UCode.INVALID_ARGUMENT, "Method URI does not match the transport source URI"
-            )
-
         try:
-            if method_uri in self.request_handlers:
-                current_handler = self.request_handlers[method_uri]
+            method_uri_str = UriSerializer().serialize(method_uri)
+            if method_uri_str in self.request_handlers:
+                current_handler = self.request_handlers[method_uri_str]
                 if current_handler is not None:
                     raise UStatusError.from_code_message(UCode.ALREADY_EXISTS, "Handler already registered")
 
@@ -109,13 +102,13 @@ class InMemoryRpcServer(RpcServer):
             if result.code != UCode.OK:
                 raise UStatusError.from_code_message(result.code, result.message)
 
-            self.request_handlers[method_uri] = handler
-            return UStatus(UCode.OK)
+            self.request_handlers[method_uri_str] = handler
+            return UStatus(code=UCode.OK)
 
         except UStatusError as e:
             return UStatus(code=e.get_code(), message=e.get_message())
         except Exception as e:
-            return UStatus(UCode.INTERNAL, str(e))
+            return UStatus(code=UCode.INTERNAL, message=str(e))
 
     def unregister_request_handler(self, method_uri: UUri, handler: RequestHandler) -> UStatus:
         """
@@ -129,19 +122,10 @@ class InMemoryRpcServer(RpcServer):
             raise ValueError("Method URI missing")
         if handler is None:
             raise ValueError("Request listener missing")
+        method_uri_str = UriSerializer().serialize(method_uri)
 
-        # Ensure the method URI matches the transport source URI
-        if (
-            method_uri.authority_name != self.transport.get_source().authority_name
-            or method_uri.ue_id != self.transport.get_source().ue_id
-            or method_uri.ue_version_major != self.transport.get_source().ue_version_major
-        ):
-            raise UStatusError.from_code_message(
-                UCode.INVALID_ARGUMENT, "Method URI does not match the transport source URI"
-            )
-
-        if self.request_handlers.get(method_uri) == handler:
-            del self.request_handlers[method_uri]
+        if self.request_handlers.get(method_uri_str) == handler:
+            del self.request_handlers[method_uri_str]
             return self.transport.unregister_listener(UriFactory.ANY, self.request_handler, method_uri)
 
         return UStatus(code=UCode.NOT_FOUND)

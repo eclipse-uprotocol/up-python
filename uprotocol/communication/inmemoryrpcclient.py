@@ -45,7 +45,6 @@ class HandleResponsesListener(UListener):
         if umsg.attributes.type != UMessageType.UMESSAGE_TYPE_RESPONSE:
             return
         time.sleep(2)
-        print("received rpc response")
 
         response_attributes = umsg.attributes
         future = self.requests.pop(UuidSerializer.serialize(response_attributes.reqid), None)
@@ -106,7 +105,6 @@ class InMemoryRpcClient(RpcClient):
         :return: Returns the asyncio Future with the response payload or raises an exception
                  with the failure reason as UStatus.
         """
-        global future
         options = options or CallOptions.DEFAULT
         builder = UMessageBuilder.request(self.transport.get_source(), method_uri, options.timeout)
 
@@ -116,18 +114,15 @@ class InMemoryRpcClient(RpcClient):
 
             request = builder.build_from_upayload(request_payload)
 
-            future = asyncio.Future()
-
             def cleanup_request(request_id):
                 request_id = UuidSerializer.serialize(request_id)
                 if request_id in self.requests:
                     del self.requests[request_id]
 
-            self.requests[UuidSerializer.serialize(request.attributes.id)] = None
-
+            response_future = asyncio.Future()
             status = self.transport.send(request)
             if status.code == UCode.OK:
-                response_future = asyncio.Future()
+                self.requests[UuidSerializer.serialize(request.attributes.id)] = response_future
 
                 async def wait_for_response():
                     try:
@@ -139,26 +134,23 @@ class InMemoryRpcClient(RpcClient):
                         )
                     except asyncio.TimeoutError:
                         cleanup_request(request.attributes.id)
-                        raise TimeoutError(
+                        raise asyncio.TimeoutError(
                             f"Timeout occurred while waiting for response to request {request.attributes.id}"
                         )
-                    except Exception as e:
+                    finally:
                         cleanup_request(request.attributes.id)
-                        raise e
 
-                asyncio.create_task(wait_for_response())
+                task = asyncio.create_task(wait_for_response())
 
                 response_future.add_done_callback(lambda fut: cleanup_request(request.attributes.id))
 
-                self.requests[UuidSerializer.serialize(request.attributes.id)] = response_future
-
-                return await wait_for_response()
+                return await task
             else:
                 raise UStatusError(status)
 
         except Exception as e:
-            if not future.done():
-                future.set_exception(e)
+            if not response_future.done():
+                response_future.set_exception(e)
             raise
 
     def close(self):

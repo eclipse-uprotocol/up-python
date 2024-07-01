@@ -78,6 +78,21 @@ class TestUMessageBuilder(unittest.TestCase):
         self.assertEqual(sink, request.attributes.sink)
         self.assertEqual(ttl, request.attributes.ttl)
 
+    def test_request_with_priority(self):
+        """
+        Test Request
+        """
+        sink = build_sink()
+        ttl = 1000
+        request: UMessage = (
+            UMessageBuilder.request(build_source(), sink, ttl).with_priority(UPriority.UPRIORITY_CS5).build()
+        )
+        self.assertIsNotNone(request)
+        self.assertEqual(UMessageType.UMESSAGE_TYPE_REQUEST, request.attributes.type)
+        self.assertEqual(UPriority.UPRIORITY_CS5, request.attributes.priority)
+        self.assertEqual(sink, request.attributes.sink)
+        self.assertEqual(ttl, request.attributes.ttl)
+
     def test_response(self):
         """
         Test Response

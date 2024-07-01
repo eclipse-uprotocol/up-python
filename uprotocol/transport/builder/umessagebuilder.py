@@ -142,7 +142,7 @@ class UMessageBuilder:
                 Factories.UPROTOCOL.create(),
                 UMessageType.UMESSAGE_TYPE_RESPONSE,
             )
-            .with_priority(UPriority.UPRIORITY_CS4)
+            .with_priority(request.priority)
             .with_sink(request.source)
             .with_reqid(request.id)
         )

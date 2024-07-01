@@ -29,7 +29,8 @@ class UriSerializer:
     # The wildcard id for a field.
     WILDCARD_ID = 0xFFFF
 
-    def serialize(self, uri: Optional[UUri]) -> str:
+    @staticmethod
+    def serialize(uri: Optional[UUri]) -> str:
         """
         Support for serializing UUri objects into their String format.
         @param uri: UUri object to be serialized to the String format.
@@ -54,7 +55,8 @@ class UriSerializer:
         sb.append(hex(uri.resource_id)[2:].upper())
         return re.sub("/+$", "", "".join(sb))
 
-    def _build_local_uri(self, uri_parts, number_of_parts_in_uri):
+    @staticmethod
+    def _build_local_uri(uri_parts, number_of_parts_in_uri):
         ue_version = None
         ur_id = None
         ue_id = int(uri_parts[1], 16)
@@ -65,7 +67,8 @@ class UriSerializer:
 
         return ue_id, ue_version, ur_id
 
-    def _build_remote_uri(self, uri_parts, number_of_parts_in_uri):
+    @staticmethod
+    def _build_remote_uri(uri_parts, number_of_parts_in_uri):
         ue_id = None
         ue_version = None
         ur_id = None
@@ -79,15 +82,16 @@ class UriSerializer:
 
         return auth_name, ue_id, ue_version, ur_id
 
-    def _build_uri(self, is_local, uri_parts, number_of_parts_in_uri):
+    @staticmethod
+    def _build_uri(is_local, uri_parts, number_of_parts_in_uri):
         auth_name = None
 
         if is_local:
-            ue_id, ue_version, ur_id = self._build_local_uri(uri_parts, number_of_parts_in_uri)
+            ue_id, ue_version, ur_id = UriSerializer._build_local_uri(uri_parts, number_of_parts_in_uri)
         else:
             if uri_parts[2].strip() == "":
                 return UUri()
-            auth_name, ue_id, ue_version, ur_id = self._build_remote_uri(uri_parts, number_of_parts_in_uri)
+            auth_name, ue_id, ue_version, ur_id = UriSerializer._build_remote_uri(uri_parts, number_of_parts_in_uri)
         return UUri(
             authority_name=auth_name,
             ue_id=ue_id,
@@ -95,7 +99,8 @@ class UriSerializer:
             resource_id=ur_id,
         )
 
-    def deserialize(self, uri: Optional[str]) -> UUri:
+    @staticmethod
+    def deserialize(uri: Optional[str]) -> UUri:
         """
         Deserialize from the format to a UUri.
         @param uri:serialized UUri.
@@ -113,7 +118,7 @@ class UriSerializer:
             return UUri()
 
         try:
-            new_uri = self._build_uri(is_local, uri_parts, number_of_parts_in_uri)
+            new_uri = UriSerializer._build_uri(is_local, uri_parts, number_of_parts_in_uri)
         except ValueError:
             return UUri()
 
@@ -122,7 +127,7 @@ class UriSerializer:
             return UUri()
 
         # Ensure that the resource id is less than the wildcard
-        if new_uri.resource_id > self.WILDCARD_ID:
+        if new_uri.resource_id > UriSerializer.WILDCARD_ID:
             return UUri()
 
         return new_uri

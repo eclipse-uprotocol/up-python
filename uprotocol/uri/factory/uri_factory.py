@@ -32,6 +32,7 @@ class UriFactory:
     ) -> UUri:
         """
         Builds a URI for a protobuf generated code Service Descriptor.
+        @param service_descriptor TThe protobuf generated code Service Descriptor.
         @param resource_id The resource id.
         @param authority_name The authority name.
         @return Returns a URI for a protobuf generated code

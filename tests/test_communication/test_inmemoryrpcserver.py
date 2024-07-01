@@ -25,6 +25,7 @@ from uprotocol.communication.requesthandler import RequestHandler
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
+from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.umessage_pb2 import UMessage
@@ -36,6 +37,44 @@ class TestInMemoryRpcServer(unittest.TestCase):
     @staticmethod
     def create_method_uri():
         return UUri(authority_name="Neelam", ue_id=4, ue_version_major=1, resource_id=3)
+
+    def test_constructor_transport_none(self):
+        with self.assertRaises(ValueError) as context:
+            InMemoryRpcServer(None)
+        self.assertEqual(str(context.exception), UTransport.TRANSPORT_NULL_ERROR)
+
+    def test_constructor_transport_not_instance(self):
+        with self.assertRaises(ValueError) as context:
+            InMemoryRpcServer("Invalid Transport")
+        self.assertEqual(str(context.exception), UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
+
+    def test_register_request_handler_method_uri_none(self):
+        server = InMemoryRpcServer(MockUTransport())
+        handler = MagicMock(return_value=UPayload.EMPTY)
+
+        with self.assertRaises(ValueError) as context:
+            server.register_request_handler(None, handler)
+        self.assertEqual(str(context.exception), "Method URI missing")
+
+    def test_register_request_handler_handler_none(self):
+        server = InMemoryRpcServer(MockUTransport())
+        with self.assertRaises(ValueError) as context:
+            server.register_request_handler(self.create_method_uri(), None)
+        self.assertEqual(str(context.exception), "Request listener missing")
+
+    def test_unregister_request_handler_method_uri_none(self):
+        server = InMemoryRpcServer(MockUTransport())
+        handler = MagicMock(return_value=UPayload.EMPTY)
+
+        with self.assertRaises(ValueError) as context:
+            server.unregister_request_handler(None, handler)
+        self.assertEqual(str(context.exception), "Method URI missing")
+
+    def test_unregister_request_handler_handler_none(self):
+        server = InMemoryRpcServer(MockUTransport())
+        with self.assertRaises(ValueError) as context:
+            server.unregister_request_handler(self.create_method_uri(), None)
+        self.assertEqual(str(context.exception), "Request listener missing")
 
     def test_registering_request_listener(self):
         handler = MagicMock(return_value=UPayload.EMPTY)

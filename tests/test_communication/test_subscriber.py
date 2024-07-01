@@ -18,8 +18,8 @@ from unittest.mock import MagicMock
 
 from tests.test_communication.mock_utransport import MockUTransport
 from uprotocol.communication.calloptions import CallOptions
+from uprotocol.communication.uclient import UClient
 from uprotocol.communication.upayload import UPayload
-from uprotocol.communication.upclient import UPClient
 from uprotocol.core.usubscription.v3.usubscription_pb2 import (
     SubscriptionResponse,
     SubscriptionStatus,
@@ -46,7 +46,7 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
     async def test_subscribe(self):
         topic = UUri(ue_id=4, ue_version_major=1, resource_id=0x8000)
         transport = HappySubscribeUTransport()
-        upclient = UPClient(transport)
+        upclient = UClient(transport)
         subscription_response = await upclient.subscribe(topic, self.listener, CallOptions(timeout=5000))
         # check for successfully subscribed
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
@@ -55,7 +55,7 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
     async def test_publish_notify_subscribe_listener(self):
         topic = UUri(ue_id=5, ue_version_major=1, resource_id=0x8000)
         transport = HappySubscribeUTransport()
-        upclient = UPClient(transport)
+        upclient = UClient(transport)
         subscription_response = await upclient.subscribe(topic, self.listener, CallOptions(timeout=5000))
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
 
@@ -72,7 +72,7 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
     async def test_unsubscribe(self):
         topic = UUri(ue_id=6, ue_version_major=1, resource_id=0x8000)
         transport = HappyUnSubscribeUTransport()
-        upclient = UPClient(transport)
+        upclient = UClient(transport)
         status = await upclient.unsubscribe(topic, self.listener, None)
         # check for successfully unsubscribed
         self.assertEqual(status.code, UCode.OK)
@@ -80,7 +80,7 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
 
     async def test_subscribe_unsubscribe(self):
         transport = HappySubscribeUTransport()
-        upclient = UPClient(transport)
+        upclient = UClient(transport)
         topic = UUri(ue_id=7, ue_version_major=1, resource_id=0x8000)
         subscription_response = await upclient.subscribe(topic, self.listener, None)
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)

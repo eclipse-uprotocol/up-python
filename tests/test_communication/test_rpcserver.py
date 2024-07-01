@@ -20,15 +20,15 @@ from unittest.mock import MagicMock
 from tests.test_communication.mock_utransport import MockUTransport
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.requesthandler import RequestHandler
+from uprotocol.communication.uclient import UClient
 from uprotocol.communication.upayload import UPayload
-from uprotocol.communication.upclient import UPClient
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
 
 transport = MockUTransport()
 
-upclient = UPClient(transport)
+upclient = UClient(transport)
 
 
 class MyRequestHandler(RequestHandler):

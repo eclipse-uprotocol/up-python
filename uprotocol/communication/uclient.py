@@ -35,7 +35,7 @@ from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
 
 
-class UPClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
+class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
     def __init__(self, transport: UTransport):
         self.transport = transport
         if transport is None:

@@ -44,7 +44,7 @@ class HandleResponsesListener(UListener):
         """
         if umsg.attributes.type != UMessageType.UMESSAGE_TYPE_RESPONSE:
             return
-        time.sleep(2)
+        time.sleep(1)
 
         response_attributes = umsg.attributes
         future = self.requests.pop(UuidSerializer.serialize(response_attributes.reqid), None)

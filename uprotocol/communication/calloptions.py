@@ -35,9 +35,3 @@ class CallOptions:
 
 # Default instance
 CallOptions.DEFAULT = CallOptions()
-
-# Example usage:
-if __name__ == "__main__":
-    options = CallOptions()
-    options1 = CallOptions(timeout=5000, priority=UPriority.UPRIORITY_CS4)
-    options2 = CallOptions(token="gbb")

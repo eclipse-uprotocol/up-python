@@ -27,6 +27,21 @@ class TestCallOptions(unittest.TestCase):
         options = CallOptions()
         self.assertEqual(options, CallOptions.DEFAULT)
 
+    def test_build_call_options_with_null_timeout(self):
+        with self.assertRaises(ValueError) as context:
+            CallOptions(timeout=None)
+            self.assertEqual(str(context.exception), "timeout cannot be None")
+
+    def test_build_call_options_with_null_token(self):
+        with self.assertRaises(ValueError) as context:
+            CallOptions(token=None)
+            self.assertEqual(str(context.exception), "token cannot be None")
+
+    def test_build_call_options_with_null_priority(self):
+        with self.assertRaises(ValueError) as context:
+            CallOptions(priority=None)
+            self.assertEqual(str(context.exception), "priority cannot be None")
+
     def test_build_call_options_with_timeout(self):
         """Test building a CallOptions with a timeout"""
         options = CallOptions(timeout=1000)

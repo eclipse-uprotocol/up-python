@@ -1,22 +1,14 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
-Eclipse Foundation
+SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program and the accompanying materials are made available under the
+terms of the Apache License Version 2.0 which is available at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
@@ -24,14 +16,15 @@ import time
 from abc import abstractmethod
 from enum import Enum
 
-from uprotocol.proto.uattributes_pb2 import (
+from uprotocol.uri.validator.urivalidator import UriValidator
+from uprotocol.uuid.factory.uuidutils import UUIDUtils
+from uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UMessageType,
     UPriority,
 )
-from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.uri.validator.urivalidator import UriValidator
-from uprotocol.uuid.factory.uuidutils import UUIDUtils
+from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.uuid_pb2 import UUID
 from uprotocol.validation.validationresult import ValidationResult
 
 
@@ -130,25 +123,22 @@ class UAttributesValidator:
         """
         return ValidationResult.success()
 
-    @staticmethod
-    def validate_sink(attr: UAttributes) -> ValidationResult:
+    @abstractmethod
+    def validate_sink(self, attr: UAttributes) -> ValidationResult:
         """
-        Validate the sink UriPart for the default case. If the
-        UAttributes does not contain a sink then the
-        ValidationResult
-        is ok.<br><br>
+        Validate the sink UriPart.
         @param attr:UAttributes object containing the sink to validate.
         @return:Returns a  ValidationResult that is success or
         failed with a failure message.
         """
-        return UriValidator.validate(attr.sink) if attr.HasField("sink") else ValidationResult.success()
+        pass
 
     @staticmethod
     def validate_priority(attr: UAttributes):
         """
         Validate the priority value to ensure it is one of the known CS values
 
-        @param attributes Attributes object containing the
+        @param attr Attributes object containing the
         Priority to validate.
         @return Returns a ValidationResult that is success or
         failed with a failure message.
@@ -178,18 +168,17 @@ class UAttributesValidator:
     @staticmethod
     def validate_req_id(attr: UAttributes) -> ValidationResult:
         """
-        Validate the correlationId for the default case. If the
-        UAttributes does not contain a request id then the
-        ValidationResult is ok.<br><br>
+        Validate the correlationId for the default case. Only the response message should have a reqid.
         @param attr:Attributes object containing the request id to validate.
         @return:Returns a  ValidationResult that is
         success or failed with a failure message.
         """
 
-        if attr.HasField("reqid") and not UUIDUtils.is_uuid(attr.reqid):
-            return ValidationResult.failure("Invalid UUID")
-        else:
-            return ValidationResult.success()
+        return (
+            ValidationResult.failure("Message should not have a reqid")
+            if attr.HasField("reqid")
+            else ValidationResult.success()
+        )
 
     @staticmethod
     def validate_id(attr: UAttributes) -> ValidationResult:
@@ -239,6 +228,19 @@ class Publish(UAttributesValidator):
             else (ValidationResult.failure(f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"))
         )
 
+    def validate_sink(self, attributes_value: UAttributes) -> ValidationResult:
+        """
+        Validate the sink UriPart for Publish events. Publish should not have a sink.
+
+        @param attributes_value UAttributes object containing the sink to validate.
+        @return Returns a ValidationResult that is success or failed with a failure message.
+        """
+        return (
+            ValidationResult.failure("Sink should not be present")
+            if attributes_value.HasField("sink")
+            else ValidationResult.success()
+        )
+
     def __str__(self):
         return "UAttributesValidator.Publish"
 
@@ -275,9 +277,9 @@ class Request(UAttributesValidator):
         failed with a failure message.
         """
         return (
-            UriValidator.validate_rpc_method(attributes_value.sink)
-            if attributes_value.HasField("sink")
-            else ValidationResult.failure("Missing Sink")
+            ValidationResult.success()
+            if UriValidator.is_rpc_method(attributes_value.sink)
+            else ValidationResult.failure("Invalid Sink Uri")
         )
 
     def validate_ttl(self, attributes_value: UAttributes) -> ValidationResult:
@@ -293,6 +295,19 @@ class Request(UAttributesValidator):
             return ValidationResult.failure("Missing TTL")
 
         return ValidationResult.success()
+
+    def validate_priority(self, attributes_value: UAttributes) -> ValidationResult:
+        """
+        Validate the priority value to ensure it is one of the known CS values
+
+        @param attributes_value Attributes object containing the Priority to validate.
+        @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+        """
+        return (
+            ValidationResult.success()
+            if attributes_value.priority >= UPriority.UPRIORITY_CS4
+            else ValidationResult.failure(f"Invalid UPriority [{UPriority.Name(attributes_value.priority)}]")
+        )
 
     def __str__(self):
         return "UAttributesValidator.Request"
@@ -331,8 +346,11 @@ class Response(UAttributesValidator):
         """
         if not attributes_value.HasField("sink") or attributes_value.sink == UUri():
             return ValidationResult.failure("Missing Sink")
-        result = UriValidator.validate_rpc_response(attributes_value.sink)
-        return result
+        return (
+            ValidationResult.success()
+            if UriValidator.is_rpc_response(attributes_value.sink)
+            else ValidationResult.failure("Invalid Sink Uri")
+        )
 
     def validate_req_id(self, attributes_value: UAttributes) -> ValidationResult:
         """
@@ -343,10 +361,24 @@ class Response(UAttributesValidator):
         @return:Returns a  ValidationResult that is success or
         failed with a failure message.
         """
+        if not attributes_value.HasField("reqid") or attributes_value.reqid == UUID():
+            return ValidationResult.failure("Missing correlationId")
+        if not UUIDUtils.is_uuid(attributes_value.reqid):
+            return ValidationResult.failure("Invalid correlation UUID")
+        return ValidationResult.success()
+
+    def validate_priority(self, attributes_value: UAttributes) -> ValidationResult:
+        """
+        Validate the priority value to ensure it is one of the known CS values
+
+        @param attributes_value Attributes object containing the Priority to validate.
+        @return Returns a ValidationResult that is success or failed with a failure message.
+        """
+
         return (
             ValidationResult.success()
-            if attributes_value.reqid and UUIDUtils.is_uuid(attributes_value.reqid)
-            else ValidationResult.failure("Missing correlationId")
+            if attributes_value.priority >= UPriority.UPRIORITY_CS4
+            else ValidationResult.failure(f"Invalid UPriority [{UPriority.Name(attributes_value.priority)}]")
         )
 
     def __str__(self):
@@ -384,11 +416,13 @@ class Notification(UAttributesValidator):
         @return:Returns a  ValidationResult that is success or
         failed with a failure message.
         """
-        if attributes_value is None:
-            return ValidationResult.failure("UAttributes cannot be null.")
         if not attributes_value.HasField("sink") or attributes_value.sink == UUri():
             return ValidationResult.failure("Missing Sink")
-        return ValidationResult.success()
+        return (
+            ValidationResult.success()
+            if UriValidator.is_default_resource_id(attributes_value.sink)
+            else ValidationResult.failure("Invalid Sink Uri")
+        )
 
     def __str__(self):
         return "UAttributesValidator.Notification"

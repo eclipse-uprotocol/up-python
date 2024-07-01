@@ -9,7 +9,10 @@ exclude = [
     ".venv/",
     "__pycache__/",
     "uprotocol/cloudevent/cloudevents_pb2.py",
-    "uprotocol/proto/*"
+    "uprotocol/core/*",
+    "uprotocol/v1/*",
+    "uprotocol/uoptions_pb2.py"
+
 ]
 
 [lint]
@@ -25,6 +28,7 @@ select = [
 
 ignore = [
     "F811", # Ignore the error for multimethod function
+    "N999"  # Invalid module name: 'up-python'
 ]
 
 [lint.flake8-annotations]

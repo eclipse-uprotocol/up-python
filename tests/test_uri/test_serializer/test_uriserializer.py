@@ -1,179 +1,183 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
-Eclipse Foundation
+SPDX-FileCopyrightText: 2023 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program and the accompanying materials are made available under the
+terms of the Apache License Version 2.0 which is available at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-import socket
 import unittest
 
-from google.protobuf.descriptor import FileDescriptor, ServiceDescriptor
-from google.protobuf.descriptor_pb2 import ServiceOptions
-from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
-
-from uprotocol.proto.core.usubscription.v3.usubscription_pb2 import DESCRIPTOR as U_SUBSCRIPTION_FILE_DESCRIPTOR
-from uprotocol.proto.uprotocol_options_pb2 import UServiceTopic, notification_topic
-from uprotocol.proto.uri_pb2 import UAuthority, UEntity, UResource, UUri
-from uprotocol.uri.factory.uentityfactory import UEntityFactory
-from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
-from uprotocol.uri.serializer.microuriserializer import MicroUriSerializer
-from uprotocol.uri.serializer.shorturiserializer import ShortUriSerializer
+from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
+from uprotocol.v1.uri_pb2 import UUri
 
 
 class TestUriSerializer(unittest.TestCase):
-    def get_uresource(self, container: RepeatedCompositeFieldContainer) -> UResource:
-        if len(container) == 0:
-            resrc = UResource()
-        else:
-            first_topic: UServiceTopic = container[0]
-            id: int = first_topic.id
-            name: str = first_topic.name
-            message: str = first_topic.message
-
-            resrc = UResource()
-            if id is not None:
-                resrc.id = id
-            if name is not None:
-                resrc.name = name
-            if message is not None:
-                resrc.message = message
-        return resrc
-
-    def check_given_test_data_is_formed_correctly(self, uuri: UUri):
-        self.assertFalse(UriValidator.is_empty(uuri))
-        self.assertTrue(UriValidator.is_micro_form(uuri))
-        self.assertTrue(UriValidator.is_long_form(uuri))
-        self.assertTrue(UriValidator.is_short_form(uuri))
-
-    def test_build_resolved_full_information_compare(self):
-        file_descriptor: FileDescriptor = U_SUBSCRIPTION_FILE_DESCRIPTOR
-        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uSubscription"]
-        options: ServiceOptions = service_descriptor.GetOptions()
-        container: RepeatedCompositeFieldContainer = options.Extensions[notification_topic]
-
-        uresrc: UResource = self.get_uresource(container)
-        uentity: UEntity = UEntityFactory.from_proto(service_descriptor)
-        uuri: UUri = UUri(entity=uentity, resource=uresrc)
-
-        actual_long_uri: str = LongUriSerializer().serialize(uuri)
-        actual_short_uri: str = ShortUriSerializer().serialize(uuri)
-        actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
-
-        expected_longuri_given_no_uauthority: str = "/core.usubscription/3/SubscriptionChange#Update"
-        expected_shorturi_given_no_uauthority: str = "/0/3/32768"
-        expected_micro_uri_given_no_uauthority = bytearray(b"\x01\x00\x80\x00\x00\x00\x03\x00")
-
-        self.check_given_test_data_is_formed_correctly(uuri)
-
-        self.assertEqual(expected_longuri_given_no_uauthority, actual_long_uri)
-        self.assertEqual(expected_shorturi_given_no_uauthority, actual_short_uri)
-        self.assertEqual(expected_micro_uri_given_no_uauthority, actual_micro_uri)
-
-    def test_build_resolved_full_information_compare_with_ipv4(self):
-        file_descriptor: FileDescriptor = U_SUBSCRIPTION_FILE_DESCRIPTOR
-        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uSubscription"]
-        options: ServiceOptions = service_descriptor.GetOptions()
-        container: RepeatedCompositeFieldContainer = options.Extensions[notification_topic]
-
-        uresrc: UResource = self.get_uresource(container)
-        uentity: UEntity = UEntityFactory.from_proto(service_descriptor)
-
-        ipv4_address: str = "192.168.1.100"
-        ipv4_packed_ip: bytes = socket.inet_pton(socket.AF_INET, ipv4_address)
-
-        authority: UAuthority = UAuthority(name="vcu.veh.gm.com", ip=ipv4_packed_ip)
-        uuri: UUri = UUri(entity=uentity, resource=uresrc, authority=authority)
-
-        self.check_given_test_data_is_formed_correctly(uuri)
-
-        actual_long_uri: str = LongUriSerializer().serialize(uuri)
-        actual_short_uri: str = ShortUriSerializer().serialize(uuri)
-        actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
-
-        expected_longuri_given_ipv4_uathority: str = "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update"
-        expected_shorturi_given_ipv4_uathority: str = "//192.168.1.100/0/3/32768"
-        expected_microuri_given_ipv4_uathority = bytearray(b"\x01\x01\x80\x00\x00\x00\x03\x00\xc0\xa8\x01d")
-
-        self.assertEqual(expected_longuri_given_ipv4_uathority, actual_long_uri)
-        self.assertEqual(expected_shorturi_given_ipv4_uathority, actual_short_uri)
-        self.assertEqual(expected_microuri_given_ipv4_uathority, actual_micro_uri)
-
-    def test_build_resolved_full_information_compare_with_id(self):
-        file_descriptor: FileDescriptor = U_SUBSCRIPTION_FILE_DESCRIPTOR
-        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uSubscription"]
-        options: ServiceOptions = service_descriptor.GetOptions()
-        container: RepeatedCompositeFieldContainer = options.Extensions[notification_topic]
-
-        uresrc: UResource = self.get_uresource(container)
-        uentity: UEntity = UEntityFactory.from_proto(service_descriptor)
-
-        authority: UAuthority = UAuthority(name="1G1YZ23J9P5800001.veh.gm.com", id=b"1G1YZ23J9P5800001")
-        uuri: UUri = UUri(entity=uentity, resource=uresrc, authority=authority)
-
-        self.check_given_test_data_is_formed_correctly(uuri)
-
-        actual_long_uri: str = LongUriSerializer().serialize(uuri)
-        actual_short_uri: str = ShortUriSerializer().serialize(uuri)
-        actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
-
-        expected_longuri_given_id_uathority: str = (
-            "//1G1YZ23J9P5800001.veh.gm.com/core.usubscription/3/SubscriptionChange#Update"
+    def test_using_the_serializers(self):
+        uri = UUri(
+            authority_name="myAuthority",
+            ue_id=1,
+            ue_version_major=2,
+            resource_id=3,
         )
-        expected_shorturi_given_id_uathority: str = "//1G1YZ23J9P5800001/0/3/32768"
-        expected_microuri_given_id_uathority = bytearray(b"\x01\x03\x80\x00\x00\x00\x03\x00\x111G1YZ23J9P5800001")
+        serialized_uri = UriSerializer.serialize(uri)
+        self.assertEqual(serialized_uri, "//myAuthority/1/2/3")
 
-        self.assertEqual(expected_longuri_given_id_uathority, actual_long_uri)
-        self.assertEqual(expected_shorturi_given_id_uathority, actual_short_uri)
-        self.assertEqual(expected_microuri_given_id_uathority, actual_micro_uri)
+    def test_deserializing_a_null_uuri(self):
+        uri = UriSerializer.deserialize(None)
+        self.assertTrue(UriValidator.is_empty(uri))
 
-    def test_build_resolved_full_information_compare_with_ipv6(self):
-        file_descriptor: FileDescriptor = U_SUBSCRIPTION_FILE_DESCRIPTOR
-        service_descriptor: ServiceDescriptor = file_descriptor.services_by_name["uSubscription"]
-        options: ServiceOptions = service_descriptor.GetOptions()
-        container: RepeatedCompositeFieldContainer = options.Extensions[notification_topic]
+    def test_deserializing_a_empty_uuri(self):
+        uri = UriSerializer.deserialize("")
+        self.assertTrue(UriValidator.is_empty(uri))
 
-        uresrc: UResource = self.get_uresource(container)
-        uentity: UEntity = UEntityFactory.from_proto(service_descriptor)
+    def test_deserializing_a_blank_uuri(self):
+        uri = UriSerializer.deserialize(" ")
+        self.assertTrue(UriValidator.is_empty(uri))
 
-        # inet_pton(): Convert IP address from its family-specific string format -> a packed, binary format
-        ipv6_address: str = "2001:db8:85a3:0:0:8a2e:370:7334"
-        ipv6_packed_ip: bytes = socket.inet_pton(socket.AF_INET6, ipv6_address)
+    def test_deserializing_with_a_valid_uri_that_has_scheme(self):
+        uri = UriSerializer.deserialize("up://myAuthority/1/2/3")
+        self.assertEqual(uri.authority_name, "myAuthority")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 2)
+        self.assertEqual(uri.resource_id, 3)
 
-        authority: UAuthority = UAuthority(name="vcu.veh.gm.com", ip=ipv6_packed_ip)
-        uuri: UUri = UUri(entity=uentity, resource=uresrc, authority=authority)
+    def test_deserializing_with_a_valid_uri_that_has_only_scheme(self):
+        uri = UriSerializer.deserialize("up://")
+        self.assertTrue(UriValidator.is_empty(uri))
 
-        self.check_given_test_data_is_formed_correctly(uuri)
+    def test_deserializing_a_valid_uuri_with_all_fields(self):
+        uri = UriSerializer.deserialize("//myAuthority/1/2/3")
+        self.assertEqual(uri.authority_name, "myAuthority")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 2)
+        self.assertEqual(uri.resource_id, 3)
 
-        actual_long_uri: str = LongUriSerializer().serialize(uuri)
-        actual_short_uri: str = ShortUriSerializer().serialize(uuri)
-        actual_micro_uri: bytes = MicroUriSerializer().serialize(uuri)
+    def test_deserializing_with_only_authority(self):
+        uri = UriSerializer.deserialize("//myAuthority")
+        self.assertEqual(uri.authority_name, "myAuthority")
+        self.assertEqual(uri.ue_id, 0)
+        self.assertEqual(uri.ue_version_major, 0)
+        self.assertEqual(uri.resource_id, 0)
 
-        expected_longuri_given_ipv6_uathority: str = "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update"
-        expected_shorturi_given_ipv6_uathority: str = "//2001:db8:85a3::8a2e:370:7334/0/3/32768"
-        expected_microuri_given_ipv6_uathority = bytearray(
-            b"\x01\x02\x80\x00\x00\x00\x03\x00 \x01\r\xb8\x85\xa3\x00\x00\x00\x00\x8a.\x03ps4"
-        )
+    def test_deserializing_authority_ueid(self):
+        uri = UriSerializer.deserialize("//myAuthority/1")
+        self.assertEqual(uri.authority_name, "myAuthority")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 0)
+        self.assertEqual(uri.resource_id, 0)
 
-        self.assertEqual(expected_longuri_given_ipv6_uathority, actual_long_uri)
-        self.assertEqual(expected_shorturi_given_ipv6_uathority, actual_short_uri)
-        self.assertEqual(expected_microuri_given_ipv6_uathority, actual_micro_uri)
+    def test_deserializing_authority_ueid_ueversion(self):
+        uri = UriSerializer.deserialize("//myAuthority/1/2")
+        self.assertEqual(uri.authority_name, "myAuthority")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 2)
+        self.assertEqual(uri.resource_id, 0)
+
+    def test_deserializing_a_string_with_invalid_chars(self):
+        uri = UriSerializer.deserialize("$$")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_names_instead_of_id_for_ueid(self):
+        uri = UriSerializer.deserialize("//myAuthority/one/2/3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_names_instead_of_id_for_ueversion(self):
+        uri = UriSerializer.deserialize("//myAuthority/1/two/3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_names_instead_of_id_for_resource_id(self):
+        uri = UriSerializer.deserialize("//myAuthority/1/2/three")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_a_string_without_authority(self):
+        uri = UriSerializer.deserialize("/1/2/3")
+        self.assertEqual(uri.authority_name, "")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 2)
+        self.assertEqual(uri.resource_id, 3)
+
+    def test_deserializing_without_authority_and_resourceid(self):
+        uri = UriSerializer.deserialize("/1/2")
+        self.assertEqual(uri.authority_name, "")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 2)
+        self.assertEqual(uri.resource_id, 0)
+
+    def test_deserializing_without_authority_resourceid_version_major(self):
+        uri = UriSerializer.deserialize("/1")
+        self.assertEqual(uri.authority_name, "")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 0)
+        self.assertEqual(uri.resource_id, 0)
+
+    def test_deserializing_with_blank_authority(self):
+        uri = UriSerializer.deserialize("///2")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_all_wildcard_values(self):
+        uri = UriSerializer.deserialize("//*/FFFF/ff/ffff")
+        self.assertEqual(uri.authority_name, "*")
+        self.assertEqual(uri.ue_id, 0xFFFF)
+        self.assertEqual(uri.ue_version_major, 0xFF)
+        self.assertEqual(uri.resource_id, 0xFFFF)
+
+    def test_deserializing_with_ueid_out_of_range(self):
+        uri = UriSerializer.deserialize("/fffffffff/2/3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_ueversionmajor_out_of_range(self):
+        uri = UriSerializer.deserialize("/1/256/3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_resourceid_out_of_range(self):
+        uri = UriSerializer.deserialize("/1/2/65536")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_negative_ueid(self):
+        uri = UriSerializer.deserialize("/-1/2/3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_negative_versionmajor(self):
+        uri = UriSerializer.deserialize("/1/-2/3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_negative_resourceid(self):
+        uri = UriSerializer.deserialize("/1/2/-3")
+        self.assertTrue(UriValidator.is_empty(uri))
+
+    def test_deserializing_with_wildcard_resourceid(self):
+        uri = UriSerializer.deserialize("/1/2/ffff")
+        self.assertEqual(uri.authority_name, "")
+        self.assertEqual(uri.ue_id, 1)
+        self.assertEqual(uri.ue_version_major, 2)
+        self.assertEqual(uri.resource_id, 0xFFFF)
+
+    def test_serializing_an_empty_uri(self):
+        uri = UUri()
+        serialized_uri = UriSerializer.serialize(uri)
+        self.assertEqual(serialized_uri, "")
+
+    def test_serializing_a_none_uri(self):
+        serialized_uri = UriSerializer.serialize(None)
+        self.assertEqual(serialized_uri, "")
+
+    def test_serializing_only_authority_ueid(self):
+        uri = UUri(authority_name="myAuthority", ue_id=1)
+        serialized_uri = UriSerializer.serialize(uri)
+        self.assertEqual(serialized_uri, "//myAuthority/1/0/0")
+
+    def test_serializing_only_authority_ueid_version_major(self):
+        uri = UUri(authority_name="myAuthority", ue_id=1, ue_version_major=2)
+        serialized_uri = UriSerializer.serialize(uri)
+        self.assertEqual(serialized_uri, "//myAuthority/1/2/0")
 
 
 if __name__ == "__main__":

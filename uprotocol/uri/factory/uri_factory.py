@@ -54,7 +54,6 @@ class UriFactory:
         version_major: int = options.Extensions[service_version_major]
         id_val: int = options.Extensions[service_id]
 
-
         uuri = UUri()
         if version_major is not None:
             uuri.ue_version_major = version_major

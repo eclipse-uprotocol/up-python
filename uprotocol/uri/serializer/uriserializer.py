@@ -29,10 +29,8 @@ class UriSerializer:
     # The wildcard id for a field.
     WILDCARD_ID = 0xFFFF
 
-
     @staticmethod
     def serialize(uri: Optional[UUri]) -> str:
-
         """
         Support for serializing UUri objects into their String format.
         @param uri: UUri object to be serialized to the String format.
@@ -59,7 +57,6 @@ class UriSerializer:
 
     @staticmethod
     def _build_local_uri(uri_parts, number_of_parts_in_uri):
-
         ue_version = None
         ur_id = None
         ue_id = int(uri_parts[1], 16)
@@ -72,7 +69,6 @@ class UriSerializer:
 
     @staticmethod
     def _build_remote_uri(uri_parts, number_of_parts_in_uri):
-
         ue_id = None
         ue_version = None
         ur_id = None
@@ -106,7 +102,6 @@ class UriSerializer:
 
     @staticmethod
     def deserialize(uri: Optional[str]) -> UUri:
-
         """
         Deserialize from the format to a UUri.
         @param uri:serialized UUri.
@@ -135,7 +130,6 @@ class UriSerializer:
 
         # Ensure that the resource id is less than the wildcard
         if new_uri.resource_id > UriSerializer.WILDCARD_ID:
-
             return UUri()
 
         return new_uri

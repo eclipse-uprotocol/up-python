@@ -140,7 +140,6 @@ class UMessageBuilder:
                 UMessageType.UMESSAGE_TYPE_RESPONSE,
             )
             .with_priority(request.priority)
-
             .with_sink(request.source)
             .with_reqid(request.id)
         )

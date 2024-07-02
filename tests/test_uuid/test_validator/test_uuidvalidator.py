@@ -1,34 +1,26 @@
 """
-SPDX-FileCopyrightText: Copyright (c) 2023 Contributors to the
-Eclipse Foundation
+SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program and the accompanying materials are made available under the
+terms of the Apache License Version 2.0 which is available at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
 import unittest
 from datetime import datetime, timezone
 
-from uprotocol.proto.ustatus_pb2 import UCode
-from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
-from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
-from uprotocol.uuid.validate.uuidvalidator import UuidValidator, Validators
+from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
+from uprotocol.uuid.validator.uuidvalidator import UuidValidator, Validators
+from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.uuid_pb2 import UUID
 from uprotocol.validation.validationresult import ValidationResult
 
 
@@ -59,32 +51,32 @@ class TestUuidValidator(unittest.TestCase):
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
         self.assertEqual("Invalid UUID Time", status.message)
 
-    def test_uuidv8_with_invalid_uuids(self):
+    def test_uuidv7_with_invalid_uuids(self):
         validator = Validators.UPROTOCOL.validator()
         self.assertIsNotNone(validator)
         status = validator.validate(None)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status.message)
+        self.assertEqual("Invalid UUIDv7 Version,Invalid UUID Time", status.message)
 
-    def test_uuidv8_with_invalid_types(self):
+    def test_uuidv7_with_invalid_types(self):
         uuidv6 = Factories.UUIDV6.create()
         uuid = UUID(msb=0, lsb=0)
-        uuidv4 = LongUuidSerializer.instance().deserialize("195f9bd1-526d-4c28-91b1-ff34c8e3632d")
+        uuidv4 = UuidSerializer.deserialize("195f9bd1-526d-4c28-91b1-ff34c8e3632d")
 
         validator = Validators.UPROTOCOL.validator()
         self.assertIsNotNone(validator)
 
         status = validator.validate(uuidv6)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEqual("Invalid UUIDv8 Version", status.message)
+        self.assertEqual("Invalid UUIDv7 Version", status.message)
 
         status1 = validator.validate(uuid)
         self.assertEqual(UCode.INVALID_ARGUMENT, status1.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status1.message)
+        self.assertEqual("Invalid UUIDv7 Version,Invalid UUID Time", status1.message)
 
         status2 = validator.validate(uuidv4)
         self.assertEqual(UCode.INVALID_ARGUMENT, status2.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status2.message)
+        self.assertEqual("Invalid UUIDv7 Version,Invalid UUID Time", status2.message)
 
     def test_good_uuidv6(self):
         uuid = Factories.UUIDV6.create()
@@ -115,7 +107,7 @@ class TestUuidValidator(unittest.TestCase):
         )
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
 
-    def test_uuidv6_with_uuidv8(self):
+    def test_uuidv6_with_uuidv7(self):
         uuid = Factories.UPROTOCOL.create()
         validator = Validators.UUIDV6.validator()
         self.assertIsNotNone(validator)

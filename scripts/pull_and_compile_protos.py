@@ -22,7 +22,7 @@ from git import Repo
 
 REPO_URL = "https://github.com/eclipse-uprotocol/up-spec.git"
 PROTO_REPO_DIR = os.path.abspath("../target")
-TAG_NAME = "main"
+TAG_NAME = "1.5.8-alpha.2"
 PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/")
 
 

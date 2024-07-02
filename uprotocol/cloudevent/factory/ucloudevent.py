@@ -596,7 +596,7 @@ class UCloudEvent:
             priority = "UPRIORITY_" + priority
 
         if priority is not None:
-            attributes.priority = priority
+            attributes.priority = UPriority.Value(priority)
 
         sink = UCloudEvent.get_sink(event)
         if sink is not None:

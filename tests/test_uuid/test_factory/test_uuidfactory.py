@@ -205,7 +205,7 @@ class TestUUIDFactory(unittest.TestCase):
             uuidv6_list.append(Factories.UUIDV6.create())
 
     def test_create_uuidv7_with_the_same_time_to_confirm_the_uuids_are_not_the_same(self):
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         factory = Factories.UPROTOCOL
         uuid = factory.create(now)
         uuid1 = factory.create(now)

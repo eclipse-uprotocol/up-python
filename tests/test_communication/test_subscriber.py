@@ -50,7 +50,6 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
         subscription_response = await upclient.subscribe(topic, self.listener, CallOptions(timeout=5000))
         # check for successfully subscribed
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
-        print('passed test_subscribe', subscription_response.status.state)
 
     async def test_publish_notify_subscribe_listener(self):
         topic = UUri(ue_id=5, ue_version_major=1, resource_id=0x8000)
@@ -67,7 +66,6 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
         await asyncio.sleep(1)
         # Verify that on_receive was called
         self.listener.on_receive.assert_called_once()
-        print('passed test_publish_notify_subscribe_listener', status.code)
 
     async def test_unsubscribe(self):
         topic = UUri(ue_id=6, ue_version_major=1, resource_id=0x8000)
@@ -76,7 +74,6 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
         status = await upclient.unsubscribe(topic, self.listener, None)
         # check for successfully unsubscribed
         self.assertEqual(status.code, UCode.OK)
-        print('passed test_unsubscribe', status.code)
 
     async def test_subscribe_unsubscribe(self):
         transport = HappySubscribeUTransport()
@@ -88,7 +85,6 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
         status2 = await upclient.unsubscribe(topic, self.listener, None)
         # check for successfully unsubscribed
         self.assertEqual(status2.code, UCode.OK)
-        print('passed test_unsubscribe', status2.code)
 
 
 class HappySubscribeUTransport(MockUTransport):

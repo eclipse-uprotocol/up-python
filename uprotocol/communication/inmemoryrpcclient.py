@@ -13,7 +13,6 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import asyncio
-import time
 from typing import Dict, Optional
 
 from uprotocol.communication.calloptions import CallOptions
@@ -44,7 +43,6 @@ class HandleResponsesListener(UListener):
         """
         if umsg.attributes.type != UMessageType.UMESSAGE_TYPE_RESPONSE:
             return
-        time.sleep(1)
 
         response_attributes = umsg.attributes
         future = self.requests.pop(UuidSerializer.serialize(response_attributes.reqid), None)
@@ -93,6 +91,11 @@ class InMemoryRpcClient(RpcClient):
         if status.code != UCode.OK:
             raise UStatusError.from_code_message(status.code, "Failed to register listener")
 
+    def cleanup_request(self, request_id):
+        request_id = UuidSerializer.serialize(request_id)
+        if request_id in self.requests:
+            del self.requests[request_id]
+
     async def invoke_method(
         self, method_uri: UUri, request_payload: UPayload, options: Optional[CallOptions] = None
     ) -> UPayload:
@@ -107,51 +110,45 @@ class InMemoryRpcClient(RpcClient):
         """
         options = options or CallOptions.DEFAULT
         builder = UMessageBuilder.request(self.transport.get_source(), method_uri, options.timeout)
-
+        request = None
+        response_future = asyncio.Future()
         try:
             if options.token:
                 builder.with_token(options.token)
 
             request = builder.build_from_upayload(request_payload)
 
-            def cleanup_request(request_id):
-                request_id = UuidSerializer.serialize(request_id)
-                if request_id in self.requests:
-                    del self.requests[request_id]
+            response_future.add_done_callback(lambda fut: self.cleanup_request(request.attributes.id))
 
-            response_future = asyncio.Future()
+            if UuidSerializer.serialize(request.attributes.id) in self.requests:
+                raise UStatusError.from_code_message(code=UCode.ALREADY_EXISTS, message="Duplicated request found")
+            self.requests[UuidSerializer.serialize(request.attributes.id)] = response_future
+
+            async def wait_for_response():
+                try:
+                    response_message = await asyncio.wait_for(response_future, timeout=request.attributes.ttl / 1000)
+                    return UPayload.pack_from_data_and_format(
+                        response_message.payload, response_message.attributes.payload_format
+                    )
+                except asyncio.TimeoutError:
+                    raise UStatusError.from_code_message(code=UCode.DEADLINE_EXCEEDED, message="Request timed out")
+                except UStatusError as e:
+                    raise e
+                except Exception as e:
+                    raise UStatusError.from_code_message(code=UCode.UNKNOWN, message=str(e))
+
+            # Start the task for waiting for the response before sending the request
+            response_task = asyncio.create_task(wait_for_response())
+
             status = self.transport.send(request)
-            if status.code == UCode.OK:
-                self.requests[UuidSerializer.serialize(request.attributes.id)] = response_future
 
-                async def wait_for_response():
-                    try:
-                        response_message = await asyncio.wait_for(
-                            response_future, timeout=request.attributes.ttl / 1000
-                        )
-                        return UPayload.pack_from_data_and_format(
-                            response_message.payload, response_message.attributes.payload_format
-                        )
-                    except asyncio.TimeoutError:
-                        cleanup_request(request.attributes.id)
-                        raise asyncio.TimeoutError(
-                            f"Timeout occurred while waiting for response to request {request.attributes.id}"
-                        )
-                    finally:
-                        cleanup_request(request.attributes.id)
-
-                task = asyncio.create_task(wait_for_response())
-
-                response_future.add_done_callback(lambda fut: cleanup_request(request.attributes.id))
-
-                return await task
-            else:
+            if status.code != UCode.OK:
                 raise UStatusError(status)
+            # Wait for the response task to complete
+            return await response_task
 
         except Exception as e:
-            if not response_future.done():
-                response_future.set_exception(e)
-            raise
+            raise e
 
     def close(self):
         """

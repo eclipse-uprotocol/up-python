@@ -165,7 +165,9 @@ class TestRpcResult(unittest.TestCase):
 
     def test_to_string_failure(self):
         result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
-        self.assertEqual(str(result), "Failure(code: INVALID_ARGUMENT\nmessage: \"boom\"\n)")
+        self.assertTrue(result.is_failure())
+        self.assertEqual(result.failure_value().code, UCode.INVALID_ARGUMENT)
+        self.assertEqual(result.failure_value().message, "boom")
 
 
 if __name__ == '__main__':

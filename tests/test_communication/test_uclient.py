@@ -16,10 +16,9 @@ import asyncio
 import unittest
 from unittest.mock import MagicMock, create_autospec
 
-from tests.test_communication.mock_utransport import EchoUTransport, ErrorUTransport, MockUTransport
+from tests.test_communication.mock_utransport import EchoUTransport, ErrorUTransport, MockUTransport, TimeoutUTransport
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.requesthandler import RequestHandler
-from uprotocol.communication.rpcmapper import RpcMapper
 from uprotocol.communication.uclient import UClient
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
@@ -116,6 +115,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         response = await future_result
         self.assertIsNotNone(response)
         self.assertFalse(future_result.exception())
+        print('pass 11')
 
     async def test_invoke_method_with_null_payload(self):
         future_result = asyncio.ensure_future(
@@ -124,17 +124,16 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         response = await future_result
         self.assertIsNotNone(response)
         self.assertFalse(future_result.exception())
+        print('pass 12')
 
     async def test_invoke_method_with_timeout_transport(self):
         payload = UPayload.pack_to_any(UUri())
-        options = CallOptions(100, "UPRIORITY_CS5", "token")
-        future_result = asyncio.ensure_future(
-            UClient(MockUTransport()).invoke_method(create_method_uri(), payload, options)
-        )
-        result = await RpcMapper.map_response_to_result(future_result, UPayload)
-        assert result.is_failure()
-        assert result.failure_value().code == UCode.DEADLINE_EXCEEDED
-        assert result.failure_value().message == "Request timed out"
+        options = CallOptions(10, "UPRIORITY_CS5", "token")
+        with self.assertRaises(UStatusError) as context:
+            await UClient(TimeoutUTransport()).invoke_method(create_method_uri(), payload, options)
+        self.assertEqual(UCode.DEADLINE_EXCEEDED, context.exception.status.code)
+        self.assertEqual("Request timed out", context.exception.status.message)
+        print('pass 13')
 
     async def test_invoke_method_with_multi_invoke_transport(self):
         rpc_client = UClient(MockUTransport())
@@ -150,6 +149,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(future_result1.exception())
         self.assertFalse(future_result2.exception())
+        print('pass 14')
 
     async def test_subscribe_happy_path(self):
         topic = UUri(ue_id=4, ue_version_major=1, resource_id=0x8000)
@@ -158,6 +158,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         subscription_response = await upclient.subscribe(topic, self.listener, CallOptions(timeout=5000))
         # check for successfully subscribed
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
+        print('pass 15')
 
     async def test_unsubscribe(self):
         topic = UUri(ue_id=6, ue_version_major=1, resource_id=0x8000)
@@ -166,6 +167,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         status = await upclient.unsubscribe(topic, self.listener, None)
         # check for successfully unsubscribed
         self.assertEqual(status.code, UCode.OK)
+        print('pass 16')
 
     async def test_unregister_listener(self):
         topic = create_topic()
@@ -176,12 +178,14 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
         status = subscriber.unregister_listener(topic, my_listener)
         self.assertEqual(status.code, UCode.OK)
+        print('pass 17')
 
     def test_registering_request_listener(self):
         handler = create_autospec(RequestHandler, instance=True)
         server = UClient(MockUTransport())
         status = server.register_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.OK)
+        print('pass 18')
 
     def test_registering_twice_the_same_request_handler(self):
         handler = create_autospec(RequestHandler, instance=True)
@@ -190,12 +194,14 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(status.code, UCode.OK)
         status = server.register_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.ALREADY_EXISTS)
+        print('pass 19')
 
     def test_unregistering_non_registered_request_handler(self):
         handler = create_autospec(RequestHandler, instance=True)
         server = UClient(MockUTransport())
         status = server.unregister_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.NOT_FOUND)
+        print('pass 20')
 
     def test_request_handler_for_notification(self):
         transport = EchoUTransport()
@@ -204,6 +210,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
 
         client.register_request_handler(create_method_uri(), handler)
         self.assertEqual(client.notify(create_topic(), transport.get_source(), None), UStatus(code=UCode.OK))
+        print('pass 21')
 
 
 def create_topic():

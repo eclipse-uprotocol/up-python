@@ -48,11 +48,9 @@ class TextRpcServer(unittest.IsolatedAsyncioTestCase):
         uri = UUri(authority_name="Neelam", ue_id=2, ue_version_major=1, resource_id=1)
         self.assertEqual(upclient.register_request_handler(uri, self.handler).code, UCode.OK)
         future_result = asyncio.ensure_future(upclient.invoke_method(uri, UPayload.pack(None), CallOptions()))
-        response = await future_result
-        print('response', response)
+        await future_result
         time.sleep(0.5)
         self.handler.handle_request.assert_called_once()
-
         self.assertEqual(upclient.unregister_request_handler(uri, self.handler).code, UCode.OK)
 
     def test_register_request_handler(self):

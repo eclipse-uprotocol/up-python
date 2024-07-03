@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 from uprotocol.uuid.factory import uuid6
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
@@ -40,7 +40,7 @@ class UUIDv6Factory(UUIDFactory):
 class UUIDv7Factory(UUIDFactory):
     def _create(self, instant) -> UUID:
         if instant is None:
-            instant = datetime.utcnow()
+            instant = datetime.now(timezone.utc)
         time = int(instant.timestamp() * 1000)  # milliseconds since epoch
 
         rand_a = random.getrandbits(12)  # 12 bits for random part

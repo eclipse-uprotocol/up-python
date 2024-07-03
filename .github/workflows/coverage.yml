@@ -40,7 +40,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          poetry run coverage run --source=uprotocol -m pytest      
+          poetry run coverage run --source=uprotocol -m pytest -x -o log_cli=true   
           poetry run coverage report > coverage_report.txt
           export COVERAGE_PERCENTAGE=$(awk '/TOTAL/{print $4}' coverage_report.txt)
           echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV

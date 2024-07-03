@@ -21,7 +21,7 @@ from uprotocol.v1.uattributes_pb2 import (
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestCallOptions(unittest.TestCase):
+class TestCallOptions(unittest.IsolatedAsyncioTestCase):
     def test_build_null_call_options(self):
         """Test building a null CallOptions that is equal to the default"""
         options = CallOptions()

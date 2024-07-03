@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 from abc import ABC, abstractmethod
-from typing import Callable, TypeVar, Union
+from typing import TypeVar, Union
 
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.ustatus_pb2 import UStatus
@@ -33,22 +33,6 @@ class RpcResult(ABC):
 
     @abstractmethod
     def is_failure(self) -> bool:
-        pass
-
-    @abstractmethod
-    def get_or_else(self, default_value: Callable[[], T]) -> T:
-        pass
-
-    @abstractmethod
-    def map(self, f: Callable[[T], T]) -> "RpcResult":
-        pass
-
-    @abstractmethod
-    def flat_map(self, f: Callable[[T], "RpcResult"]) -> "RpcResult":
-        pass
-
-    @abstractmethod
-    def filter(self, f: Callable[[T], bool]) -> "RpcResult":
         pass
 
     @abstractmethod
@@ -75,10 +59,6 @@ class RpcResult(ABC):
     ) -> "RpcResult":
         return Failure(value, code, message)
 
-    @staticmethod
-    def flatten(result: "RpcResult") -> "RpcResult":
-        return result.flat_map(lambda x: x)
-
 
 class Success(RpcResult):
     def __init__(self, value: T):
@@ -89,31 +69,6 @@ class Success(RpcResult):
 
     def is_failure(self) -> bool:
         return False
-
-    def get_or_else(self, default_value: Callable[[], T]) -> T:
-        return self.success_value()
-
-    def map(self, f: Callable[[T], T]) -> RpcResult:
-        try:
-            return self.success(f(self.success_value()))
-        except Exception as e:
-            return self.failure(e)
-
-    def flat_map(self, f: Callable[[T], RpcResult]) -> RpcResult:
-        try:
-            return f(self.success_value())
-        except Exception as e:
-            return self.failure(e)
-
-    def filter(self, f: Callable[[T], bool]) -> RpcResult:
-        try:
-            return (
-                self
-                if f(self.success_value())
-                else self.failure(code=UCode.FAILED_PRECONDITION, message="filtered out")
-            )
-        except Exception as e:
-            return self.failure(e)
 
     def failure_value(self) -> UStatus:
         raise ValueError("Method failure_value() called on a Success instance")
@@ -146,20 +101,6 @@ class Failure(RpcResult):
 
     def is_failure(self) -> bool:
         return True
-
-    def get_or_else(self, default_value: Callable[[], T]) -> T:
-        if callable(default_value):
-            return default_value()
-        return default_value
-
-    def map(self, f: Callable[[T], T]) -> RpcResult:
-        return self.failure(self)
-
-    def flat_map(self, f: Callable[[T], RpcResult]) -> RpcResult:
-        return self.failure(self.failure_value())
-
-    def filter(self, f: Callable[[T], bool]) -> RpcResult:
-        return self.failure(self)
 
     def failure_value(self) -> UStatus:
         return self.value

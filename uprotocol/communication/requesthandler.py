@@ -34,6 +34,6 @@ class RequestHandler(ABC):
 
         :param message: The request message received.
         :return: The response payload.
-        :raises UStatusException: If the service encounters an error processing the request.
+        :raises UStatusError: If the service encounters an error processing the request.
         """
         pass

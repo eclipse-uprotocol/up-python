@@ -58,7 +58,7 @@ class SadUTransport(UTransport):
         return UUri()
 
 
-class UTransportTest(unittest.TestCase):
+class UTransportTest(unittest.IsolatedAsyncioTestCase):
     def test_happy_send_message_parts(self):
         transport = HappyUTransport()
         status = transport.send(UMessage())

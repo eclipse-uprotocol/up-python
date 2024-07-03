@@ -36,7 +36,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), payload, None))
         result = await RpcMapper.map_response(future_result, UUri)
         assert result == uri
-        print('pass 1')
 
     async def test_map_response_to_result_with_empty_request(self):
         rpc_client = InMemoryRpcClient(MockUTransport())
@@ -44,7 +43,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_success()
         assert result.success_value() == UUri()
-        print('pass 2')
 
     async def test_map_response_with_exception(self):
         class RpcClientWithException:
@@ -56,7 +54,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
 
         with pytest.raises(RuntimeError):
             await RpcMapper.map_response(future_result, UUri)
-        print('pass 3')
 
     async def test_map_response_with_empty_payload(self):
         class RpcClientWithEmptyPayload:
@@ -67,7 +64,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
         result = await RpcMapper.map_response(future_result, UUri)
         assert result == UUri()
-        print('pass 4')
 
     async def test_map_response_with_null_payload(self):
         class RpcClientWithNullPayload:
@@ -80,7 +76,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         with pytest.raises(Exception) as exc_info:
             await RpcMapper.map_response(future_result, UUri)
         assert str(exc_info.value) == f"Unknown payload. Expected [{UUri.__name__}]"
-        print('pass 5')
 
     async def test_map_response_to_result_with_non_empty_payload(self):
         uri = UUri(authority_name="Neelam")
@@ -95,7 +90,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_success()
         assert result.success_value() == uri
-        print('pass 6')
 
     async def test_map_response_to_result_with_null_payload(self):
         class RpcClientWithNullPayload:
@@ -106,7 +100,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_failure()
-        print('pass 7')
 
     async def test_map_response_to_result_with_empty_payload(self):
         class RpcClientWithEmptyPayload:
@@ -118,7 +111,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_success()
         assert result.success_value() == UUri()
-        print('pass 8')
 
     async def test_map_response_to_result_with_exception(self):
         class RpcClientWithException:
@@ -132,7 +124,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         assert result.is_failure()
         assert result.failure_value().code == UCode.FAILED_PRECONDITION
         assert result.failure_value().message == "Error"
-        print('pass 9')
 
     async def test_map_response_to_result_with_timeout_exception(self):
         class RpcClientWithTimeoutException:
@@ -145,7 +136,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         assert result.is_failure()
         assert result.failure_value().code == UCode.DEADLINE_EXCEEDED
         assert result.failure_value().message == "Request timed out"
-        print('pass 10')
 
     async def test_map_response_to_result_with_invalid_arguments_exception(self):
         class RpcClientWithInvalidArgumentsException:
@@ -158,7 +148,6 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         assert result.is_failure()
         assert result.failure_value().code == UCode.INVALID_ARGUMENT
         assert result.failure_value().message == ""
-        print('pass 11')
 
     def create_method_uri(self):
         return UUri(authority_name="Neelam", ue_id=10, ue_version_major=1, resource_id=3)

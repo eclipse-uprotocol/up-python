@@ -1,6 +1,5 @@
 """
 SPDX-FileCopyrightText: 2023 Contributors to the Eclipse Foundation
-SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -23,7 +22,7 @@ from git import Repo
 
 REPO_URL = "https://github.com/eclipse-uprotocol/up-spec.git"
 PROTO_REPO_DIR = os.path.abspath("../target")
-TAG_NAME = "v1.5.0-alpha.2"
+TAG_NAME = "v1.6.0-alpha.2"
 PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/")
 
 

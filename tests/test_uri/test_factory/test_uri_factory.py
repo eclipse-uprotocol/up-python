@@ -18,7 +18,7 @@ from uprotocol.core.usubscription.v3 import usubscription_pb2
 from uprotocol.uri.factory.uri_factory import UriFactory
 
 
-class TestUriFactory(unittest.TestCase):
+class TestUriFactory(unittest.IsolatedAsyncioTestCase):
     def test_from_proto(self):
         service_descriptor = usubscription_pb2.DESCRIPTOR.services_by_name["uSubscription"]
         uri = UriFactory.from_proto(service_descriptor, 0, "")

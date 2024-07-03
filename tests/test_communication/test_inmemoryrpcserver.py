@@ -33,7 +33,7 @@ from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
 
 
-class TestInMemoryRpcServer(unittest.TestCase):
+class TestInMemoryRpcServer(unittest.IsolatedAsyncioTestCase):
     @staticmethod
     def create_method_uri():
         return UUri(authority_name="Neelam", ue_id=4, ue_version_major=1, resource_id=3)

@@ -21,7 +21,7 @@ from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.v1.uuid_pb2 import UUID
 
 
-class TestUUIDFactory(unittest.TestCase):
+class TestUUIDFactory(unittest.IsolatedAsyncioTestCase):
     def test_uuidv7_creation(self):
         now = datetime.now()
         uuid = Factories.UPROTOCOL.create(now)

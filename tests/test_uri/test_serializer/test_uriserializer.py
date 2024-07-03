@@ -19,7 +19,7 @@ from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestUriSerializer(unittest.TestCase):
+class TestUriSerializer(unittest.IsolatedAsyncioTestCase):
     def test_using_the_serializers(self):
         uri = UUri(
             authority_name="myAuthority",

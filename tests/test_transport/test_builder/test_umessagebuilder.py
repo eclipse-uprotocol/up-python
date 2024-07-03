@@ -42,7 +42,7 @@ def get_uuid():
     return Factories.UPROTOCOL.create()
 
 
-class TestUMessageBuilder(unittest.TestCase):
+class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
     def test_publish(self):
         """
         Test Publish

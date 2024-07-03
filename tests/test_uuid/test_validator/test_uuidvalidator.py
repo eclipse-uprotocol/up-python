@@ -24,7 +24,7 @@ from uprotocol.v1.uuid_pb2 import UUID
 from uprotocol.validation.validationresult import ValidationResult
 
 
-class TestUuidValidator(unittest.TestCase):
+class TestUuidValidator(unittest.IsolatedAsyncioTestCase):
     def test_validator_with_good_uuid(self):
         uuid = Factories.UPROTOCOL.create()
         status = UuidValidator.get_validator(uuid).validate(uuid)

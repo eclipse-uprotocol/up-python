@@ -24,7 +24,7 @@ from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestUPayload(unittest.TestCase):
+class TestUPayload(unittest.IsolatedAsyncioTestCase):
     def test_is_empty_with_null_upayload(self):
         self.assertTrue(UPayload.is_empty(UPayload.pack(None)))
         self.assertTrue(UPayload.is_empty(UPayload.pack_to_any(None)))

@@ -18,7 +18,7 @@ from uprotocol.communication.rpcresult import RpcResult
 from uprotocol.v1.ucode_pb2 import UCode
 
 
-class TestRpcResult(unittest.IsolatedAsyncioTestCase):
+class TestRpcResult(unittest.TestCase):
     def test_is_success_on_success(self):
         result = RpcResult.success(2)
         self.assertTrue(result.is_success())

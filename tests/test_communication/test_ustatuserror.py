@@ -19,7 +19,7 @@ from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.ustatus_pb2 import UStatus
 
 
-class TestUStatusError(unittest.IsolatedAsyncioTestCase):
+class TestUStatusError(unittest.TestCase):
     def test_ustatus_exception_constructor(self):
         """Test UStatusError constructor"""
         exception = UStatusError.from_code_message(UCode.INVALID_ARGUMENT, "Invalid message type")

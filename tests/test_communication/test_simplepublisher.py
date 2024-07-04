@@ -22,7 +22,7 @@ from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):
+class TestSimplePublisher(unittest.TestCase):
     def create_topic(self):
         return UUri(authority_name="neelam", ue_id=3, ue_version_major=1, resource_id=0x8000)
 

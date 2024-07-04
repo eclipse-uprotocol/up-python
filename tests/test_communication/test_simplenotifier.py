@@ -23,7 +23,7 @@ from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
+class TestSimpleNotifier(unittest.TestCase):
     def create_topic(self):
         return UUri(authority_name="neelam", ue_id=3, ue_version_major=1, resource_id=0x8000)
 

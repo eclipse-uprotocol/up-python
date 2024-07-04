@@ -20,7 +20,7 @@ from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestPublisher(unittest.IsolatedAsyncioTestCase):
+class TestPublisher(unittest.TestCase):
     def test_send_publish(self):
         # Topic to publish
         topic = UUri(ue_id=4, ue_version_major=1, resource_id=0x8000)

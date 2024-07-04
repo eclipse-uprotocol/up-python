@@ -95,13 +95,13 @@ class UUIDv6Validator(UuidValidator):
         )
 
 
-class UUIDv8Validator(UuidValidator):
+class UUIDv7Validator(UuidValidator):
     def validate_version(self, uuid: UUID) -> ValidationResult:
         version = UUIDUtils.get_version(uuid)
         return (
             ValidationResult.success()
             if version and version == Version.VERSION_UPROTOCOL
-            else (ValidationResult.failure("Invalid UUIDv8 Version"))
+            else (ValidationResult.failure("Invalid UUIDv7 Version"))
         )
 
     def validate_variant(self, uuid: UUID) -> ValidationResult:
@@ -111,7 +111,7 @@ class UUIDv8Validator(UuidValidator):
 class Validators(Enum):
     UNKNOWN = InvalidValidator()  # Use a default validator instance
     UUIDV6 = UUIDv6Validator()  # Use a default validator instance
-    UPROTOCOL = UUIDv8Validator()  # Use a default validator instance
+    UPROTOCOL = UUIDv7Validator()  # Use a default validator instance
 
     def validator(self):
         return self.value

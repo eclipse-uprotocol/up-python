@@ -31,7 +31,7 @@ DELAY_LONG_MS = 100000
 TTL = 10000
 
 
-class TestUUIDUtils(unittest.TestCase):
+class TestUUIDUtils(unittest.IsolatedAsyncioTestCase):
     def test_get_elapsed_time(self):
         id_val: UUID = create_id()
         self.assertIsNotNone(UUIDUtils.get_elapsed_time(id_val))

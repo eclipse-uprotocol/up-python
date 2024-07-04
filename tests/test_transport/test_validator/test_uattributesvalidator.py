@@ -34,7 +34,7 @@ def build_topic_uuri():
     return UUri(ue_id=1, ue_version_major=1, resource_id=0x8000)
 
 
-class TestUAttributesValidator(unittest.TestCase):
+class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
     def test_uattributes_validator_happy_path(self):
         message = UMessageBuilder.publish(build_topic_uuri()).build()
 

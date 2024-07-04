@@ -233,6 +233,7 @@ class Publish(UAttributesValidator):
         Validate the sink UriPart for Publish events. Publish should not have a sink.
 
         @param attributes_value UAttributes object containing the sink to validate.
+
         @return Returns a ValidationResult that is success or failed with a failure message.
         """
         return (
@@ -301,6 +302,7 @@ class Request(UAttributesValidator):
         Validate the priority value to ensure it is one of the known CS values
 
         @param attributes_value Attributes object containing the Priority to validate.
+
         @return Returns a {@link ValidationResult} that is success or failed with a failure message.
         """
         return (
@@ -372,6 +374,7 @@ class Response(UAttributesValidator):
         Validate the priority value to ensure it is one of the known CS values
 
         @param attributes_value Attributes object containing the Priority to validate.
+
         @return Returns a ValidationResult that is success or failed with a failure message.
         """
 

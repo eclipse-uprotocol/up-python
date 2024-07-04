@@ -16,6 +16,7 @@ import unittest
 
 from google.protobuf.any_pb2 import Any
 
+from uprotocol.communication.upayload import UPayload
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.v1.uattributes_pb2 import (
@@ -41,7 +42,7 @@ def get_uuid():
     return Factories.UPROTOCOL.create()
 
 
-class TestUMessageBuilder(unittest.TestCase):
+class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
     def test_publish(self):
         """
         Test Publish
@@ -142,26 +143,12 @@ class TestUMessageBuilder(unittest.TestCase):
         self.assertEqual(UCode.CANCELLED, attributes.commstatus)
         self.assertEqual("myParents", attributes.traceparent)
 
-    def test_build_with_payload(self):
-        """
-        Test Build with google.protobuf.Message payload
-        """
-        message: UMessage = UMessageBuilder.publish(build_source()).build(build_sink())
-        self.assertIsNotNone(message)
-        self.assertIsNotNone(message.payload)
-        self.assertEqual(
-            UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
-            message.attributes.payload_format,
-        )
-        self.assertEqual(message.payload, build_sink().SerializeToString())
-
     def test_build_with_upayload(self):
         """
         Test building UMessage with UPayload payload
         """
-        message: UMessage = UMessageBuilder.publish(build_source()).build(
-            UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
-            build_sink().SerializeToString(),
+        message: UMessage = UMessageBuilder.publish(build_source()).build_from_upayload(
+            UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, data=build_sink().SerializeToString())
         )
         self.assertIsNotNone(message)
         self.assertIsNotNone(message.payload)
@@ -175,7 +162,9 @@ class TestUMessageBuilder(unittest.TestCase):
         """
         Test building UMessage with Any payload
         """
-        message: UMessage = UMessageBuilder.publish(build_source()).build(Any())
+        message: UMessage = UMessageBuilder.publish(build_source()).build_from_upayload(
+            UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, data=Any().SerializeToString())
+        )
         self.assertIsNotNone(message)
         self.assertIsNotNone(message.payload)
         self.assertEqual(

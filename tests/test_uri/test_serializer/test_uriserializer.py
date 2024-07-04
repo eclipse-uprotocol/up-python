@@ -19,7 +19,7 @@ from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestUriSerializer(unittest.TestCase):
+class TestUriSerializer(unittest.IsolatedAsyncioTestCase):
     def test_using_the_serializers(self):
         uri = UUri(
             authority_name="myAuthority",
@@ -44,6 +44,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_with_a_valid_uri_that_has_scheme(self):
         uri = UriSerializer.deserialize("up://myAuthority/1/2/3")
+
         self.assertEqual(uri.authority_name, "myAuthority")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 2)
@@ -55,6 +56,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_a_valid_uuri_with_all_fields(self):
         uri = UriSerializer.deserialize("//myAuthority/1/2/3")
+
         self.assertEqual(uri.authority_name, "myAuthority")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 2)
@@ -62,6 +64,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_with_only_authority(self):
         uri = UriSerializer.deserialize("//myAuthority")
+
         self.assertEqual(uri.authority_name, "myAuthority")
         self.assertEqual(uri.ue_id, 0)
         self.assertEqual(uri.ue_version_major, 0)
@@ -69,6 +72,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_authority_ueid(self):
         uri = UriSerializer.deserialize("//myAuthority/1")
+
         self.assertEqual(uri.authority_name, "myAuthority")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 0)
@@ -76,6 +80,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_authority_ueid_ueversion(self):
         uri = UriSerializer.deserialize("//myAuthority/1/2")
+
         self.assertEqual(uri.authority_name, "myAuthority")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 2)
@@ -99,6 +104,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_a_string_without_authority(self):
         uri = UriSerializer.deserialize("/1/2/3")
+
         self.assertEqual(uri.authority_name, "")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 2)
@@ -106,6 +112,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_without_authority_and_resourceid(self):
         uri = UriSerializer.deserialize("/1/2")
+
         self.assertEqual(uri.authority_name, "")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 2)
@@ -113,6 +120,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_without_authority_resourceid_version_major(self):
         uri = UriSerializer.deserialize("/1")
+
         self.assertEqual(uri.authority_name, "")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 0)
@@ -124,6 +132,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_with_all_wildcard_values(self):
         uri = UriSerializer.deserialize("//*/FFFF/ff/ffff")
+
         self.assertEqual(uri.authority_name, "*")
         self.assertEqual(uri.ue_id, 0xFFFF)
         self.assertEqual(uri.ue_version_major, 0xFF)
@@ -155,6 +164,7 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_deserializing_with_wildcard_resourceid(self):
         uri = UriSerializer.deserialize("/1/2/ffff")
+
         self.assertEqual(uri.authority_name, "")
         self.assertEqual(uri.ue_id, 1)
         self.assertEqual(uri.ue_version_major, 2)
@@ -167,16 +177,19 @@ class TestUriSerializer(unittest.TestCase):
 
     def test_serializing_a_none_uri(self):
         serialized_uri = UriSerializer.serialize(None)
+
         self.assertEqual(serialized_uri, "")
 
     def test_serializing_only_authority_ueid(self):
         uri = UUri(authority_name="myAuthority", ue_id=1)
         serialized_uri = UriSerializer.serialize(uri)
+
         self.assertEqual(serialized_uri, "//myAuthority/1/0/0")
 
     def test_serializing_only_authority_ueid_version_major(self):
         uri = UUri(authority_name="myAuthority", ue_id=1, ue_version_major=2)
         serialized_uri = UriSerializer.serialize(uri)
+
         self.assertEqual(serialized_uri, "//myAuthority/1/2/0")
 
 

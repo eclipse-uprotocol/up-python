@@ -92,6 +92,7 @@ class UriSerializer:
             if uri_parts[2].strip() == "":
                 return UUri()
             auth_name, ue_id, ue_version, ur_id = UriSerializer._build_remote_uri(uri_parts, number_of_parts_in_uri)
+
         return UUri(
             authority_name=auth_name,
             ue_id=ue_id,
@@ -119,6 +120,7 @@ class UriSerializer:
 
         try:
             new_uri = UriSerializer._build_uri(is_local, uri_parts, number_of_parts_in_uri)
+
         except ValueError:
             return UUri()
 

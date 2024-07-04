@@ -21,8 +21,8 @@ from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.v1.uuid_pb2 import UUID
 
 
-class TestUUIDFactory(unittest.TestCase):
-    def test_uuidv8_creation(self):
+class TestUUIDFactory(unittest.IsolatedAsyncioTestCase):
+    def test_uuidv7_creation(self):
         now = datetime.now()
         uuid = Factories.UPROTOCOL.create(now)
         version = UUIDUtils.get_version(uuid)
@@ -44,7 +44,7 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertNotEqual(uuid2, UUID())
         self.assertEqual(uuid, uuid2)
 
-    def test_uuidv8_creation_with_null_instant(self):
+    def test_uuidv7_creation_with_null_instant(self):
         uuid = Factories.UPROTOCOL.create(None)
         version = UUIDUtils.get_version(uuid)
         time = UUIDUtils.get_time(uuid)
@@ -62,22 +62,6 @@ class TestUUIDFactory(unittest.TestCase):
 
         self.assertNotEqual(uuid2, UUID())
         self.assertEqual(uuid, uuid2)
-
-    def test_uuidv8_overflow(self):
-        uuid_list = []
-        max_count = 4095
-
-        now = datetime.now()
-        for i in range(max_count * 2):
-            uuid_list.append(Factories.UPROTOCOL.create(now))
-
-            self.assertEqual(
-                UUIDUtils.get_time(uuid_list[0]),
-                UUIDUtils.get_time(uuid_list[i]),
-            )
-            self.assertEqual(uuid_list[0].lsb, uuid_list[i].lsb)
-            if i > max_count:
-                self.assertEqual(uuid_list[max_count].msb, uuid_list[i].msb)
 
     def test_uuidv6_creation_with_instant(self):
         now = datetime.now()
@@ -209,18 +193,24 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertTrue(time1 is not None)
         self.assertNotEqual(time, time1)
 
-    def test_create_both_uuidv6_and_v8_to_compare_performance(self):
+    def test_create_both_uuidv6_and_v7_to_compare_performance(self):
         uuidv6_list = []
-        uuidv8_list = []
+        uuidv7_list = []
         max_count = 10000
 
         for _ in range(max_count):
-            uuidv8_list.append(Factories.UPROTOCOL.create())
+            uuidv7_list.append(Factories.UPROTOCOL.create())
 
         for _ in range(max_count):
             uuidv6_list.append(Factories.UUIDV6.create())
-        # print(
-        #     f"UUIDv8: [{v8_diff.total_seconds() / max_count}s] UUIDv6: [{v6_diff.total_seconds() / max_count}s]")
+
+    def test_create_uuidv7_with_the_same_time_to_confirm_the_uuids_are_not_the_same(self):
+        now = datetime.now(timezone.utc)
+        factory = Factories.UPROTOCOL
+        uuid = factory.create(now)
+        uuid1 = factory.create(now)
+        self.assertNotEqual(uuid, uuid1)
+        self.assertEqual(UUIDUtils.get_time(uuid), UUIDUtils.get_time(uuid1))
 
 
 if __name__ == "__main__":

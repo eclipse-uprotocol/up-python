@@ -18,7 +18,7 @@ from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestUriValidator(unittest.TestCase):
+class TestUriValidator(unittest.IsolatedAsyncioTestCase):
     def test_is_empty_with_null_uri(self):
         self.assertTrue(UriValidator.is_empty(None))
 

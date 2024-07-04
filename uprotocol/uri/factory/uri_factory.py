@@ -26,6 +26,13 @@ class UriFactory:
     URI Factory that builds URIs from protos
     """
 
+    ANY = UUri(
+        authority_name="*",
+        ue_id=0xFFFF,
+        ue_version_major=0xFF,
+        resource_id=0xFFFF,
+    )
+
     @staticmethod
     def from_proto(
         service_descriptor: Optional[ServiceDescriptor], resource_id: int, authority_name: Optional[str]
@@ -36,6 +43,7 @@ class UriFactory:
         @param resource_id The resource id.
         @param authority_name The authority name.
         @return Returns a URI for a protobuf generated code
+
         Service Descriptor.
         """
         if service_descriptor is None:
@@ -53,20 +61,8 @@ class UriFactory:
             uuri.resource_id = resource_id
         if id_val is not None:
             uuri.ue_id = id_val
+
         if authority_name is not None:
             uuri.authority_name = authority_name
 
         return uuri
-
-    @staticmethod
-    def any_func() -> UUri:
-        """
-        Returns a URI with all fields set to 0.
-        @return Returns a URI with all fields set to 0.
-        """
-        return UUri(
-            authority_name="*",
-            ue_id=0xFFFF,
-            ue_version_major=0xFF,
-            resource_id=0xFFFF,
-        )

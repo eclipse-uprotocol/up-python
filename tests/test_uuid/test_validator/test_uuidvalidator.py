@@ -24,7 +24,7 @@ from uprotocol.v1.uuid_pb2 import UUID
 from uprotocol.validation.validationresult import ValidationResult
 
 
-class TestUuidValidator(unittest.TestCase):
+class TestUuidValidator(unittest.IsolatedAsyncioTestCase):
     def test_validator_with_good_uuid(self):
         uuid = Factories.UPROTOCOL.create()
         status = UuidValidator.get_validator(uuid).validate(uuid)
@@ -51,14 +51,14 @@ class TestUuidValidator(unittest.TestCase):
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
         self.assertEqual("Invalid UUID Time", status.message)
 
-    def test_uuidv8_with_invalid_uuids(self):
+    def test_uuidv7_with_invalid_uuids(self):
         validator = Validators.UPROTOCOL.validator()
         self.assertIsNotNone(validator)
         status = validator.validate(None)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status.message)
+        self.assertEqual("Invalid UUIDv7 Version,Invalid UUID Time", status.message)
 
-    def test_uuidv8_with_invalid_types(self):
+    def test_uuidv7_with_invalid_types(self):
         uuidv6 = Factories.UUIDV6.create()
         uuid = UUID(msb=0, lsb=0)
         uuidv4 = UuidSerializer.deserialize("195f9bd1-526d-4c28-91b1-ff34c8e3632d")
@@ -68,15 +68,15 @@ class TestUuidValidator(unittest.TestCase):
 
         status = validator.validate(uuidv6)
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
-        self.assertEqual("Invalid UUIDv8 Version", status.message)
+        self.assertEqual("Invalid UUIDv7 Version", status.message)
 
         status1 = validator.validate(uuid)
         self.assertEqual(UCode.INVALID_ARGUMENT, status1.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status1.message)
+        self.assertEqual("Invalid UUIDv7 Version,Invalid UUID Time", status1.message)
 
         status2 = validator.validate(uuidv4)
         self.assertEqual(UCode.INVALID_ARGUMENT, status2.code)
-        self.assertEqual("Invalid UUIDv8 Version,Invalid UUID Time", status2.message)
+        self.assertEqual("Invalid UUIDv7 Version,Invalid UUID Time", status2.message)
 
     def test_good_uuidv6(self):
         uuid = Factories.UUIDV6.create()
@@ -107,7 +107,7 @@ class TestUuidValidator(unittest.TestCase):
         )
         self.assertEqual(UCode.INVALID_ARGUMENT, status.code)
 
-    def test_uuidv6_with_uuidv8(self):
+    def test_uuidv6_with_uuidv7(self):
         uuid = Factories.UPROTOCOL.create()
         validator = Validators.UUIDV6.validator()
         self.assertIsNotNone(validator)

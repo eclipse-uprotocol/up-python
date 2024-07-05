@@ -15,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 import re
 from typing import Optional
 
+from uprotocol.uri.factory.uri_factory import UriFactory
 from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.v1.uri_pb2 import UUri
 
@@ -25,9 +26,6 @@ class UriSerializer:
     Each transport supports different
     serialization formats.
     """
-
-    # The wildcard id for a field.
-    WILDCARD_ID = 0xFFFF
 
     @staticmethod
     def serialize(uri: Optional[UUri]) -> str:
@@ -125,11 +123,11 @@ class UriSerializer:
             return UUri()
 
         # Ensure that the major version is less than the wildcard
-        if new_uri.ue_version_major > UriValidator.MAJOR_VERSION_WILDCARD:
+        if new_uri.ue_version_major > UriFactory.WILDCARD_ENTITY_VERSION:
             return UUri()
 
         # Ensure that the resource id is less than the wildcard
-        if new_uri.resource_id > UriSerializer.WILDCARD_ID:
+        if new_uri.resource_id > UriFactory.WILDCARD_ENTITY_ID:
             return UUri()
 
         return new_uri

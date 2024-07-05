@@ -26,11 +26,17 @@ class UriFactory:
     URI Factory that builds URIs from protos
     """
 
+    WILDCARD_AUTHORITY = "*"
+    WILDCARD_ENTITY_ID = 0xFFFF
+    WILDCARD_ENTITY_VERSION = 0xFF
+    WILDCARD_RESOURCE_ID = 0xFFFF
+
+    # URI that consists of wildcards only and therefore matches any URI.
     ANY = UUri(
-        authority_name="*",
-        ue_id=0xFFFF,
-        ue_version_major=0xFF,
-        resource_id=0xFFFF,
+        authority_name=WILDCARD_AUTHORITY,
+        ue_id=WILDCARD_ENTITY_ID,
+        ue_version_major=WILDCARD_ENTITY_VERSION,
+        resource_id=WILDCARD_RESOURCE_ID,
     )
 
     @staticmethod

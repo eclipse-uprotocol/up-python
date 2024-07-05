@@ -35,6 +35,7 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         rpc_client = InMemoryRpcClient(MockUTransport())
         response = await rpc_client.invoke_method(self.create_method_uri(), payload, None)
         self.assertIsNotNone(response)
+        self.assertEqual(response, payload)
 
     async def test_invoke_method_with_payload_and_call_options(self):
         payload = UPayload.pack_to_any(UUri())
@@ -42,11 +43,13 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         rpc_client = InMemoryRpcClient(MockUTransport())
         response = await rpc_client.invoke_method(self.create_method_uri(), payload, options)
         self.assertIsNotNone(response)
+        self.assertEqual(response, payload)
 
     async def test_invoke_method_with_null_payload(self):
         rpc_client = InMemoryRpcClient(MockUTransport())
         response = await rpc_client.invoke_method(self.create_method_uri(), None, CallOptions.DEFAULT)
         self.assertIsNotNone(response)
+        self.assertEqual(response, UPayload.EMPTY)
 
     async def test_invoke_method_with_timeout_transport(self):
         payload = UPayload.pack_to_any(UUri())
@@ -64,7 +67,8 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         response2 = await rpc_client.invoke_method(self.create_method_uri(), payload, None)
         self.assertIsNotNone(response1)
         self.assertIsNotNone(response2)
-        self.assertEqual(response1, response2)
+        self.assertEqual(payload, response1)
+        self.assertEqual(payload, response2)
 
     async def test_close_with_multiple_listeners(self):
         rpc_client = InMemoryRpcClient(MockUTransport())
@@ -74,7 +78,8 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
         response2 = await rpc_client.invoke_method(self.create_method_uri(), payload, None)
         self.assertIsNotNone(response1)
         self.assertIsNotNone(response2)
-        self.assertEqual(response1, response2)
+        self.assertEqual(payload, response1)
+        self.assertEqual(payload, response2)
         rpc_client.close()
 
     async def test_invoke_method_with_comm_status_transport(self):
@@ -87,7 +92,7 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
 
     async def test_invoke_method_with_error_transport(self):
         class ErrorUTransport(MockUTransport):
-            def send(self, message):
+            async def send(self, message):
                 return UStatus(code=UCode.FAILED_PRECONDITION)
 
         rpc_client = InMemoryRpcClient(ErrorUTransport())

@@ -28,7 +28,7 @@ class RpcServer(ABC):
     """
 
     @abstractmethod
-    def register_request_handler(self, method: UUri, handler: RequestHandler) -> UStatus:
+    async def register_request_handler(self, method: UUri, handler: RequestHandler) -> UStatus:
         """
         Register a handler that will be invoked when requests come in from clients for the given method.
 
@@ -41,7 +41,7 @@ class RpcServer(ABC):
         pass
 
     @abstractmethod
-    def unregister_request_handler(self, method: UUri, handler: RequestHandler) -> UStatus:
+    async def unregister_request_handler(self, method: UUri, handler: RequestHandler) -> UStatus:
         """
         Unregister a handler that will be invoked when requests come in from clients for the given method.
 

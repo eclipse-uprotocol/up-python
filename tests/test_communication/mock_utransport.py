@@ -12,6 +12,7 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
+import asyncio
 import threading
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
@@ -35,6 +36,8 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 from uprotocol.validation.validationresult import ValidationResult
 
 
+# ToDo Change the implementation of transport APIs to use the URI match pattern and save listeners
+# against the source and sink filter tuple.
 class MockUTransport(UTransport):
     def get_source(self) -> UUri:
         return self.source
@@ -53,7 +56,7 @@ class MockUTransport(UTransport):
     def close(self):
         self.listeners.clear()
 
-    def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         with self.lock:
             if sink_filter is not None:  # method uri
                 topic = UriSerializer().serialize(sink_filter)
@@ -65,7 +68,7 @@ class MockUTransport(UTransport):
             self.listeners[topic].append(listener)
             return UStatus(code=UCode.OK)
 
-    def unregister_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
+    async def unregister_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
         with self.lock:
             if sink is not None:  # method uri
                 topic = UriSerializer().serialize(sink)
@@ -82,57 +85,74 @@ class MockUTransport(UTransport):
             result = UStatus(code=code)
         return result
 
-    def send(self, message: UMessage) -> UStatus:
+    async def send(self, message: UMessage) -> UStatus:
         validator = UAttributesValidator.get_validator(message.attributes)
         with self.lock:
             if message is None or validator.validate(message.attributes) != ValidationResult.success():
                 return UStatus(code=UCode.INVALID_ARGUMENT, message="Invalid message attributes")
 
-            executor = ThreadPoolExecutor(max_workers=5)
-            executor.submit(self._notify_listeners, message)
+            # Use a ThreadPoolExecutor with max_workers=1
+            executor = ThreadPoolExecutor(max_workers=1)
+
+            try:
+                # Submit _notify_listeners to the executor
+                future = executor.submit(self._notify_listeners, message)
+
+                # Await completion of the Future
+                await asyncio.wrap_future(future)
+
+            finally:
+                # Clean up the executor
+                executor.shutdown()
 
         return UStatus(code=UCode.OK)
 
     def _notify_listeners(self, umsg):
-        if umsg.attributes.type == UMessageType.UMESSAGE_TYPE_PUBLISH:
-            for key, listeners in self.listeners.items():
-                uri = UriSerializer().deserialize(key)
-                if not (UriValidator.is_rpc_method(uri) or UriValidator.is_rpc_response(uri)):
-                    for listener in listeners:
-                        listener.on_receive(umsg)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            if umsg.attributes.type == UMessageType.UMESSAGE_TYPE_PUBLISH:
+                for key, listeners in self.listeners.items():
+                    uri = UriSerializer().deserialize(key)
+                    if not (UriValidator.is_rpc_method(uri) or UriValidator.is_rpc_response(uri)):
+                        for listener in listeners:
+                            loop.call_soon_threadsafe(listener.on_receive, umsg)
 
-        else:
-            if umsg.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
-                serialized_uri = UriSerializer().serialize(umsg.attributes.sink)
-                if serialized_uri not in self.listeners:
-                    # no listener registered for method uri, send dummy response.
-                    # This case will only come for request type
-                    # as for response type, there will always be response handler as it is in up client
-                    serialized_uri = UriSerializer().serialize(UriFactory.ANY)
-                    umsg = self.build_response(umsg)
             else:
-                # this is for response type,handle response
-                serialized_uri = UriSerializer().serialize(UriFactory.ANY)
+                if umsg.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
+                    serialized_uri = UriSerializer().serialize(umsg.attributes.sink)
+                    if serialized_uri not in self.listeners:
+                        # no listener registered for method uri, send dummy response.
+                        # This case will only come for request type
+                        # as for response type, there will always be response handler as it is in up client
+                        serialized_uri = UriSerializer().serialize(UriFactory.ANY)
+                        umsg = self.build_response(umsg)
+                else:
+                    # this is for response type,handle response
+                    serialized_uri = UriSerializer().serialize(UriFactory.ANY)
 
-            if serialized_uri in self.listeners:
-                for listener in self.listeners[serialized_uri]:
-                    listener.on_receive(umsg)
-                    break  # as there will be only one listener for method uri
+                if serialized_uri in self.listeners:
+                    for listener in self.listeners[serialized_uri]:
+                        loop.call_soon_threadsafe(listener.on_receive, umsg)
+                        break  # as there will be only one listener for method uri
+        finally:
+            loop.run_until_complete(loop.shutdown_asyncgens())
+            loop.close()
 
 
 class TimeoutUTransport(MockUTransport, ABC):
-    def send(self, message):
+    async def send(self, message):
         return UStatus(code=UCode.OK)
 
 
 class ErrorUTransport(MockUTransport, ABC):
-    def send(self, message):
+    async def send(self, message):
         return UStatus(code=UCode.FAILED_PRECONDITION)
 
-    def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         return UStatus(code=UCode.FAILED_PRECONDITION)
 
-    def unregister_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
+    async def unregister_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
         return UStatus(code=UCode.FAILED_PRECONDITION)
 
 
@@ -150,7 +170,7 @@ class EchoUTransport(MockUTransport):
     def build_response(self, request):
         return request
 
-    def send(self, message):
+    async def send(self, message):
         response = self.build_response(message)
         executor = ThreadPoolExecutor(max_workers=1)
         executor.submit(self._notify_listeners, response)

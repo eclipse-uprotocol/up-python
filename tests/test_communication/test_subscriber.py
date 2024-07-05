@@ -60,7 +60,7 @@ class TestSubscriber(unittest.IsolatedAsyncioTestCase):
 
         # Create a mock for MyListener's on_receive method
         self.listener.on_receive = MagicMock(side_effect=self.listener.on_receive)
-        status = upclient.publish(topic, None)
+        status = await upclient.publish(topic, None)
         self.assertEqual(status.code, UCode.OK)
         # Wait for a short time to ensure on_receive can be called
         await asyncio.sleep(1)

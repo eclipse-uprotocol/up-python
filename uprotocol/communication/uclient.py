@@ -52,29 +52,29 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
     async def subscribe(self, topic: UUri, listener: UListener, options: CallOptions) -> SubscriptionResponse:
         return await self.subscriber.subscribe(topic, listener, options)
 
-    def unsubscribe(self, topic: UUri, listener: UListener, options: CallOptions) -> UStatus:
-        return self.subscriber.unsubscribe(topic, listener, options)
+    async def unsubscribe(self, topic: UUri, listener: UListener, options: CallOptions) -> UStatus:
+        return await self.subscriber.unsubscribe(topic, listener, options)
 
-    def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
-        return self.subscriber.unregister_listener(topic, listener)
+    async def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
+        return await self.subscriber.unregister_listener(topic, listener)
 
-    def notify(self, topic: UUri, destination: UUri, payload: UPayload) -> UStatus:
-        return self.notifier.notify(topic, destination, payload)
+    async def notify(self, topic: UUri, destination: UUri, payload: UPayload) -> UStatus:
+        return await self.notifier.notify(topic, destination, payload)
 
-    def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
-        return self.notifier.register_notification_listener(topic, listener)
+    async def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
+        return await self.notifier.register_notification_listener(topic, listener)
 
-    def unregister_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
-        return self.notifier.unregister_notification_listener(topic, listener)
+    async def unregister_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
+        return await self.notifier.unregister_notification_listener(topic, listener)
 
-    def publish(self, topic: UUri, payload: UPayload) -> UStatus:
-        return self.publisher.publish(topic, payload)
+    async def publish(self, topic: UUri, payload: UPayload) -> UStatus:
+        return await self.publisher.publish(topic, payload)
 
-    def register_request_handler(self, method: UUri, handler):
-        return self.rpcServer.register_request_handler(method, handler)
+    async def register_request_handler(self, method: UUri, handler):
+        return await self.rpcServer.register_request_handler(method, handler)
 
-    def unregister_request_handler(self, method: UUri, handler):
-        return self.rpcServer.unregister_request_handler(method, handler)
+    async def unregister_request_handler(self, method: UUri, handler):
+        return await self.rpcServer.unregister_request_handler(method, handler)
 
     async def invoke_method(
         self, method_uri: UUri, request_payload: UPayload, options: Optional[CallOptions] = None

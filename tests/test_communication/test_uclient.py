@@ -16,7 +16,7 @@ import asyncio
 import unittest
 from unittest.mock import MagicMock, create_autospec
 
-from tests.test_communication.mock_utransport import EchoUTransport, ErrorUTransport, MockUTransport, TimeoutUTransport
+from tests.test_communication.mock_utransport import EchoUTransport, MockUTransport, TimeoutUTransport
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.requesthandler import RequestHandler
 from uprotocol.communication.uclient import UClient
@@ -50,51 +50,47 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             UClient(None)
 
-    def test_create_upclient_with_error_transport(self):
-        with self.assertRaises(UStatusError):
-            UClient(ErrorUTransport())
-
-    def test_send_notification(self):
-        status = UClient(MockUTransport()).notify(create_topic(), create_destination_uri(), None)
+    async def test_send_notification(self):
+        status = await UClient(MockUTransport()).notify(create_topic(), create_destination_uri(), None)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_send_notification_with_payload(self):
+    async def test_send_notification_with_payload(self):
         uri = UUri(authority_name="neelam")
-        status = UClient(MockUTransport()).notify(create_topic(), create_destination_uri(), UPayload.pack(uri))
+        status = await UClient(MockUTransport()).notify(create_topic(), create_destination_uri(), UPayload.pack(uri))
         self.assertEqual(status.code, UCode.OK)
 
-    def test_register_listener(self):
+    async def test_register_listener(self):
         listener = create_autospec(UListener, instance=True)
         listener.on_receive = MagicMock()
 
-        status = UClient(MockUTransport()).register_notification_listener(create_topic(), listener)
+        status = await UClient(MockUTransport()).register_notification_listener(create_topic(), listener)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_unregister_notification_listener(self):
+    async def test_unregister_notification_listener(self):
         listener = create_autospec(UListener, instance=True)
         listener.on_receive = MagicMock()
 
         notifier = UClient(MockUTransport())
-        status = notifier.register_notification_listener(create_topic(), listener)
+        status = await notifier.register_notification_listener(create_topic(), listener)
         self.assertEqual(status.code, UCode.OK)
 
-        status = notifier.unregister_notification_listener(create_topic(), listener)
+        status = await notifier.unregister_notification_listener(create_topic(), listener)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_unregister_listener_not_registered(self):
+    async def test_unregister_listener_not_registered(self):
         listener = create_autospec(UListener, instance=True)
         listener.on_receive = MagicMock()
 
-        status = UClient(MockUTransport()).unregister_notification_listener(create_topic(), listener)
+        status = await UClient(MockUTransport()).unregister_notification_listener(create_topic(), listener)
         self.assertEqual(status.code, UCode.INVALID_ARGUMENT)
 
-    def test_send_publish(self):
-        status = UClient(MockUTransport()).publish(create_topic(), None)
+    async def test_send_publish(self):
+        status = await UClient(MockUTransport()).publish(create_topic(), None)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_send_publish_with_stuffed_payload(self):
+    async def test_send_publish_with_stuffed_payload(self):
         uri = UUri(authority_name="neelam")
-        status = UClient(MockUTransport()).publish(create_topic(), UPayload.pack_to_any(uri))
+        status = await UClient(MockUTransport()).publish(create_topic(), UPayload.pack_to_any(uri))
         self.assertEqual(status.code, UCode.OK)
 
     async def test_invoke_method_with_payload(self):
@@ -170,36 +166,36 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         subscriber = UClient(HappySubscribeUTransport())
         subscription_response = await subscriber.subscribe(topic, my_listener, CallOptions.DEFAULT)
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
-        status = subscriber.unregister_listener(topic, my_listener)
+        status = await subscriber.unregister_listener(topic, my_listener)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_registering_request_listener(self):
+    async def test_registering_request_listener(self):
         handler = create_autospec(RequestHandler, instance=True)
         server = UClient(MockUTransport())
-        status = server.register_request_handler(create_method_uri(), handler)
+        status = await server.register_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_registering_twice_the_same_request_handler(self):
+    async def test_registering_twice_the_same_request_handler(self):
         handler = create_autospec(RequestHandler, instance=True)
         server = UClient(MockUTransport())
-        status = server.register_request_handler(create_method_uri(), handler)
+        status = await server.register_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.OK)
-        status = server.register_request_handler(create_method_uri(), handler)
+        status = await server.register_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.ALREADY_EXISTS)
 
-    def test_unregistering_non_registered_request_handler(self):
+    async def test_unregistering_non_registered_request_handler(self):
         handler = create_autospec(RequestHandler, instance=True)
         server = UClient(MockUTransport())
-        status = server.unregister_request_handler(create_method_uri(), handler)
+        status = await server.unregister_request_handler(create_method_uri(), handler)
         self.assertEqual(status.code, UCode.NOT_FOUND)
 
-    def test_request_handler_for_notification(self):
+    async def test_request_handler_for_notification(self):
         transport = EchoUTransport()
         client = UClient(transport)
         handler = create_autospec(RequestHandler, instance=True)
 
-        client.register_request_handler(create_method_uri(), handler)
-        self.assertEqual(client.notify(create_topic(), transport.get_source(), None), UStatus(code=UCode.OK))
+        await client.register_request_handler(create_method_uri(), handler)
+        self.assertEqual(await client.notify(create_topic(), transport.get_source(), None), UStatus(code=UCode.OK))
 
 
 def create_topic():

@@ -70,7 +70,7 @@ class TestInMemorySubscriber(unittest.IsolatedAsyncioTestCase):
         subscription_response = await subscriber.subscribe(topic, self.listener, CallOptions())
         self.assertFalse(subscription_response is None)
 
-        status = subscriber.unregister_listener(topic, self.listener)
+        status = await subscriber.unregister_listener(topic, self.listener)
         self.assertEqual(status.code, UCode.OK)
 
     async def test_unsubscribe_with_commstatus_error(self):
@@ -91,19 +91,19 @@ class TestInMemorySubscriber(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.message, "Request timed out")
         self.assertEqual(response.code, UCode.DEADLINE_EXCEEDED)
 
-    def test_unregister_listener_missing_topic(self):
+    async def test_unregister_listener_missing_topic(self):
         transport = TimeoutUTransport()
         subscriber = InMemorySubscriber(transport, InMemoryRpcClient(transport))
         with self.assertRaises(ValueError) as context:
-            subscriber.unregister_listener(None, self.listener)
+            await subscriber.unregister_listener(None, self.listener)
         self.assertEqual(str(context.exception), "Unsubscribe topic missing")
 
-    def test_unregister_listener_missing_listener(self):
+    async def test_unregister_listener_missing_listener(self):
         topic = self.create_topic()
         transport = TimeoutUTransport()
         subscriber = InMemorySubscriber(transport, InMemoryRpcClient(transport))
         with self.assertRaises(ValueError) as context:
-            subscriber.unregister_listener(topic, None)
+            await subscriber.unregister_listener(topic, None)
         self.assertEqual(str(context.exception), "Request listener missing")
 
     async def test_unsubscribe_missing_topic(self):

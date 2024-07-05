@@ -33,7 +33,7 @@ class SimplePublisher(Publisher):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
         self.transport = transport
 
-    def publish(self, topic: UUri, payload: UPayload) -> UStatus:
+    async def publish(self, topic: UUri, payload: UPayload) -> UStatus:
         """
         Publishes a message to a topic using the provided payload.
 
@@ -45,4 +45,4 @@ class SimplePublisher(Publisher):
             raise ValueError("Publish topic missing")
 
         message = UMessageBuilder.publish(topic).build_from_upayload(payload)
-        return self.transport.send(message)
+        return await self.transport.send(message)

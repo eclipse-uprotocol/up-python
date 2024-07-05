@@ -96,7 +96,7 @@ class InMemorySubscriber(Subscriber):
         response_future = RpcMapper.map_response(future_result, SubscriptionResponse)
 
         response = await response_future
-        self.transport.register_listener(topic, listener)
+        await self.transport.register_listener(topic, listener)
         return response
 
     async def unsubscribe(self, topic: UUri, listener: UListener, options: CallOptions) -> UStatus:
@@ -124,11 +124,11 @@ class InMemorySubscriber(Subscriber):
         response_future = RpcMapper.map_response_to_result(future_result, UnsubscribeResponse)
         response = await response_future
         if response.is_success():
-            self.transport.unregister_listener(topic, listener)
+            await self.transport.unregister_listener(topic, listener)
             return UStatus(code=UCode.OK)
         return response.failure_value()
 
-    def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
+    async def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
         Unregister a listener from a topic.
 
@@ -143,4 +143,4 @@ class InMemorySubscriber(Subscriber):
             raise ValueError("Unsubscribe topic missing")
         if not listener:
             raise ValueError("Request listener missing")
-        return self.transport.unregister_listener(topic, listener)
+        return await self.transport.unregister_listener(topic, listener)

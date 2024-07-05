@@ -29,7 +29,7 @@ class Notifier(ABC):
     """
 
     @abstractmethod
-    def notify(self, topic: UUri, destination: UUri, payload: UPayload) -> UStatus:
+    async def notify(self, topic: UUri, destination: UUri, payload: UPayload) -> UStatus:
         """
         Send a notification to a given topic passing a payload.
 
@@ -41,7 +41,7 @@ class Notifier(ABC):
         pass
 
     @abstractmethod
-    def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
+    async def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
         Register a listener for a notification topic.
 
@@ -52,7 +52,7 @@ class Notifier(ABC):
         pass
 
     @abstractmethod
-    def unregister_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
+    async def unregister_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
         Unregister a listener from a notification topic.
 

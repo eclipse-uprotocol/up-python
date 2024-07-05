@@ -24,14 +24,14 @@ class UTransport(ABC):
     """UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive
     messages.<br>UTransport implementations contain the details for connecting to the underlying transport technology
     and sending UMessage using the configured technology.<br>For more information please refer to
-    <a href =https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc>link</a>
+    https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc
     """
 
     TRANSPORT_NULL_ERROR = "Transport cannot be null"
     TRANSPORT_NOT_INSTANCE_ERROR = "Transport must be an instance of UTransport"
 
     @abstractmethod
-    def send(self, message: UMessage) -> UStatus:
+    async def send(self, message: UMessage) -> UStatus:
         """Send a message (in parts) over the transport.
         @param message the UMessage to be sent.
         @return Returns UStatus with UCode set to the status code (successful or failure).
@@ -39,7 +39,7 @@ class UTransport(ABC):
         pass
 
     @abstractmethod
-    def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         """Register UListener for UUri source and sink filters to be called when
         a message is received.
 
@@ -56,7 +56,7 @@ class UTransport(ABC):
         pass
 
     @abstractmethod
-    def unregister_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def unregister_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         """Unregister UListener for UUri source and sink filters. Messages
         arriving at this topic will no longer be processed by this listener.
 
@@ -73,8 +73,16 @@ class UTransport(ABC):
 
     @abstractmethod
     def get_source(self) -> UUri:
-        """Get the source URI of the transport.
+        """Get the source URI of the transport.This URI represents the uE that is using the transport.
 
         @return Returns the source URI of the transport.
+        """
+        pass
+
+    @abstractmethod
+    async def close(self) -> None:
+        """
+        Close the connection to the transport that will trigger any registered listeners
+        to be unregistered.
         """
         pass

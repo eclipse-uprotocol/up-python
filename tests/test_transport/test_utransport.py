@@ -29,14 +29,17 @@ class MyListener(UListener):
 
 
 class HappyUTransport(UTransport):
-    def send(self, message):
+    async def close(self) -> None:
+        pass
+
+    async def send(self, message):
         return UStatus(code=UCode.INVALID_ARGUMENT if message is None else UCode.OK)
 
-    def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         listener.on_receive(UMessage())
         return UStatus(code=UCode.OK)
 
-    def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):
+    async def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):
         return UStatus(code=UCode.OK)
 
     def get_source(self):
@@ -44,14 +47,17 @@ class HappyUTransport(UTransport):
 
 
 class SadUTransport(UTransport):
-    def send(self, message):
+    async def close(self) -> None:
+        pass
+
+    async def send(self, message):
         return UStatus(code=UCode.INTERNAL)
 
-    def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
         listener.on_receive(None)
         return UStatus(code=UCode.INTERNAL)
 
-    def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):
+    async def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):
         return UStatus(code=UCode.INTERNAL)
 
     def get_source(self):
@@ -59,39 +65,39 @@ class SadUTransport(UTransport):
 
 
 class UTransportTest(unittest.IsolatedAsyncioTestCase):
-    def test_happy_send_message_parts(self):
+    async def test_happy_send_message_parts(self):
         transport = HappyUTransport()
-        status = transport.send(UMessage())
+        status = await transport.send(UMessage())
         self.assertEqual(status.code, UCode.OK)
 
-    def test_happy_register_listener(self):
+    async def test_happy_register_listener(self):
         transport = HappyUTransport()
-        status = transport.register_listener(UUri(), MyListener(), None)
+        status = await transport.register_listener(UUri(), MyListener(), None)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_happy_register_unlistener(self):
+    async def test_happy_register_unlistener(self):
         transport = HappyUTransport()
-        status = transport.unregister_listener(UUri(), MyListener(), None)
+        status = await transport.unregister_listener(UUri(), MyListener(), None)
         self.assertEqual(status.code, UCode.OK)
 
-    def test_sending_null_message(self):
+    async def test_sending_null_message(self):
         transport = HappyUTransport()
-        status = transport.send(None)
+        status = await transport.send(None)
         self.assertEqual(status.code, UCode.INVALID_ARGUMENT)
 
-    def test_unhappy_send_message_parts(self):
+    async def test_unhappy_send_message_parts(self):
         transport = SadUTransport()
-        status = transport.send(UMessage())
+        status = await transport.send(UMessage())
         self.assertEqual(status.code, UCode.INTERNAL)
 
-    def test_unhappy_register_listener(self):
+    async def test_unhappy_register_listener(self):
         transport = SadUTransport()
-        status = transport.register_listener(UUri(), MyListener(), None)
+        status = await transport.register_listener(UUri(), MyListener(), None)
         self.assertEqual(status.code, UCode.INTERNAL)
 
-    def test_unhappy_register_unlistener(self):
+    async def test_unhappy_register_unlistener(self):
         transport = SadUTransport()
-        status = transport.unregister_listener(UUri(), MyListener(), None)
+        status = await transport.unregister_listener(UUri(), MyListener(), None)
         self.assertEqual(status.code, UCode.INTERNAL)
 
 

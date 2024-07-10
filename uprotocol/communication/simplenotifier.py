@@ -45,7 +45,7 @@ class SimpleNotifier(Notifier):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
         self.transport = transport
 
-    def notify(self, topic: UUri, destination: UUri, payload: Optional[UPayload] = None) -> UStatus:
+    async def notify(self, topic: UUri, destination: UUri, payload: Optional[UPayload] = None) -> UStatus:
         """
         Send a notification to a given topic.
 
@@ -55,9 +55,9 @@ class SimpleNotifier(Notifier):
         :return: Returns the UStatus with the status of the notification.
         """
         builder = UMessageBuilder.notification(topic, destination)
-        return self.transport.send(builder.build() if payload is None else builder.build_from_upayload(payload))
+        return await self.transport.send(builder.build() if payload is None else builder.build_from_upayload(payload))
 
-    def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
+    async def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
         Register a listener for a notification topic.
 
@@ -65,9 +65,9 @@ class SimpleNotifier(Notifier):
         :param listener: The listener to be called when a message is received on the topic.
         :return: Returns the UStatus with the status of the listener registration.
         """
-        return self.transport.register_listener(topic, listener, self.transport.get_source())
+        return await self.transport.register_listener(topic, listener, self.transport.get_source())
 
-    def unregister_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
+    async def unregister_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
         Unregister a listener from a notification topic.
 
@@ -75,4 +75,4 @@ class SimpleNotifier(Notifier):
         :param listener: The listener to be unregistered from the topic.
         :return: Returns the UStatus with the status of the listener that was unregistered.
         """
-        return self.transport.unregister_listener(topic, listener, self.transport.get_source())
+        return await self.transport.unregister_listener(topic, listener, self.transport.get_source())

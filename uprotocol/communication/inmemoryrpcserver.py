@@ -75,7 +75,7 @@ class InMemoryRpcServer(RpcServer):
         self.request_handlers = {}
         self.request_handler = HandleRequestListener(self.transport, self.request_handlers)
 
-    def register_request_handler(self, method_uri: UUri, handler: RequestHandler) -> UStatus:
+    async def register_request_handler(self, method_uri: UUri, handler: RequestHandler) -> UStatus:
         """
         Register a handler that will be invoked when requests come in from clients for the given method.
 
@@ -97,7 +97,7 @@ class InMemoryRpcServer(RpcServer):
                 if current_handler is not None:
                     raise UStatusError.from_code_message(UCode.ALREADY_EXISTS, "Handler already registered")
 
-            result = self.transport.register_listener(UriFactory.ANY, self.request_handler, method_uri)
+            result = await self.transport.register_listener(UriFactory.ANY, self.request_handler, method_uri)
             if result.code != UCode.OK:
                 raise UStatusError.from_code_message(result.code, result.message)
 
@@ -109,7 +109,7 @@ class InMemoryRpcServer(RpcServer):
         except Exception as e:
             return UStatus(code=UCode.INTERNAL, message=str(e))
 
-    def unregister_request_handler(self, method_uri: UUri, handler: RequestHandler) -> UStatus:
+    async def unregister_request_handler(self, method_uri: UUri, handler: RequestHandler) -> UStatus:
         """
         Unregister a handler that will be invoked when requests come in from clients for the given method.
 
@@ -125,6 +125,6 @@ class InMemoryRpcServer(RpcServer):
 
         if self.request_handlers.get(method_uri_str) == handler:
             del self.request_handlers[method_uri_str]
-            return self.transport.unregister_listener(UriFactory.ANY, self.request_handler, method_uri)
+            return await self.transport.unregister_listener(UriFactory.ANY, self.request_handler, method_uri)
 
         return UStatus(code=UCode.NOT_FOUND)

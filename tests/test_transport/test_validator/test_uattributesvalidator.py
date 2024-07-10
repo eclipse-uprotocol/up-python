@@ -323,3 +323,14 @@ class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.is_failure())
         self.assertEqual(str(validator), "UAttributesValidator.Response")
         self.assertEqual(result.message, "Invalid correlation UUID")
+
+    def test_validate_priority_is_cs0(self):
+        message = UMessageBuilder.publish(build_default_uuri()).build()
+        message.attributes.priority = UPriority.UPRIORITY_CS0
+
+        validator = UAttributesValidator.get_validator(message.attributes)
+        result = validator.validate(message.attributes)
+
+        self.assertTrue(result.is_failure())
+        self.assertEqual(str(validator), "UAttributesValidator.Publish")
+        self.assertEqual(result.get_message(), "Invalid UPriority [UPRIORITY_CS0]")

@@ -20,8 +20,8 @@ from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
 
 
-class TestPublisher(unittest.TestCase):
-    def test_send_publish(self):
+class TestPublisher(unittest.IsolatedAsyncioTestCase):
+    async def test_send_publish(self):
         # Topic to publish
         topic = UUri(ue_id=4, ue_version_major=1, resource_id=0x8000)
 
@@ -32,7 +32,7 @@ class TestPublisher(unittest.TestCase):
         publisher = UClient(transport)
 
         # Send the publish message
-        status = publisher.publish(topic, None)
+        status = await publisher.publish(topic, None)
         # Assert that the status code is OK
         self.assertEqual(status.code, UCode.OK)
 

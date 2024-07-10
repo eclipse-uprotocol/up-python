@@ -145,7 +145,7 @@ class UAttributesValidator:
         """
         return (
             ValidationResult.success()
-            if attr.priority >= UPriority.UPRIORITY_CS0
+            if attr.priority >= UPriority.UPRIORITY_CS1
             else ValidationResult.failure(f"Invalid UPriority [{UPriority.Name(attr.priority)}]")
         )
 

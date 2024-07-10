@@ -86,10 +86,7 @@ class InMemoryRpcClient(RpcClient):
         self.transport = transport
         self.requests: Dict[str, asyncio.Future] = {}
         self.response_handler: UListener = HandleResponsesListener(self.requests)
-
-        status = self.transport.register_listener(UriFactory.ANY, self.response_handler, None)
-        if status.code != UCode.OK:
-            raise UStatusError.from_code_message(status.code, "Failed to register listener")
+        self.is_listener_registered = False
 
     def cleanup_request(self, request_id):
         request_id = UuidSerializer.serialize(request_id)
@@ -101,6 +98,9 @@ class InMemoryRpcClient(RpcClient):
     ) -> UPayload:
         """
         Invoke a method (send an RPC request) and receive the response asynchronously.
+        Ensures that the listener is registered before proceeding with the method invocation.
+        If the listener is not registered, it attempts to register it and raises an exception
+        if the registration fails.
 
         :param method_uri: The method URI to be invoked.
         :param request_payload: The request message to be sent to the server.
@@ -108,6 +108,12 @@ class InMemoryRpcClient(RpcClient):
         :return: Returns the asyncio Future with the response payload or raises an exception
                  with the failure reason as UStatus.
         """
+        if not self.is_listener_registered:
+            # Ensure listener is registered before proceeding
+            status = await self.transport.register_listener(UriFactory.ANY, self.response_handler, None)
+            if status.code != UCode.OK:
+                raise UStatusError.from_code_message(status.code, "Failed to register listener for rpc client")
+            self.is_listener_registered = True
         options = options or CallOptions.DEFAULT
         builder = UMessageBuilder.request(self.transport.get_source(), method_uri, options.timeout)
         request = None
@@ -140,7 +146,7 @@ class InMemoryRpcClient(RpcClient):
             # Start the task for waiting for the response before sending the request
             response_task = asyncio.create_task(wait_for_response())
 
-            status = self.transport.send(request)
+            status = await self.transport.send(request)
 
             if status.code != UCode.OK:
                 raise UStatusError(status)
@@ -155,4 +161,6 @@ class InMemoryRpcClient(RpcClient):
         Close the InMemoryRpcClient by clearing stored requests and unregistering the listener.
         """
         self.requests.clear()
-        self.transport.unregister_listener(UriFactory.ANY, self.response_handler, self.transport.get_source())
+        asyncio.ensure_future(
+            self.transport.unregister_listener(UriFactory.ANY, self.response_handler, self.transport.get_source())
+        )

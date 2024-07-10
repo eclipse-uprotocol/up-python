@@ -33,7 +33,7 @@ from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
 
 
-class TestInMemoryRpcServer(unittest.TestCase):
+class TestInMemoryRpcServer(unittest.IsolatedAsyncioTestCase):
     @staticmethod
     def create_method_uri():
         return UUri(authority_name="Neelam", ue_id=4, ue_version_major=1, resource_id=3)
@@ -48,64 +48,64 @@ class TestInMemoryRpcServer(unittest.TestCase):
             InMemoryRpcServer("Invalid Transport")
         self.assertEqual(str(context.exception), UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
 
-    def test_register_request_handler_method_uri_none(self):
+    async def test_register_request_handler_method_uri_none(self):
         server = InMemoryRpcServer(MockUTransport())
         handler = MagicMock(return_value=UPayload.EMPTY)
 
         with self.assertRaises(ValueError) as context:
-            server.register_request_handler(None, handler)
+            await server.register_request_handler(None, handler)
         self.assertEqual(str(context.exception), "Method URI missing")
 
-    def test_register_request_handler_handler_none(self):
+    async def test_register_request_handler_handler_none(self):
         server = InMemoryRpcServer(MockUTransport())
         with self.assertRaises(ValueError) as context:
-            server.register_request_handler(self.create_method_uri(), None)
+            await server.register_request_handler(self.create_method_uri(), None)
         self.assertEqual(str(context.exception), "Request listener missing")
 
-    def test_unregister_request_handler_method_uri_none(self):
+    async def test_unregister_request_handler_method_uri_none(self):
         server = InMemoryRpcServer(MockUTransport())
         handler = MagicMock(return_value=UPayload.EMPTY)
 
         with self.assertRaises(ValueError) as context:
-            server.unregister_request_handler(None, handler)
+            await server.unregister_request_handler(None, handler)
         self.assertEqual(str(context.exception), "Method URI missing")
 
-    def test_unregister_request_handler_handler_none(self):
+    async def test_unregister_request_handler_handler_none(self):
         server = InMemoryRpcServer(MockUTransport())
         with self.assertRaises(ValueError) as context:
-            server.unregister_request_handler(self.create_method_uri(), None)
+            await server.unregister_request_handler(self.create_method_uri(), None)
         self.assertEqual(str(context.exception), "Request listener missing")
 
-    def test_registering_request_listener(self):
+    async def test_registering_request_listener(self):
         handler = MagicMock(return_value=UPayload.EMPTY)
         method = self.create_method_uri()
         server = InMemoryRpcServer(MockUTransport())
-        self.assertEqual(server.register_request_handler(method, handler).code, UCode.OK)
-        self.assertEqual(server.unregister_request_handler(method, handler).code, UCode.OK)
+        self.assertEqual((await server.register_request_handler(method, handler)).code, UCode.OK)
+        self.assertEqual((await server.unregister_request_handler(method, handler)).code, UCode.OK)
 
-    def test_registering_twice_the_same_request_handler(self):
+    async def test_registering_twice_the_same_request_handler(self):
         handler = MagicMock(return_value=UPayload.EMPTY)
         server = InMemoryRpcServer(MockUTransport())
-        status = server.register_request_handler(self.create_method_uri(), handler)
+        status = await server.register_request_handler(self.create_method_uri(), handler)
         self.assertEqual(status.code, UCode.OK)
-        status = server.register_request_handler(self.create_method_uri(), handler)
+        status = await server.register_request_handler(self.create_method_uri(), handler)
         self.assertEqual(status.code, UCode.ALREADY_EXISTS)
 
-    def test_unregistering_non_registered_request_handler(self):
+    async def test_unregistering_non_registered_request_handler(self):
         handler = MagicMock(side_effect=NotImplementedError("Unimplemented method 'handleRequest'"))
         server = InMemoryRpcServer(MockUTransport())
-        status = server.unregister_request_handler(self.create_method_uri(), handler)
+        status = await server.unregister_request_handler(self.create_method_uri(), handler)
         self.assertEqual(status.code, UCode.NOT_FOUND)
 
-    def test_registering_request_listener_with_error_transport(self):
+    async def test_registering_request_listener_with_error_transport(self):
         handler = MagicMock(return_value=UPayload.EMPTY)
         server = InMemoryRpcServer(ErrorUTransport())
-        status = server.register_request_handler(self.create_method_uri(), handler)
+        status = await server.register_request_handler(self.create_method_uri(), handler)
         self.assertEqual(status.code, UCode.FAILED_PRECONDITION)
 
-    def test_handle_requests(self):
+    async def test_handle_requests(self):
         class CustomTestUTransport(MockUTransport):
-            def send(self, message):
+            async def send(self, message):
                 serialized_uri = UriSerializer().serialize(message.attributes.sink)
                 if serialized_uri in self.listeners:
                     for listener in self.listeners[serialized_uri]:
@@ -120,18 +120,18 @@ class TestInMemoryRpcServer(unittest.TestCase):
         # Update the resource_id
         method2.resource_id = 69
 
-        self.assertEqual(server.register_request_handler(method, handler).code, UCode.OK)
+        self.assertEqual((await server.register_request_handler(method, handler)).code, UCode.OK)
 
         request = UMessageBuilder.request(transport.get_source(), method2, 1000).build()
 
         # fake sending a request message that will trigger the handler to be called but since it is
         # not for the same method as the one registered, it should be ignored and the handler not called
-        self.assertEqual(transport.send(request).code, UCode.OK)
+        self.assertEqual((await transport.send(request)).code, UCode.OK)
 
-    def test_handle_requests_exception(self):
+    async def test_handle_requests_exception(self):
         # test transport that will trigger the handleRequest()
         class CustomTestUTransport(MockUTransport):
-            def send(self, message):
+            async def send(self, message):
                 serialized_uri = UriSerializer().serialize(message.attributes.sink)
                 if serialized_uri in self.listeners:
                     for listener in self.listeners[serialized_uri]:
@@ -148,14 +148,14 @@ class TestInMemoryRpcServer(unittest.TestCase):
         server = InMemoryRpcServer(transport)
         method = self.create_method_uri()
 
-        self.assertEqual(server.register_request_handler(method, handler).code, UCode.OK)
+        self.assertEqual((await server.register_request_handler(method, handler)).code, UCode.OK)
 
         request = UMessageBuilder.request(transport.get_source(), method, 1000).build()
-        self.assertEqual(transport.send(request).code, UCode.OK)
+        self.assertEqual((await transport.send(request)).code, UCode.OK)
 
-    def test_handle_requests_unknown_exception(self):
+    async def test_handle_requests_unknown_exception(self):
         class CustomTestUTransport(MockUTransport):
-            def send(self, message):
+            async def send(self, message):
                 serialized_uri = UriSerializer().serialize(message.attributes.sink)
                 if serialized_uri in self.listeners:
                     for listener in self.listeners[serialized_uri]:
@@ -172,10 +172,10 @@ class TestInMemoryRpcServer(unittest.TestCase):
         server = InMemoryRpcServer(transport)
         method = self.create_method_uri()
 
-        self.assertEqual(server.register_request_handler(method, handler).code, UCode.OK)
+        self.assertEqual((await server.register_request_handler(method, handler)).code, UCode.OK)
 
         request = UMessageBuilder.request(transport.get_source(), method, 1000).build()
-        self.assertEqual(transport.send(request).code, UCode.OK)
+        self.assertEqual((await transport.send(request)).code, UCode.OK)
 
 
 if __name__ == '__main__':

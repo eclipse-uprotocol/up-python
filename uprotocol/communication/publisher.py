@@ -30,12 +30,12 @@ class Publisher(ABC):
     """
 
     @abstractmethod
-    def publish(self, topic: UUri, payload: UPayload) -> UStatus:
+    async def publish(self, topic: UUri, payload: UPayload) -> UStatus:
         """
         Publish a message to a topic passing UPayload as the payload.
 
         :param topic: The topic to publish to.
         :param payload: The UPayload to publish.
-        :return: UStatus
+        :return: An instance of UStatus indicating the status of the publish operation.
         """
         pass

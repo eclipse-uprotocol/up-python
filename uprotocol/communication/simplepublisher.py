@@ -50,5 +50,9 @@ class SimplePublisher(Publisher):
         if topic is None:
             raise ValueError("Publish topic missing")
 
-        message = UMessageBuilder.publish(topic).build_from_upayload(payload)
-        return await self.transport.send(message)
+        builder = UMessageBuilder.publish(topic)
+        if options:
+            builder.with_priority(options.priority)
+            builder.with_ttl(options.timeout)
+            builder.with_token(options.token)
+        return await self.transport.send(builder.build_from_upayload(payload))

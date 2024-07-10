@@ -13,7 +13,9 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
+from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.upayload import UPayload
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
@@ -30,11 +32,14 @@ class Publisher(ABC):
     """
 
     @abstractmethod
-    async def publish(self, topic: UUri, payload: UPayload) -> UStatus:
+    async def publish(
+        self, topic: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
+    ) -> UStatus:
         """
-        Publish a message to a topic passing UPayload as the payload.
+        Publish a message to a topic.
 
         :param topic: The topic to publish to.
+        :param options: Call options for the publish.
         :param payload: The UPayload to publish.
         :return: An instance of UStatus indicating the status of the publish operation.
         """

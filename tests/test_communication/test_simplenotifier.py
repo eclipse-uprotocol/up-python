@@ -32,13 +32,13 @@ class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
 
     async def test_send_notification(self):
         notifier = SimpleNotifier(MockUTransport())
-        status = await notifier.notify(self.create_topic(), self.create_destination_uri(), None)
+        status = await notifier.notify(self.create_topic(), self.create_destination_uri())
         self.assertEqual(status.code, UCode.OK)
 
     async def test_send_notification_with_payload(self):
         uri = UUri(authority_name="Neelam")
         notifier = SimpleNotifier(MockUTransport())
-        status = await notifier.notify(self.create_topic(), self.create_destination_uri(), UPayload.pack(uri))
+        status = await notifier.notify(self.create_topic(), self.create_destination_uri(), payload=UPayload.pack(uri))
         self.assertEqual(status.code, UCode.OK)
 
     async def test_register_listener(self):

@@ -108,16 +108,19 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         """
         return await self.subscriber.unregister_listener(topic, listener)
 
-    async def notify(self, topic: UUri, destination: UUri, payload: UPayload) -> UStatus:
+    async def notify(
+        self, topic: UUri, destination: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
+    ) -> UStatus:
         """
         Send a notification to a given topic.
 
         :param topic: The topic to send the notification to.
         :param destination: The destination to send the notification to.
+        :param options: Call options for the notification.
         :param payload: The payload to send with the notification.
         :return: Returns the UStatus with the status of the notification.
         """
-        return await self.notifier.notify(topic, destination, payload)
+        return await self.notifier.notify(topic, destination, options, payload)
 
     async def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:
         """
@@ -139,15 +142,18 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         """
         return await self.notifier.unregister_notification_listener(topic, listener)
 
-    async def publish(self, topic: UUri, payload: UPayload) -> UStatus:
+    async def publish(
+        self, topic: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
+    ) -> UStatus:
         """
         Publishes a message to a topic using the provided payload.
 
         :param topic: The topic to publish the message to.
+        :param options: Call options for the publish.
         :param payload: The payload to be published.
         :return: An instance of UStatus indicating the status of the publish operation.
         """
-        return await self.publisher.publish(topic, payload)
+        return await self.publisher.publish(topic, options, payload)
 
     async def register_request_handler(self, method: UUri, handler):
         """

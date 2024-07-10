@@ -51,12 +51,14 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
             UClient(None)
 
     async def test_send_notification(self):
-        status = await UClient(MockUTransport()).notify(create_topic(), create_destination_uri(), None)
+        status = await UClient(MockUTransport()).notify(create_topic(), create_destination_uri())
         self.assertEqual(status.code, UCode.OK)
 
     async def test_send_notification_with_payload(self):
         uri = UUri(authority_name="neelam")
-        status = await UClient(MockUTransport()).notify(create_topic(), create_destination_uri(), UPayload.pack(uri))
+        status = await UClient(MockUTransport()).notify(
+            create_topic(), create_destination_uri(), payload=UPayload.pack(uri)
+        )
         self.assertEqual(status.code, UCode.OK)
 
     async def test_register_listener(self):
@@ -85,19 +87,24 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(status.code, UCode.INVALID_ARGUMENT)
 
     async def test_send_publish(self):
-        status = await UClient(MockUTransport()).publish(create_topic(), None)
+        status = await UClient(MockUTransport()).publish(create_topic())
         self.assertEqual(status.code, UCode.OK)
 
     async def test_send_publish_with_stuffed_payload(self):
         uri = UUri(authority_name="neelam")
-        status = await UClient(MockUTransport()).publish(create_topic(), UPayload.pack_to_any(uri))
+        status = await UClient(MockUTransport()).publish(create_topic(), payload=UPayload.pack_to_any(uri))
+        self.assertEqual(status.code, UCode.OK)
+
+    async def test_send_publish_with_stuffed_payload_and_calloptions(self):
+        uri = UUri(authority_name="neelam")
+        status = await UClient(MockUTransport()).publish(
+            create_topic(), CallOptions(token="134"), payload=UPayload.pack_to_any(uri)
+        )
         self.assertEqual(status.code, UCode.OK)
 
     async def test_invoke_method_with_payload(self):
         payload = UPayload.pack_to_any(UUri())
-        future_result = asyncio.ensure_future(
-            UClient(MockUTransport()).invoke_method(create_method_uri(), payload, None)
-        )
+        future_result = asyncio.ensure_future(UClient(MockUTransport()).invoke_method(create_method_uri(), payload))
         response = await future_result
         self.assertIsNotNone(response)
         self.assertFalse(future_result.exception())
@@ -132,10 +139,10 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         rpc_client = UClient(MockUTransport())
         payload = UPayload.pack_to_any(UUri())
 
-        future_result1 = asyncio.ensure_future(rpc_client.invoke_method(create_method_uri(), payload, None))
+        future_result1 = asyncio.ensure_future(rpc_client.invoke_method(create_method_uri(), payload))
         response = await future_result1
         self.assertIsNotNone(response)
-        future_result2 = asyncio.ensure_future(rpc_client.invoke_method(create_method_uri(), payload, None))
+        future_result2 = asyncio.ensure_future(rpc_client.invoke_method(create_method_uri(), payload))
         response2 = await future_result2
 
         self.assertIsNotNone(response2)
@@ -195,7 +202,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         handler = create_autospec(RequestHandler, instance=True)
 
         await client.register_request_handler(create_method_uri(), handler)
-        self.assertEqual(await client.notify(create_topic(), transport.get_source(), None), UStatus(code=UCode.OK))
+        self.assertEqual(await client.notify(create_topic(), transport.get_source()), UStatus(code=UCode.OK))
 
 
 def create_topic():

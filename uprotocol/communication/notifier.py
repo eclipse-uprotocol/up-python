@@ -13,7 +13,9 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
+from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.upayload import UPayload
 from uprotocol.transport.ulistener import UListener
 from uprotocol.v1.uri_pb2 import UUri
@@ -29,12 +31,15 @@ class Notifier(ABC):
     """
 
     @abstractmethod
-    async def notify(self, topic: UUri, destination: UUri, payload: UPayload) -> UStatus:
+    async def notify(
+        self, topic: UUri, destination: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
+    ) -> UStatus:
         """
-        Send a notification to a given topic passing a payload.
+        Send a notification to a given topic.
 
         :param topic: The topic to send the notification to.
         :param destination: The destination to send the notification to.
+        :param options: Call options for the notification.
         :param payload: The payload to send with the notification.
         :return: Returns the UStatus with the status of the notification.
         """

@@ -28,13 +28,13 @@ class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):
 
     async def test_send_publish(self):
         publisher = SimplePublisher(MockUTransport())
-        status = await publisher.publish(self.create_topic(), None)
+        status = await publisher.publish(self.create_topic())
         self.assertEqual(status.code, UCode.OK)
 
     async def test_send_publish_with_stuffed_payload(self):
         uri = UUri(authority_name="Neelam")
         publisher = SimplePublisher(MockUTransport())
-        status = await publisher.publish(self.create_topic(), UPayload.pack_to_any(uri))
+        status = await publisher.publish(self.create_topic(), payload=UPayload.pack_to_any(uri))
         self.assertEqual(status.code, UCode.OK)
 
     def test_constructor_transport_none(self):
@@ -52,7 +52,7 @@ class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):
         uri = UUri(authority_name="Neelam")
 
         with self.assertRaises(ValueError) as context:
-            await publisher.publish(None, UPayload.pack_to_any(uri))
+            await publisher.publish(None, payload=UPayload.pack_to_any(uri))
         self.assertEqual(str(context.exception), "Publish topic missing")
 
 

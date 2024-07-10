@@ -14,6 +14,7 @@ SPDX-License-Identifier: Apache-2.0
 
 from typing import Optional
 
+from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.notifier import Notifier
 from uprotocol.communication.upayload import UPayload
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
@@ -45,16 +46,23 @@ class SimpleNotifier(Notifier):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
         self.transport = transport
 
-    async def notify(self, topic: UUri, destination: UUri, payload: Optional[UPayload] = None) -> UStatus:
+    async def notify(
+        self, topic: UUri, destination: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
+    ) -> UStatus:
         """
         Send a notification to a given topic.
 
         :param topic: The topic to send the notification to.
         :param destination: The destination to send the notification to.
+        :param options: Call options for the notification.
         :param payload: The payload to send with the notification.
         :return: Returns the UStatus with the status of the notification.
         """
         builder = UMessageBuilder.notification(topic, destination)
+        if options:
+            builder.with_priority(options.priority)
+            builder.with_ttl(options.timeout)
+            builder.with_token(options.token)
         return await self.transport.send(builder.build() if payload is None else builder.build_from_upayload(payload))
 
     async def register_notification_listener(self, topic: UUri, listener: UListener) -> UStatus:

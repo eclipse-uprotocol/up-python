@@ -12,6 +12,9 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
+from typing import Optional
+
+from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.publisher import Publisher
 from uprotocol.communication.upayload import UPayload
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
@@ -33,16 +36,23 @@ class SimplePublisher(Publisher):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
         self.transport = transport
 
-    async def publish(self, topic: UUri, payload: UPayload) -> UStatus:
+    async def publish(
+        self, topic: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
+    ) -> UStatus:
         """
         Publishes a message to a topic using the provided payload.
 
         :param topic: The topic to publish the message to.
+        :param options: Call options for the publish.
         :param payload: The payload to be published.
         :return: An instance of UStatus indicating the status of the publish operation.
         """
         if topic is None:
             raise ValueError("Publish topic missing")
 
-        message = UMessageBuilder.publish(topic).build_from_upayload(payload)
-        return await self.transport.send(message)
+        builder = UMessageBuilder.publish(topic)
+        if options:
+            builder.with_priority(options.priority)
+            builder.with_ttl(options.timeout)
+            builder.with_token(options.token)
+        return await self.transport.send(builder.build_from_upayload(payload))

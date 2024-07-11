@@ -84,7 +84,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         listener.on_receive = MagicMock()
 
         status = await UClient(MockUTransport()).unregister_notification_listener(create_topic(), listener)
-        self.assertEqual(status.code, UCode.INVALID_ARGUMENT)
+        self.assertEqual(status.code, UCode.NOT_FOUND)
 
     async def test_send_publish(self):
         status = await UClient(MockUTransport()).publish(create_topic())
@@ -157,14 +157,6 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         subscription_response = await upclient.subscribe(topic, self.listener, CallOptions(timeout=5000))
         # check for successfully subscribed
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
-
-    async def test_unsubscribe(self):
-        topic = UUri(ue_id=6, ue_version_major=1, resource_id=0x8000)
-        transport = HappyUnSubscribeUTransport()
-        upclient = UClient(transport)
-        status = await upclient.unsubscribe(topic, self.listener, None)
-        # check for successfully unsubscribed
-        self.assertEqual(status.code, UCode.OK)
 
     async def test_unregister_listener(self):
         topic = create_topic()

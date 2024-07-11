@@ -72,7 +72,7 @@ class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
         listener = TestListener()
         notifier = SimpleNotifier(MockUTransport())
         status = await notifier.unregister_notification_listener(self.create_topic(), listener)
-        self.assertEqual(status.code, UCode.INVALID_ARGUMENT)
+        self.assertEqual(status.code, UCode.NOT_FOUND)
 
 
 if __name__ == '__main__':

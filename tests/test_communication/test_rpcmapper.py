@@ -128,10 +128,10 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
     async def test_map_response_to_result_with_timeout_exception(self):
         class RpcClientWithTimeoutException:
             async def invoke_method(self, uri, payload, options):
-                raise asyncio.TimeoutError()
+                raise UStatusError.from_code_message(code=UCode.DEADLINE_EXCEEDED, message="Request timed out")
 
         rpc_client = RpcClientWithTimeoutException()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_failure()
         assert result.failure_value().code == UCode.DEADLINE_EXCEEDED

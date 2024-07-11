@@ -5,10 +5,10 @@
 
 This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Python defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
-The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet (ex. UPayload) This library fits into the big picture of the uProtocol SDK as seen in <<uprotocol-sdk>> below.
+The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet (ex. UPayload) This library fits into the big picture of the uProtocol SDK as seen in the diagram below.
 
 .uProtocol SDK
-image:https://raw.githubusercontent.com/eclipse-uprotocol/uprotocol-spec/main/uprotocol_sdk.drawio.svg[#uprotocol-sdk,width=100%,align="center"]
+image:https://raw.githubusercontent.com/eclipse-uprotocol/up-spec/main/up_libraries.drawio.svg[#uprotocol-sdk,width=100%,align="center"]
 
 
 == Getting Started
@@ -21,7 +21,9 @@ Before proceeding with the setup of this project, ensure that the following prer
 ----
 mvn -version
 ----
-If Maven is properly installed, you should see information about the Maven version and configuration.
+If Maven is properly installed, you should see information about the Maven version and configuration. +
+
+NOTE: Ensure you are using Java 17 with your Maven installation before continuing with the next steps. Other versions of Java may not be supported.
 
 === Importing the Library
 
@@ -31,7 +33,7 @@ To set up SDK, follow the steps below:
 +
 [source]
 ----
-git clone https://github.com/eclipse-uprotocol/uprotocol-python.git
+git clone https://github.com/eclipse-uprotocol/up-python.git
 ----
 
 . Execute the `pull_and_compile_protos.py` script using the following commands:
@@ -44,7 +46,7 @@ python pull_and_compile_protos.py
 This script automates the following tasks:
 
 1. **Cloning and Compilation of Protos:**
-   Clones the `up-core-api` protos from the specified repository URL, compiles them, and generates Python protofiles in the protos folder.
+   Clones the `up-core-api` protos from the `up-spec` repository, compiles them, and generates Python protofiles in the protos folder.
 
 . Install up-python
 +
@@ -53,28 +55,11 @@ This script automates the following tasks:
 python -m pip install ../
 ----
 
-*This will install the up-python, making its classes and modules available for import in your python code.*
+*This will install up-python, making its classes and modules available for import in your python code.*
 
 === Using the Library
 
 The Library is broken up into different packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it. Packages are organized into the following directories:
-
-.Package Folders
-[#pkg-folders,width=100%,cols="20%,80%",options="header"]
-|===
-
-| Folder | Purpose
-
-| `*builder*` or `*factory*`
-| Contains factory methods for creating uProtocol data types
-
-| `*serializer*`
-| Contains serializers to convert the objects into byte or string form representation of said object
-
-| `*validator*`
-| Contains validators to validate the data types and report errors if the objects are missing or incorrect
-
-|===
 
 
 .SDK Packages
@@ -83,20 +68,17 @@ The Library is broken up into different packages that are described in <<sdk-pac
 
 | Package | Purpose
 
-| link:uprotocol/uri/README.adoc[`*uuri*`]
-| Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network
+| link:uprotocol/uri/README.adoc[`*uri*`]
+| Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network.
 
 | link:uprotocol/uuid/README.adoc[`*uuid*`]
-| Identifier used to uniquely identify (and timestamp) messages that are sent
+| Identifier used to uniquely identify (and timestamp) messages that are sent.
 
-| link:uprotocol/rpc/README.adoc[`*rpc*`]
-| Interface to build client and service stubs for uServices. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/rpcclient.adoc[RpcClient interface]
+| link:uprotocol/communication/README.adoc[`*communication*`]
+| Interface to build entities that use UTransport APIs to communicate with other entities. This is described in further detail on the up-spec page about https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[L2 APIs].
 
-| link:uprotocol/transport/README.adoc[`*utransport*`]
-| Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/ulink.adoc[ulink] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
-
-| link:uprotocol/cloudevent/README.adoc[`*cloudevent*`]
-| Common way to represent uProtocol messages using CloudEvent data model used by some transports (ex. MQTT, HTTP, etc…​)
+| link:uprotocol/transport/README.adoc[`*transport*`]
+| Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by client libraries (described https://github.com/eclipse-uprotocol/up-spec/blob/main/up-l1/README.adoc[here]) for a given underlying transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
 
 |===
 

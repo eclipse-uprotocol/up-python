@@ -5,29 +5,41 @@
 
 == Overview
 
-The following folder contains everything but the data model for UUri (builders, serializers, validators, etc...) per https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
-The data model is defined in https://github.com/eclipse-uprotocol/uprotocol-core-api/blob/main/src/main/proto/uri.proto[uri.proto] and included as a dependency for this project.
-
-IMPORTANT: For more details about the data model, various formats (object, long, micro) and their uses, please refer to  https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
+The following folder contains the data model for UUri (factory, serializer, validator, etc...) as per the https://github.com/eclipse-uprotocol/up-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
+The data model is defined in https://github.com/eclipse-uprotocol/up-spec/blob/main/up-core-api/uprotocol/v1/uri.proto[uri.proto] and included as a dependency for this project.
 
 
-== Using the SDK
 
-When building UUri, you can choose to populate it with only names, only numbers, or both (resolved). When you should use each is described the best practice section of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
-
-=== Building an RPC Method
+== Create uri from proto
 [,python]
 ----
+from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.uri.factory.uri_factory import UriFactory
+from uprotocol.core.usubscription.v3 import usubscription_pb2
+
+service_descriptor = usubscription_pb2.DESCRIPTOR.services_by_name["uSubscription"]
+uri = UriFactory.from_proto(service_descriptor, 0)
+----
+== Serialize and Deserialize uri
+[,python]
+----
+from uprotocol.v1.uri_pb2 import UUri
 uri: UUri = UUri(
-            authority=UAuthority(name="MyDevice", ip=bytes(socket.inet_pton(socket.AF_INET, "192.168.1.100")),
-                                 id=bytes.fromhex("3GTU2NEC8HG403825")),
-            entity=UEntity(name="HartleyService", id=10203, version_major=1),
-            resource=UResourceBuilder.for_rpc_request("Raise", 10))
-----
+                authority_name = "MyDevice",
+                ue_id = "0x1234",
+                ue_version_major = "1",
+                resource_id = "0x5010"
+            )
+serialized_uri : str = UriSerializer.serialize(uri);
+deserialized_uri : UUri = UriSerializer.deserialize(serialized_uri);
+self.assertEqual(uri, deserialized_uri)
 
-=== Validating
+----
+== Validating a UUri
 [,python]
 ----
-status : ValidationResult = UriValidator.validate_rpc_method(uuri)
-assertTrue(status.is_success());
+from uprotocol.uri.validator.urivalidator import UriValidator
+uri = UUri(resource_id=0x7FFF)
+status: bool = UriValidator.is_rpc_method(uri)
+assertTrue(status)
 ----

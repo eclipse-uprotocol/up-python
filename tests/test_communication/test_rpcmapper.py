@@ -12,7 +12,6 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
-import asyncio
 import unittest
 
 import pytest
@@ -33,13 +32,13 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         payload = UPayload.pack(uri)
 
         rpc_client = InMemoryRpcClient(MockUTransport())
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), payload, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), payload)
         result = await RpcMapper.map_response(future_result, UUri)
         assert result == uri
 
     async def test_map_response_to_result_with_empty_request(self):
         rpc_client = InMemoryRpcClient(MockUTransport())
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), None, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), None, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_success()
         assert result.success_value() == UUri()
@@ -50,7 +49,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 raise RuntimeError("Error")
 
         rpc_client = RpcClientWithException()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), None, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), None, None)
 
         with pytest.raises(RuntimeError):
             await RpcMapper.map_response(future_result, UUri)
@@ -61,7 +60,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 return UPayload.EMPTY
 
         rpc_client = RpcClientWithEmptyPayload()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
         result = await RpcMapper.map_response(future_result, UUri)
         assert result == UUri()
 
@@ -71,7 +70,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 return None
 
         rpc_client = RpcClientWithNullPayload()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
 
         with pytest.raises(Exception) as exc_info:
             await RpcMapper.map_response(future_result, UUri)
@@ -86,7 +85,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 return payload
 
         rpc_client = RpcClientWithNonEmptyPayload()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), payload, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), payload, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_success()
         assert result.success_value() == uri
@@ -97,7 +96,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 return None
 
         rpc_client = RpcClientWithNullPayload()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_failure()
 
@@ -107,7 +106,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 return UPayload.EMPTY
 
         rpc_client = RpcClientWithEmptyPayload()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_success()
         assert result.success_value() == UUri()
@@ -119,7 +118,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 raise UStatusError(status)
 
         rpc_client = RpcClientWithException()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_failure()
         assert result.failure_value().code == UCode.FAILED_PRECONDITION
@@ -143,7 +142,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
                 raise ValueError()
 
         rpc_client = RpcClientWithInvalidArgumentsException()
-        future_result = asyncio.ensure_future(rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None))
+        future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
         result = await RpcMapper.map_response_to_result(future_result, UUri)
         assert result.is_failure()
         assert result.failure_value().code == UCode.INVALID_ARGUMENT

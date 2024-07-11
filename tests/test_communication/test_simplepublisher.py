@@ -13,29 +13,35 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import unittest
+from unittest.mock import MagicMock
 
-from tests.test_communication.mock_utransport import MockUTransport
 from uprotocol.communication.simplepublisher import SimplePublisher
 from uprotocol.communication.upayload import UPayload
 from uprotocol.transport.utransport import UTransport
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):
-    def create_topic(self):
-        return UUri(authority_name="neelam", ue_id=3, ue_version_major=1, resource_id=0x8000)
+    def setUp(self):
+        self.transport = MagicMock(spec=UTransport)
+        self.topic = UUri(authority_name="neelam", ue_id=3, ue_version_major=1, resource_id=2)
 
     async def test_send_publish(self):
-        publisher = SimplePublisher(MockUTransport())
-        status = await publisher.publish(self.create_topic())
+        self.transport.send.return_value = UStatus(code=UCode.OK)
+        publisher = SimplePublisher(self.transport)
+        status = await publisher.publish(self.topic)
         self.assertEqual(status.code, UCode.OK)
+        self.transport.send.assert_called_once()
 
     async def test_send_publish_with_stuffed_payload(self):
+        self.transport.send.return_value = UStatus(code=UCode.OK)
         uri = UUri(authority_name="Neelam")
-        publisher = SimplePublisher(MockUTransport())
-        status = await publisher.publish(self.create_topic(), payload=UPayload.pack_to_any(uri))
+        publisher = SimplePublisher(self.transport)
+        status = await publisher.publish(self.topic, payload=UPayload.pack_to_any(uri))
         self.assertEqual(status.code, UCode.OK)
+        self.transport.send.assert_called_once()
 
     def test_constructor_transport_none(self):
         with self.assertRaises(ValueError) as context:
@@ -48,9 +54,8 @@ class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(str(context.exception), UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
 
     async def test_publish_topic_none(self):
-        publisher = SimplePublisher(MockUTransport())
+        publisher = SimplePublisher(self.transport)
         uri = UUri(authority_name="Neelam")
-
         with self.assertRaises(ValueError) as context:
             await publisher.publish(None, payload=UPayload.pack_to_any(uri))
         self.assertEqual(str(context.exception), "Publish topic missing")

@@ -336,6 +336,60 @@ class TestInMemorySubscriber(unittest.IsolatedAsyncioTestCase):
         self.transport.register_listener.assert_called_once()
         self.transport.get_source.assert_called_once()
 
+    async def test_unregister_listener_missing_topic(self):
+        transport = MagicMock(spec=UTransport)
+        rpc_client = MagicMock(spec=InMemoryRpcClient)
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemorySubscriber(transport, rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.unregister_listener(None, self.listener)
+        self.assertEqual(str(context.exception), "Unsubscribe topic missing")
+
+    async def test_unregister_listener_missing_listener(self):
+        transport = MagicMock(spec=UTransport)
+        rpc_client = MagicMock(spec=InMemoryRpcClient)
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemorySubscriber(transport, rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.unregister_listener(self.topic, None)
+        self.assertEqual(str(context.exception), "Request listener missing")
+
+    async def test_unsubscribe_missing_topic(self):
+        transport = MagicMock(spec=UTransport)
+        rpc_client = MagicMock(spec=InMemoryRpcClient)
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemorySubscriber(transport, rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.unsubscribe(None, self.listener, CallOptions())
+        self.assertEqual(str(context.exception), "Unsubscribe topic missing")
+
+    async def test_unsubscribe_missing_listener(self):
+        transport = MagicMock(spec=UTransport)
+        rpc_client = MagicMock(spec=InMemoryRpcClient)
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemorySubscriber(transport, rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.unsubscribe(self.topic, None, CallOptions())
+        self.assertEqual(str(context.exception), "Listener missing")
+
+    async def test_subscribe_missing_topic(self):
+        transport = MagicMock(spec=UTransport)
+        rpc_client = MagicMock(spec=InMemoryRpcClient)
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemorySubscriber(transport, rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.subscribe(None, self.listener, CallOptions())
+        self.assertEqual(str(context.exception), "Subscribe topic missing")
+
+    async def test_subscribe_missing_listener(self):
+        transport = MagicMock(spec=UTransport)
+        rpc_client = MagicMock(spec=InMemoryRpcClient)
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemorySubscriber(transport, rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.subscribe(self.topic, None, CallOptions())
+        self.assertEqual(str(context.exception), "Request listener missing")
+
 
 if __name__ == '__main__':
     unittest.main()

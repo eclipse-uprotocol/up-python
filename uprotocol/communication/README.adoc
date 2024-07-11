@@ -1,0 +1,157 @@
+= uProtocol Communication Layer
+:toc:
+:sectnums:
+
+
+== Overview
+
+The following folder contains implementations of the L2 Communication Layer APIs, as per the https://github.com/eclipse-uprotocol/up-spec/blob/main/up-l2/api.adoc[uProtocol L2 API Specifications].
+
+
+
+## uP-L2 Interfaces
+
+.Interfaces (uP-L2 Interface)
+[cols="1,1,3",options="header"]
+|===
+| Interface | Implementation(s) | Description  
+
+| xref:publisher.py[*Publisher*] | xref:simplepublisher.py[SimplePublisher] | Producers API to send publish or notification messages
+| xref:subscriber.py[*Subscriber*] | xref:inmemorysubscriber.py[InMemorySubscriber] | Consumers API to subscribe or unsubscribe to topics
+| xref:rpcclient.py[*RpcClient*] | xref:inmemoryrpcclient.py[InMemoryRpcClient] | Client interface to invoke a method
+| xref:rpcserver.py[*RpcServer*] | xref:inmemoryrpcserver.py[InMemoryRpcServer]| Server interface to register a listener for incoming RPC requests and automatically send a response
+| xref:notifier.py[*Notifier*] | xref:simplenotifier.py[SimpleNotifier] | Notification communication pattern APIs to notify and register a listener to receive the notifications
+| All the above | xref:uclient.py[UClient] | Single class that Implements all the interfaces above using the various implementations also from above
+|===
+
+
+== Examples
+The uP-L2 interfaces are designed to be used by uEs (applications and services) that rely on the communication patterns to talk with other uEs. The interfaces only require an implementation of uTransport passed by reference to the various APIs to perform the various communication patterns.
+
+NOTE: Examples below will be using the `UClient` implementation.
+
+
+=== Publish a Message
+[,python]
+----
+
+transport = # your UTransport instance
+#topic to publish
+topic : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+publisher : Publisher = UClient(transport)
+#send the publish message
+publisher.publish(topic)
+----
+
+=== Subscribe and Unsubscribe
+[,python]
+----
+transport = # your UTransport instance
+
+#subscription topic
+topic : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+
+#Listener to process incoming events on the topic
+class MySubscriptionListener(UListener):
+    def on_receive(self, umsg: UMessage) -> None:
+        # Handle receiving published message
+        pass
+listener = MySubscriptionListener()
+# Optional handler that is called whenever the SubscriptionState changes for the subscriber
+class MySubscriptionChangeHandler(SubscriptionChangeHandler)
+     def handle_subscription_change(self, topic: UUri, status: SubscriptionStatus) -> None:
+        # Handle subscription status changes if you're interested like when
+        # the subscription state changes from SUBSCRIBE_PENDING to SUBSCRIBED
+        pass
+
+subscriber : Subscriber = UClient(transport)
+subscriber.subscribe(topic, listener, CallOptions.DEFAULT, MySubscriptionChangeHandler())
+
+#UnSubscribe from the topic
+subscriber.unsubscribe(topic, listener)
+----
+=== Invoke a method using RPCClient
+[,python]
+----
+transport = # your UTransport instance
+
+#URI of the method to be invoked
+method_uri= UUri(ue_id=10, ue_version_major=1, resource_id=3)
+payload = UPayload.pack_to_any(UUri())
+options = CallOptions(2000, UPriority.UPRIORITY_CS5)
+
+rpc_client : RpcClient = UClient(transport)
+#Returns the asyncio Future with the response payload or raises an exception
+with the failure reason as UStatus
+await rpc_client.invoke_method(method_uri, payload, options)
+
+----
+
+=== Register and handle rpc request
+[,python]
+----
+transport = # your UTransport instance
+
+#URI of the method to be invoked
+uri= UUri(ue_id=10, ue_version_major=1, resource_id=3)
+
+#Handler for processing requests
+class MyRequestHandler(RequestHandler):
+        def handle_request(self, message: UMessage) -> UPayload:
+            # If your processing of the request was successful, you return the response message like
+            # return UPayload.EMPTY;
+            # If your processing of the request failed, you can raise a UStatusException passing the
+            # appropriate UCode and message such as:
+            # raise UStatusException(UCode.FAILED_PRECONDITION, "Failed to process the request")
+            # For this example, we will return an empty response
+            return UPayload.EMPTY
+
+
+rpc_server: RpcServer = UClient(transport)
+#Returns the asyncio Future with the response payload or raises an exception
+#with the failure reason as UStatus
+await rpc_server.register_request_handler(uri, MyRequestHandler())
+
+----
+
+
+=== Send a notification
+[,python]
+----
+transport = # your UTransport instance
+
+#Notification topic
+uri : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+
+#Destination for the notification
+destination_uri : UUri = UUri( ue_id=3, ue_version_major=1)
+
+
+notifier: Notifier = UClient(transport)
+# Send the notification (without payload)
+await notifier.notify(uri, destination_uri)
+
+----
+
+
+=== Registering to receive notifications
+[,python]
+----
+transport = # your UTransport instance
+
+#Notification topic
+uri : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+
+#Listener to process incoming events on the topic
+class MyListener(UListener):
+    def on_receive(self, umsg: UMessage) -> None:
+        # Handle receiving notifications here
+        pass
+listener = MyListener()
+
+
+notifier: Notifier = UClient(transport)
+# Register listener to recieve notifications
+await notifier.registerNotificationListener(uri, listener)
+
+----

@@ -12,7 +12,6 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
-import asyncio
 import threading
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
@@ -84,19 +83,13 @@ class MockUTransport(UTransport):
 
         if message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
             response = self.build_response(message)
-            asyncio.get_running_loop().run_in_executor(self.executor, self._notify_listeners, response)
+            self._notify_listeners(response)
 
         return UStatus(code=UCode.OK)
 
     def _notify_listeners(self, response: UMessage):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            for listener in self.listeners:
-                loop.call_soon_threadsafe(listener.on_receive, response)
-        finally:
-            loop.run_until_complete(loop.shutdown_asyncgens())
-            loop.close()
+        for listener in self.listeners:
+            listener.on_receive(response)
 
     async def register_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
         self.listeners.append(listener)

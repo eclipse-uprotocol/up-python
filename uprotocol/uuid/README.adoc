@@ -4,30 +4,25 @@
 
 == Overview
 
-Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uuid.adoc[uProtocol UUID specifications].
+Implementation of https://github.com/eclipse-uprotocol/up-spec/blob/main/basics/uuid.adoc[uProtocol UUID specifications].
 
 == Examples
 
 [source,python]
 ----
     uuid = Factories.UPROTOCOL.create()
-    version = UUIDUtils.getVersion(uuid)
-    time = UUIDUtils.getTime(uuid)
-    bytes_uuid = MicroUuidSerializer.instance().serialize(uuid)
+    version = UUIDUtils.get_version(uuid)
+    time = UUIDUtils.get_time(uuid)
     str_uuid = UuidSerializer.serialize(uuid)
 
-    assertTrue(UUIDUtils.isUProtocol(uuid))
-    assertTrue(UUIDUtils.isuuid(uuid))
-    assertFalse(UUIDUtils.isUuidv6(uuid))
+    assertTrue(UUIDUtils.is_uprotocol(uuid))
+    assertTrue(UUIDUtils.is_uuid(uuid))
+    assertFalse(UUIDUtils.is_uuidv6(uuid))
     assertTrue(version)
     assertTrue(time)
-    assertGreater(len(bytes_uuid), 0)
     assertFalse(str_uuid.isspace())
 
-    uuid1 = MicroUuidSerializer.instance().deserialize(bytes_data)
-    uuid2 = UuidSerializer.deserialize(uuid_string)
+    uuid1 = UuidSerializer.deserialize(uuid_string)
     assertNotEqual(uuid1, UUID())
-    assertNotEqual(uuid2, UUID())
     assertEqual(uuid, uuid1)
-    assertEqual(uuid, uuid2)
 ----

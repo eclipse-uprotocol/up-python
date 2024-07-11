@@ -42,9 +42,8 @@ class MyListener(UListener):
 
 
 class UPClientTest(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.listener = MyListener()
+    def setUp(self):
+        self.listener = MyListener()
 
     def test_create_upclient_with_null_transport(self):
         with self.assertRaises(ValueError):

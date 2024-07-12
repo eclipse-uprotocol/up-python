@@ -14,8 +14,6 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-import pytest
-
 from tests.test_communication.mock_utransport import MockUTransport
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.rpcmapper import RpcMapper
@@ -50,8 +48,7 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
 
         rpc_client = RpcClientWithException()
         future_result = rpc_client.invoke_method(self.create_method_uri(), None, None)
-
-        with pytest.raises(RuntimeError):
+        with self.assertRaises(RuntimeError):
             await RpcMapper.map_response(future_result, UUri)
 
     async def test_map_response_with_empty_payload(self):
@@ -72,9 +69,9 @@ class TestRpcMapper(unittest.IsolatedAsyncioTestCase):
         rpc_client = RpcClientWithNullPayload()
         future_result = rpc_client.invoke_method(self.create_method_uri(), UPayload.EMPTY, None)
 
-        with pytest.raises(Exception) as exc_info:
+        with self.assertRaises(Exception) as exc_info:
             await RpcMapper.map_response(future_result, UUri)
-        assert str(exc_info.value) == f"Unknown payload. Expected [{UUri.__name__}]"
+        assert str(exc_info.exception) == f"Unknown payload. Expected [{UUri.__name__}]"
 
     async def test_map_response_to_result_with_non_empty_payload(self):
         uri = UUri(authority_name="Neelam")

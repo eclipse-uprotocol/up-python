@@ -38,8 +38,6 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 from uprotocol.validation.validationresult import ValidationResult
 
 
-# ToDo Change the implementation of transport APIs to use the URI match pattern and save listeners
-# against the source and sink filter tuple.
 class MockUTransport(UTransport):
     def get_source(self) -> UUri:
         return self.source

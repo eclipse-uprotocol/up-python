@@ -16,6 +16,7 @@ import unittest
 
 from uprotocol.communication.rpcresult import RpcResult
 from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class TestRpcResult(unittest.TestCase):
@@ -34,6 +35,7 @@ class TestRpcResult(unittest.TestCase):
     def test_is_failure_on_failure(self):
         result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
         self.assertTrue(result.is_failure())
+        self.assertEqual(str(result), 'Failure(code: INVALID_ARGUMENT\nmessage: "boom"\n)')
 
     def test_to_string_success(self):
         result = RpcResult.success(2)
@@ -44,6 +46,24 @@ class TestRpcResult(unittest.TestCase):
         self.assertTrue(result.is_failure())
         self.assertEqual(result.failure_value().code, UCode.INVALID_ARGUMENT)
         self.assertEqual(result.failure_value().message, "boom")
+
+    def test_success_value_onsuccess(self):
+        result = RpcResult.success(2)
+        assert result.success_value() == 2
+
+    def test_success_value_onfailure(self):
+        result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
+        with self.assertRaises(ValueError):
+            result.success_value()
+
+    def test_failure_value_onsuccess(self):
+        result = RpcResult.success(2)
+        with self.assertRaises(ValueError):
+            result.failure_value()
+
+    def test_failure_value_onfailure(self):
+        result = RpcResult.failure(code=UCode.INVALID_ARGUMENT, message="boom")
+        assert result.failure_value() == UStatus(code=UCode.INVALID_ARGUMENT, message="boom")
 
 
 if __name__ == '__main__':

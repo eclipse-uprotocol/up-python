@@ -118,6 +118,13 @@ class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
             SimpleNotifier("InvalidTransport")
         self.assertEqual(str(context.exception), UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
 
+    async def test_send_notification_with_options(self):
+        self.transport.send.return_value = UStatus(code=UCode.OK)
+        self.notifier = SimpleNotifier(self.transport)
+        result = await self.notifier.notify(self.source, self.sink, CallOptions.DEFAULT)
+
+        self.assertEqual(result.code, UCode.OK)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -46,10 +46,10 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
 
     Attributes:
         transport (UTransport): The underlying transport mechanism.
-        rpcServer (InMemoryRpcServer): Handles incoming RPC requests.
+        rpc_server (InMemoryRpcServer): Handles incoming RPC requests.
         publisher (SimplePublisher): Sends messages to topics.
         notifier (SimpleNotifier): Sends notifications to destinations.
-        rpcClient (InMemoryRpcClient): Invokes remote methods.
+        rpc_client (InMemoryRpcClient): Invokes remote methods.
         subscriber (InMemorySubscriber): Manages topic subscriptions.
     """
 
@@ -60,11 +60,11 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         elif not isinstance(transport, UTransport):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
 
-        self.rpcServer = InMemoryRpcServer(self.transport)
+        self.rpc_server = InMemoryRpcServer(self.transport)
         self.publisher = SimplePublisher(self.transport)
         self.notifier = SimpleNotifier(self.transport)
-        self.rpcClient = InMemoryRpcClient(self.transport)
-        self.subscriber = InMemorySubscriber(self.transport, self.rpcClient, self.notifier)
+        self.rpc_client = InMemoryRpcClient(self.transport)
+        self.subscriber = InMemorySubscriber(self.transport, self.rpc_client, self.notifier)
 
     async def subscribe(
         self,
@@ -165,7 +165,7 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         """
         return await self.publisher.publish(topic, options, payload)
 
-    async def register_request_handler(self, method: UUri, handler):
+    async def register_request_handler(self, method_uri: UUri, handler):
         """
         Register a handler that will be invoked when requests come in from clients for the given method.
 
@@ -175,9 +175,9 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         :param handler: The handler that will process the request for the client.
         :return: Returns the status of registering the RpcListener.
         """
-        return await self.rpcServer.register_request_handler(method, handler)
+        return await self.rpc_server.register_request_handler(method_uri, handler)
 
-    async def unregister_request_handler(self, method: UUri, handler):
+    async def unregister_request_handler(self, method_uri: UUri, handler):
         """
         Unregister a handler that will be invoked when requests come in from clients for the given method.
 
@@ -185,7 +185,7 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         :param handler: The handler for processing requests.
         :return: Returns the status of unregistering the RpcListener.
         """
-        return await self.rpcServer.unregister_request_handler(method, handler)
+        return await self.rpc_server.unregister_request_handler(method_uri, handler)
 
     async def invoke_method(
         self, method_uri: UUri, request_payload: UPayload, options: Optional[CallOptions] = None
@@ -202,4 +202,10 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         :return: Returns the asyncio Future with the response payload or raises an exception
                  with the failure reason as UStatus.
         """
-        return await self.rpcClient.invoke_method(method_uri, request_payload, options)
+        return await self.rpc_client.invoke_method(method_uri, request_payload, options)
+
+    def close(self):
+        if self.rpc_client:
+            self.rpc_client.close()
+        if self.subscriber:
+            self.subscriber.close()

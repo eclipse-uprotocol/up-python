@@ -81,9 +81,6 @@ class RpcMapper:
                 return RpcResult.failure(code=UCode.INVALID_ARGUMENT, message=str(e))
         if isinstance(response, UStatusError):
             return RpcResult.failure(value=response.status)
-        if isinstance(response, Exception):
-            exception = RuntimeError(f"Unknown exception occurred {str(response)}")
-            return RpcResult.failure(code=UCode.INVALID_ARGUMENT, message=str(exception))
         if response is not None:
             if not response.data:
                 return RpcResult.success(expected_cls())

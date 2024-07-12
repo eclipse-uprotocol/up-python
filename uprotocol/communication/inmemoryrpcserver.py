@@ -85,10 +85,9 @@ class InMemoryRpcServer(RpcServer):
         :param handler: The handler that will process the request for the client.
         :return: Returns the status of registering the RpcListener.
         """
-        if method_uri is None:
-            raise ValueError("Method URI missing")
-        if handler is None:
-            raise ValueError("Request listener missing")
+
+        if method_uri is None or handler is None:
+            return UStatus(code=UCode.INVALID_ARGUMENT, message="Method URI or handler missing")
 
         try:
             method_uri_str = UriSerializer().serialize(method_uri)
@@ -106,8 +105,6 @@ class InMemoryRpcServer(RpcServer):
 
         except UStatusError as e:
             return UStatus(code=e.get_code(), message=e.get_message())
-        except Exception as e:
-            return UStatus(code=UCode.INTERNAL, message=str(e))
 
     async def unregister_request_handler(self, method_uri: UUri, handler: RequestHandler) -> UStatus:
         """
@@ -117,10 +114,9 @@ class InMemoryRpcServer(RpcServer):
         :param handler: The handler for processing requests.
         :return: Returns the status of unregistering the RpcListener.
         """
-        if method_uri is None:
-            raise ValueError("Method URI missing")
-        if handler is None:
-            raise ValueError("Request listener missing")
+        if method_uri is None or handler is None:
+            return UStatus(code=UCode.INVALID_ARGUMENT, message="Method URI or handler missing")
+
         method_uri_str = UriSerializer().serialize(method_uri)
 
         if self.request_handlers.get(method_uri_str) == handler:

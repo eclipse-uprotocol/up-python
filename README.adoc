@@ -92,7 +92,18 @@ Clean up by running the command:
 
 === Running the Tests
 
-Requires coverage to be installed first, that can be done by running `pip install coverage`
+- Execute below command from up-python directory
 
-then you run:
-`python -m coverage run --source tests/ -m unittest discover`
+[source]
+----
+python -m coverage run --source uprotocol/ -m pytest
+----
+=== Generate coverage report
+
+[source]
+----
+python -m coverage report
+python -m coverage html
+----
+This generates the HTML report to htmlcov\index.html
+

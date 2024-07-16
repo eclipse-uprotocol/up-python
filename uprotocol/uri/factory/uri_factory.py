@@ -41,7 +41,7 @@ class UriFactory:
 
     @staticmethod
     def from_proto(
-        service_descriptor: Optional[ServiceDescriptor], resource_id: int, authority_name: Optional[str]
+        service_descriptor: Optional[ServiceDescriptor], resource_id: int, authority_name: Optional[str] = None
     ) -> UUri:
         """
         Builds a URI for a protobuf generated code Service Descriptor.

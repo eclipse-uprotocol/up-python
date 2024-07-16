@@ -4,4 +4,101 @@
 :source-highlighter: prettify
 
 == Overview
-The purpose of this module is to provide the Python implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uTransport API & Data Model]. The transport API is used by all uE developers to send and receive messages across any transport. The interface is to be implemented by communication transport developers (i.e. developing a uTransport for SOME/IP, DDS, Zenoh, MQTT, etc...).
+The following section implements https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Transport Layer Specifications]. The purpose of the transport layer is to wrap communication middlewares into a common interface that allows us to send and receive any kind of uProtocol messages (publish, request, response, notification) over any kind of transport (HTTP, MQTT, WebSockets, etc).
+
+the datamodel is declared in the uProtocol specifications project in the https://github.com/eclipse-uprotocol/up-spec/tree/main/up-core-api[up-core-api] folder and this project declares the language specific transport interface (UListener & UTransport) and the builders, serializers, and validators, for the up-core-api data model. .
+
+Below are the list of the classes and interfaces that are part of the uProtocol Transport Interface & Data Model:
+
+.Transport Interfaces
+[table-transport-interfaces, cols="1,3"]
+|===
+| Class/Interface | Description
+
+| xref:utransport.py[*`UTransport`*]
+| Interface that defines the methods that a transport middleware must implement in order to be used by the uProtocol library.
+
+| xref:ulistener.py[*`UListener`*]
+| Callback/listener interface to be able to receive messages from a transport.
+
+| xref:builder/umessagebuilder.py[*`UMessageBuilder`*]
+| Interface that simply builds request, response, publish, and defines the methods that a message builder must implement in order to be used by the uProtocol library.
+
+| xref:validator/uattributesvalidator.py[*`UAttributesValidator`*]
+| uProtocol Attributes validator that ensures that the publish, notification, request, and response messages are built with the correct information.
+
+|===
+
+== Examples
+
+=== Create Transport
+
+[,python]
+----
+class HappyUTransport(UTransport):
+    async def close(self) -> None:
+        pass
+
+    async def send(self, message):
+        return UStatus(code=UCode.INVALID_ARGUMENT if message is None else UCode.OK)
+
+    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+        listener.on_receive(UMessage())
+        return UStatus(code=UCode.OK)
+
+    async def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):
+        return UStatus(code=UCode.OK)
+
+    def get_source(self):
+        return UUri()
+----
+
+=== Build Messages using UMessageBuilder
+
+==== Build Publish Message
+[,python]
+----
+topic : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+UMessageBuilder.publish(topic).build()
+
+# to add payload, pack your proto message in UPayload
+# to pack UUri()
+UMessageBuilder.publish(topic).build_from_upayload(UPayload.pack(UUri()))
+
+----
+==== Build Notification Message
+[,python]
+----
+topic : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+destination_uri : UUri = UUri( ue_id=3, ue_version_major=1)
+
+UMessageBuilder.notification(topic, destination).build()
+
+----
+==== Build Request Message
+[,python]
+----
+source : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+sink : UUri = UUri( ue_id=3, ue_version_major=1)
+#1000 is ttl here
+UMessageBuilder.request(source, sink, 1000).build()
+
+----
+
+==== Build Response Message
+[,python]
+----
+source : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
+sink : UUri = UUri( ue_id=3, ue_version_major=1)
+reqid : UUID = Factories.UPROTOCOL.create()
+UMessageBuilder.response(source, sink, reqid).build()
+
+----
+
+==== Build Response Message from Request
+[,python]
+----
+
+UMessageBuilder.response_for_request(request.attributes).build()
+
+----

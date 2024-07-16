@@ -12,7 +12,7 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
-import asyncio
+from typing import Coroutine
 
 from uprotocol.communication.rpcresult import RpcResult
 from uprotocol.communication.upayload import UPayload
@@ -29,7 +29,7 @@ class RpcMapper:
     """
 
     @staticmethod
-    async def map_response(response_coro: asyncio.Future, expected_cls):
+    async def map_response(response_coro: Coroutine, expected_cls):
         """
         Map a response from invoking a method on a uTransport service into a result
         containing the declared expected return type of the RPC method.
@@ -39,22 +39,25 @@ class RpcMapper:
         :return: Returns the declared expected return type of the RPC method or raises an exception.
         """
         try:
-            payload = await response_coro
+            response = await response_coro
         except Exception as e:
             raise RuntimeError(f"Unexpected exception: {str(e)}") from e
-
-        if payload is not None:
-            if not payload.data:
+        if isinstance(response, UStatusError):
+            raise response
+        if isinstance(response, Exception):
+            raise response
+        if response is not None:
+            if not response.data:
                 return expected_cls()
             else:
-                result = UPayload.unpack(payload, expected_cls)
+                result = UPayload.unpack(response, expected_cls)
                 if result:
                     return result
 
         raise RuntimeError(f"Unknown payload. Expected [{expected_cls.__name__}]")
 
     @staticmethod
-    async def map_response_to_result(response_coro: asyncio.Future, expected_cls) -> RpcResult:
+    async def map_response_to_result(response_coro: Coroutine, expected_cls) -> RpcResult:
         """
         Map a response from method invocation to an RpcResult containing the declared expected
         return type of the RPC method.
@@ -70,20 +73,19 @@ class RpcMapper:
         :raises: Raises appropriate exceptions if there is an error during response handling.
         """
         try:
-            payload = await response_coro
+            response = await response_coro
         except Exception as e:
             if isinstance(e, UStatusError):
                 return RpcResult.failure(value=e.status)
-            elif isinstance(e, asyncio.TimeoutError):
-                return RpcResult.failure(code=UCode.DEADLINE_EXCEEDED, message="Request timed out")
             else:
                 return RpcResult.failure(code=UCode.INVALID_ARGUMENT, message=str(e))
-
-        if payload is not None:
-            if not payload.data:
+        if isinstance(response, UStatusError):
+            return RpcResult.failure(value=response.status)
+        if response is not None:
+            if not response.data:
                 return RpcResult.success(expected_cls())
             else:
-                result = UPayload.unpack(payload, expected_cls)
+                result = UPayload.unpack(response, expected_cls)
                 return RpcResult.success(result)
 
         exception = RuntimeError(f"Unknown or null payload type. Expected [{expected_cls.__name__}]")

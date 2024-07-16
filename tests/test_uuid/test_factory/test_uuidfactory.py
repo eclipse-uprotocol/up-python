@@ -163,6 +163,8 @@ class TestUUIDFactory(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(uuid, UUID())
         uuid1 = UuidSerializer.deserialize("")
         self.assertEqual(uuid1, UUID())
+        uuid2 = UuidSerializer.deserialize("jshkh")
+        self.assertEqual(uuid2, UUID())
 
     def test_create_uprotocol_uuid_in_the_past(self):
         now = datetime.now()

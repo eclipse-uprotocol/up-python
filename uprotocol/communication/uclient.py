@@ -25,6 +25,7 @@ from uprotocol.communication.rpcserver import RpcServer
 from uprotocol.communication.simplenotifier import SimpleNotifier
 from uprotocol.communication.simplepublisher import SimplePublisher
 from uprotocol.communication.subscriber import Subscriber
+from uprotocol.communication.subscriptionchangehandler import SubscriptionChangeHandler
 from uprotocol.communication.upayload import UPayload
 from uprotocol.core.usubscription.v3.usubscription_pb2 import (
     SubscriptionResponse,
@@ -45,10 +46,10 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
 
     Attributes:
         transport (UTransport): The underlying transport mechanism.
-        rpcServer (InMemoryRpcServer): Handles incoming RPC requests.
+        rpc_server (InMemoryRpcServer): Handles incoming RPC requests.
         publisher (SimplePublisher): Sends messages to topics.
         notifier (SimpleNotifier): Sends notifications to destinations.
-        rpcClient (InMemoryRpcClient): Invokes remote methods.
+        rpc_client (InMemoryRpcClient): Invokes remote methods.
         subscriber (InMemorySubscriber): Manages topic subscriptions.
     """
 
@@ -59,33 +60,42 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         elif not isinstance(transport, UTransport):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
 
-        self.rpcServer = InMemoryRpcServer(self.transport)
+        self.rpc_server = InMemoryRpcServer(self.transport)
         self.publisher = SimplePublisher(self.transport)
         self.notifier = SimpleNotifier(self.transport)
-        self.rpcClient = InMemoryRpcClient(self.transport)
-        self.subscriber = InMemorySubscriber(self.transport, self.rpcClient)
+        self.rpc_client = InMemoryRpcClient(self.transport)
+        self.subscriber = InMemorySubscriber(self.transport, self.rpc_client, self.notifier)
 
-    async def subscribe(self, topic: UUri, listener: UListener, options: CallOptions) -> SubscriptionResponse:
+    async def subscribe(
+        self,
+        topic: UUri,
+        listener: UListener,
+        options: Optional[CallOptions] = None,
+        handler: Optional[SubscriptionChangeHandler] = None,
+    ) -> SubscriptionResponse:
         """
-        Subscribe to a given topic.
+        Subscribe to a given topic asynchronously.
 
-        The API will return a future with the response SubscriptionResponse or exception
-        with the failure if the subscription was not successful. The API will also register the listener to be
-        called when messages are received.
+        The API will return a SubscriptionResponse or raise an exception if the subscription fails.
+        It registers the listener to be called when messages are received and allows the caller to register
+        a SubscriptionChangeHandler that is called whenever the subscription state changes (e.g., PENDING_SUBSCRIBED to
+        SUBSCRIBED, SUBSCRIBED to UNSUBSCRIBED, etc.).
 
         :param topic: The topic to subscribe to.
-        :param listener: The listener to be called when a message is received on the topic.
-        :param options: The call options for the subscription.
-        :return: Returns the future with the response SubscriptionResponse or
-        exception with the failure reason as UStatus.
+        :param listener: The UListener that is called when published messages are received.
+        :param options: The CallOptions to provide additional information (timeout, token, etc.).
+        :param handler: SubscriptionChangeHandler to handle changes to subscription states.
+        :return: Returns the SubscriptionResponse or raises an exception with the failure reason as UStatus.
         """
-        return await self.subscriber.subscribe(topic, listener, options)
+        return await self.subscriber.subscribe(topic, listener, options, handler)
 
-    async def unsubscribe(self, topic: UUri, listener: UListener, options: CallOptions) -> UStatus:
+    async def unsubscribe(
+        self, topic: UUri, listener: UListener, options: Optional[CallOptions] = CallOptions.DEFAULT
+    ) -> UStatus:
         """
-        Unsubscribe to a given topic.
+        Unsubscribe to a given topic asynchronously.
 
-        The subscriber no longer wishes to be subscribed to said topic so we issue an unsubscribe
+        The subscriber no longer wishes to be subscribed to the specified topic, trigger an unsubscribe
         request to the USubscription service.
 
         :param topic: The topic to unsubscribe to.
@@ -155,7 +165,7 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         """
         return await self.publisher.publish(topic, options, payload)
 
-    async def register_request_handler(self, method: UUri, handler):
+    async def register_request_handler(self, method_uri: UUri, handler):
         """
         Register a handler that will be invoked when requests come in from clients for the given method.
 
@@ -165,9 +175,9 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         :param handler: The handler that will process the request for the client.
         :return: Returns the status of registering the RpcListener.
         """
-        return await self.rpcServer.register_request_handler(method, handler)
+        return await self.rpc_server.register_request_handler(method_uri, handler)
 
-    async def unregister_request_handler(self, method: UUri, handler):
+    async def unregister_request_handler(self, method_uri: UUri, handler):
         """
         Unregister a handler that will be invoked when requests come in from clients for the given method.
 
@@ -175,7 +185,7 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         :param handler: The handler for processing requests.
         :return: Returns the status of unregistering the RpcListener.
         """
-        return await self.rpcServer.unregister_request_handler(method, handler)
+        return await self.rpc_server.unregister_request_handler(method_uri, handler)
 
     async def invoke_method(
         self, method_uri: UUri, request_payload: UPayload, options: Optional[CallOptions] = None
@@ -192,4 +202,10 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         :return: Returns the asyncio Future with the response payload or raises an exception
                  with the failure reason as UStatus.
         """
-        return await self.rpcClient.invoke_method(method_uri, request_payload, options)
+        return await self.rpc_client.invoke_method(method_uri, request_payload, options)
+
+    def close(self):
+        if self.rpc_client:
+            self.rpc_client.close()
+        if self.subscriber:
+            self.subscriber.close()

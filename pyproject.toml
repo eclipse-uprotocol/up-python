@@ -18,12 +18,11 @@ cloudevents = "*"
 gitpython = ">=3.1.41"
 googleapis-common-protos = ">=1.56.4"
 protobuf = "4.24.2"
-
-[tool.poetry.dev-dependencies]
 pytest = ">=6.2.5"
 pytest-asyncio = ">=0.15.1"
 coverage = ">=6.5.0"
 pytest-timeout = ">=1.4.2"
+
 
 [build-system]
 requires = ["poetry-core"]

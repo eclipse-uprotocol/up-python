@@ -127,6 +127,36 @@ class TestUriValidator(unittest.IsolatedAsyncioTestCase):
         candidate = UriSerializer.deserialize("//authority/A410/3/1003")
         self.assertFalse(UriValidator.matches(pattern, candidate))
 
+    def test_has_wildcard_for_null_uuri(self):
+        self.assertFalse(UriValidator.has_wildcard(None))
+
+    def test_has_wildcard_for_empty_uuri(self):
+        self.assertFalse(UriValidator.has_wildcard(UUri()))
+
+    def test_has_wildcard_for_uuri_with_wildcard_authority(self):
+        uri = UriSerializer.deserialize("//*/A410/3/1003")
+        self.assertTrue(UriValidator.has_wildcard(uri))
+
+    def test_has_wildcard_for_uuri_with_wildcard_entity_id(self):
+        uri = UriSerializer.deserialize("//authority/FFFF/3/1003")
+        self.assertTrue(UriValidator.has_wildcard(uri))
+
+    def test_has_wildcard_for_uuri_with_wildcard_entity_instance(self):
+        uri = UriSerializer.deserialize("//authority/1FFFF/3/1003")
+        self.assertTrue(UriValidator.has_wildcard(uri))
+
+    def test_has_wildcard_for_uuri_with_wildcard_version(self):
+        uri = UriSerializer.deserialize("//authority/A410/FF/1003")
+        self.assertTrue(UriValidator.has_wildcard(uri))
+
+    def test_has_wildcard_for_uuri_with_wildcard_resource(self):
+        uri = UriSerializer.deserialize("//authority/A410/3/FFFF")
+        self.assertTrue(UriValidator.has_wildcard(uri))
+
+    def test_has_wildcard_for_uuri_with_no_wildcards(self):
+        uri = UriSerializer.deserialize("//authority/A410/3/1003")
+        self.assertFalse(UriValidator.has_wildcard(uri))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,6 +19,7 @@ from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
+from uprotocol.transport.utransport import UTransport
 from uprotocol.v1.uattributes_pb2 import UPriority
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
@@ -29,6 +30,16 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
     @staticmethod
     def create_method_uri():
         return UUri(authority_name="neelam", ue_id=10, ue_version_major=1, resource_id=3)
+
+    def test_constructor_transport_none(self):
+        with self.assertRaises(ValueError) as context:
+            InMemoryRpcClient(None)
+        self.assertEqual(str(context.exception), UTransport.TRANSPORT_NULL_ERROR)
+
+    def test_constructor_transport_not_instance(self):
+        with self.assertRaises(ValueError) as context:
+            InMemoryRpcClient("Invalid Transport")
+        self.assertEqual(str(context.exception), UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
 
     async def test_invoke_method_with_payload(self):
         payload = UPayload.pack_to_any(UUri())

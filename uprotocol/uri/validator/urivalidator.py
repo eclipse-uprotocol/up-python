@@ -199,3 +199,21 @@ class UriValidator:
             and UriValidator.matches_entity(uri_to_match, candidate_uri)
             and UriValidator.matches_resource(uri_to_match, candidate_uri)
         )
+
+    @staticmethod
+    def has_wildcard(uri):
+        """
+        Checks if the URI has a wildcard in any of its fields.
+
+        :param uri: The URI to check for wildcards.
+        :type uri: UUri
+
+        :return: True if the URI has a wildcard, False otherwise.
+        :rtype: bool
+        """
+        return uri and (
+            uri.authority_name == UriFactory.WILDCARD_AUTHORITY
+            or (uri.ue_id & UriFactory.WILDCARD_ENTITY_ID) == UriFactory.WILDCARD_ENTITY_ID
+            or uri.ue_version_major == UriFactory.WILDCARD_ENTITY_VERSION
+            or uri.resource_id == UriFactory.WILDCARD_RESOURCE_ID
+        )

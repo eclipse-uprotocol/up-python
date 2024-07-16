@@ -12,20 +12,22 @@ terms of the Apache License Version 2.0 which is available at
 SPDX-License-Identifier: Apache-2.0
 """
 
-import asyncio
 import threading
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List
+from typing import List
 
 from uprotocol.communication.upayload import UPayload
+from uprotocol.core.usubscription.v3.usubscription_pb2 import (
+    SubscriptionRequest,
+    SubscriptionResponse,
+    SubscriptionStatus,
+    UnsubscribeResponse,
+)
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.transport.validator.uattributesvalidator import UAttributesValidator
-from uprotocol.uri.factory.uri_factory import UriFactory
-from uprotocol.uri.serializer.uriserializer import UriSerializer
-from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.v1.uattributes_pb2 import (
     UMessageType,
 )
@@ -36,8 +38,6 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 from uprotocol.validation.validationresult import ValidationResult
 
 
-# ToDo Change the implementation of transport APIs to use the URI match pattern and save listeners
-# against the source and sink filter tuple.
 class MockUTransport(UTransport):
     def get_source(self) -> UUri:
         return self.source
@@ -45,99 +45,63 @@ class MockUTransport(UTransport):
     def __init__(self, source=None):
         super().__init__()
         self.source = source if source else UUri(authority_name="Neelam", ue_id=4, ue_version_major=1)
-        self.listeners: Dict[str, List[UListener]] = {}
+        self.listeners: List[UListener] = []
         self.lock = threading.Lock()
+        self.executor = ThreadPoolExecutor()
 
-    def build_response(self, request: UMessage):
-        payload = UPayload.pack_from_data_and_format(request.payload, request.attributes.payload_format)
-
-        return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(payload)
-
-    def close(self):
-        self.listeners.clear()
-
-    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
-        with self.lock:
-            if sink_filter is not None:  # method uri
-                topic = UriSerializer().serialize(sink_filter)
+    def build_response(self, request: UMessage) -> UMessage:
+        if request.attributes.sink.ue_id == 0:
+            if request.attributes.sink.resource_id == 1:
+                try:
+                    subscription_request = SubscriptionRequest.parse(request.payload)
+                    sub_response = SubscriptionResponse(
+                        topic=subscription_request.topic,
+                        status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED),
+                    )
+                    return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(
+                        UPayload.pack(sub_response)
+                    )
+                except Exception:
+                    return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(
+                        UPayload.pack(UnsubscribeResponse())
+                    )
             else:
-                topic = UriSerializer().serialize(source_filter)
-
-            if topic not in self.listeners:
-                self.listeners[topic] = []
-            self.listeners[topic].append(listener)
-            return UStatus(code=UCode.OK)
-
-    async def unregister_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
-        with self.lock:
-            if sink is not None:  # method uri
-                topic = UriSerializer().serialize(sink)
-            else:
-                topic = UriSerializer().serialize(source)
-
-            if topic in self.listeners and listener in self.listeners[topic]:
-                self.listeners[topic].remove(listener)
-                if not self.listeners[topic]:  # If the list is empty, remove the key
-                    del self.listeners[topic]
-                code = UCode.OK
-            else:
-                code = UCode.INVALID_ARGUMENT
-            result = UStatus(code=code)
-        return result
+                return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(
+                    UPayload.pack(UnsubscribeResponse())
+                )
+        return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(
+            UPayload.pack_from_data_and_format(request.payload, request.attributes.payload_format)
+        )
 
     async def send(self, message: UMessage) -> UStatus:
         validator = UAttributesValidator.get_validator(message.attributes)
-        with self.lock:
-            if message is None or validator.validate(message.attributes) != ValidationResult.success():
-                return UStatus(code=UCode.INVALID_ARGUMENT, message="Invalid message attributes")
 
-            # Use a ThreadPoolExecutor with max_workers=1
-            executor = ThreadPoolExecutor(max_workers=1)
+        if message is None or validator.validate(message.attributes) != ValidationResult.success():
+            return UStatus(code=UCode.INVALID_ARGUMENT, message="Invalid message attributes")
 
-            try:
-                # Submit _notify_listeners to the executor
-                future = executor.submit(self._notify_listeners, message)
-
-                # Await completion of the Future
-                await asyncio.wrap_future(future)
-
-            finally:
-                # Clean up the executor
-                executor.shutdown()
+        if message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
+            response = self.build_response(message)
+            self._notify_listeners(response)
 
         return UStatus(code=UCode.OK)
 
-    def _notify_listeners(self, umsg):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            if umsg.attributes.type == UMessageType.UMESSAGE_TYPE_PUBLISH:
-                for key, listeners in self.listeners.items():
-                    uri = UriSerializer().deserialize(key)
-                    if not (UriValidator.is_rpc_method(uri) or UriValidator.is_rpc_response(uri)):
-                        for listener in listeners:
-                            loop.call_soon_threadsafe(listener.on_receive, umsg)
+    def _notify_listeners(self, response: UMessage):
+        for listener in self.listeners:
+            listener.on_receive(response)
 
-            else:
-                if umsg.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
-                    serialized_uri = UriSerializer().serialize(umsg.attributes.sink)
-                    if serialized_uri not in self.listeners:
-                        # no listener registered for method uri, send dummy response.
-                        # This case will only come for request type
-                        # as for response type, there will always be response handler as it is in up client
-                        serialized_uri = UriSerializer().serialize(UriFactory.ANY)
-                        umsg = self.build_response(umsg)
-                else:
-                    # this is for response type,handle response
-                    serialized_uri = UriSerializer().serialize(UriFactory.ANY)
+    async def register_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
+        self.listeners.append(listener)
+        return UStatus(code=UCode.OK)
 
-                if serialized_uri in self.listeners:
-                    for listener in self.listeners[serialized_uri]:
-                        loop.call_soon_threadsafe(listener.on_receive, umsg)
-                        break  # as there will be only one listener for method uri
-        finally:
-            loop.run_until_complete(loop.shutdown_asyncgens())
-            loop.close()
+    async def unregister_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
+        if listener in self.listeners:
+            self.listeners.remove(listener)
+            return UStatus(code=UCode.OK)
+        return UStatus(code=UCode.NOT_FOUND)
+
+    def close(self):
+        self.listeners.clear()
+        self.executor.shutdown()
 
 
 class TimeoutUTransport(MockUTransport, ABC):

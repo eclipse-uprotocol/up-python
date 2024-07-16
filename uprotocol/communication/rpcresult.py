@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Union
+from typing import TypeVar
 
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.ustatus_pb2 import UStatus
@@ -49,11 +49,7 @@ class RpcResult(ABC):
 
     @staticmethod
     def failure(
-        value: Union[
-            UStatus,
-            "Failure",
-            Exception,
-        ] = None,
+        value: UStatus = None,
         code: UCode = UCode.UNKNOWN,
         message: str = "",
     ) -> "RpcResult":
@@ -83,16 +79,12 @@ class Success(RpcResult):
 class Failure(RpcResult):
     def __init__(
         self,
-        value: Union[UStatus, "Failure", Exception, None] = None,
+        value: UStatus = None,
         code: UCode = UCode.UNKNOWN,
         message: str = "",
     ):
         if isinstance(value, UStatus):
             self.value = value
-        elif isinstance(value, Exception):
-            self.value = UStatus(code=code, message=str(value))
-        elif isinstance(value, Failure):
-            self.value = value.failure_value()
         else:
             self.value = UStatus(code=code, message=message)
 

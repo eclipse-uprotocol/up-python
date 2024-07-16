@@ -41,10 +41,19 @@ class MyListener(UListener):
         assert umsg is not None
 
 
-class UPClientTest(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.listener = MyListener()
+async def register_and_unregister_request_handler(client, handler):
+    await client.register_request_handler(create_method_uri(), handler)
+    await client.unregister_request_handler(create_method_uri(), handler)
+
+
+async def unregister_listener_not_registered(client, listener):
+    result = await client.unregister_listener(create_topic(), listener)
+    assert result.code == UCode.NOT_FOUND
+
+
+class UClientTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.listener = MyListener()
 
     def test_create_upclient_with_null_transport(self):
         with self.assertRaises(ValueError):
@@ -84,7 +93,7 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         listener.on_receive = MagicMock()
 
         status = await UClient(MockUTransport()).unregister_notification_listener(create_topic(), listener)
-        self.assertEqual(status.code, UCode.INVALID_ARGUMENT)
+        self.assertEqual(status.code, UCode.NOT_FOUND)
 
     async def test_send_publish(self):
         status = await UClient(MockUTransport()).publish(create_topic())
@@ -158,14 +167,6 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
         # check for successfully subscribed
         self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
 
-    async def test_unsubscribe(self):
-        topic = UUri(ue_id=6, ue_version_major=1, resource_id=0x8000)
-        transport = HappyUnSubscribeUTransport()
-        upclient = UClient(transport)
-        status = await upclient.unsubscribe(topic, self.listener, None)
-        # check for successfully unsubscribed
-        self.assertEqual(status.code, UCode.OK)
-
     async def test_unregister_listener(self):
         topic = create_topic()
         my_listener = create_autospec(UListener, instance=True)
@@ -203,6 +204,39 @@ class UPClientTest(unittest.IsolatedAsyncioTestCase):
 
         await client.register_request_handler(create_method_uri(), handler)
         self.assertEqual(await client.notify(create_topic(), transport.get_source()), UStatus(code=UCode.OK))
+
+    async def test_happy_path_for_all_apis_async(self):
+        client = UClient(MockUTransport())
+
+        class MyUListener(UListener):
+            def on_receive(self, umsg: UMessage) -> None:
+                pass
+
+        class MyRequestHandler(RequestHandler):
+            def handle_request(self, message: UMessage) -> UPayload:
+                pass
+
+        async def run_tests():
+            listener = MyUListener()
+            handler = MyRequestHandler()
+            listener.on_receive = MagicMock()
+
+            tasks = [
+                client.notify(create_topic(), create_destination_uri()),
+                client.publish(create_topic()),
+                client.invoke_method(create_method_uri(), UPayload.pack(None), CallOptions.DEFAULT),
+                client.subscribe(create_topic(), listener),
+                client.unsubscribe(create_topic(), listener),
+                unregister_listener_not_registered(client, listener),
+                client.register_notification_listener(create_topic(), listener),
+                client.unregister_notification_listener(create_topic(), listener),
+                register_and_unregister_request_handler(client, handler),
+            ]
+
+            await asyncio.gather(*tasks)
+            client.close()
+
+        await run_tests()
 
 
 def create_topic():

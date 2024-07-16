@@ -86,14 +86,3 @@ class UPayload:
 
 # Initialize EMPTY outside the class definition
 UPayload.EMPTY = UPayload(data=bytes(), format=UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED)
-
-# Example usage:
-if __name__ == "__main__":
-    from google.protobuf.wrappers_pb2 import Int32Value  # Import Int32Value from Google protobuf wrappers
-
-    # Create an instance of Int32Value
-    int_value = Int32Value(value=42)
-
-    packed_int = UPayload.pack(int_value)
-    unpacked_int = UPayload.unpack(packed_int, Int32Value)
-    print("Unpacked Int32Value:", unpacked_int)

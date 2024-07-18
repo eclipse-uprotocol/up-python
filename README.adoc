@@ -3,7 +3,9 @@
 
 == Overview
 
-This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Python defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
+This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Python defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.
+
+Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
 The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet (ex. UPayload) This library fits into the big picture of the uProtocol SDK as seen in the diagram below.
 
@@ -63,22 +65,30 @@ The Library is broken up into different packages that are described in <<sdk-pac
 
 
 .SDK Packages
-[#sdk-packages,width=100%,cols="20%,80%",options="header"]
+[#sdk-packages,width=100%,cols="1,2,5",options="header"]
 |===
 
-| Package | Purpose
+| Package | Protocol Layer | Purpose
+
+| link:uprotocol/client/README.adoc[`*client*`]
+| https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l3[Application Layer (uP-L3)]
+| Top level client-facing interfaces to communication with USubscription, UDiscovery, and UTwin services.
+
+| link:uprotocol/communication/README.adoc[`*communication*`]
+| https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)]
+| Common implementation of communication messaging patterns (publisher, subscriber, Rpcclient, RpcServer, etc..) tha t is build on top of the L1 transport interface (see below)
+
+| link:uprotocol/transport/README.adoc[`*transport*`]
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[Transport Layer (uP-L1)]
+| Interface and data model for how to send() and receive() messages in a common way across various transport technologies (ex. zenoh, mqtt, http, etc...). the interface is implemented by transports (ex. up-transport-android-java), and the interface is then used to build the uProtocol layer 2 communication layer implementation.
 
 | link:uprotocol/uri/README.adoc[`*uri*`]
+|
 | Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network.
 
 | link:uprotocol/uuid/README.adoc[`*uuid*`]
+|
 | Identifier used to uniquely identify (and timestamp) messages that are sent.
-
-| link:uprotocol/communication/README.adoc[`*communication*`]
-| Interface to build entities that use UTransport APIs to communicate with other entities. This is described in further detail on the up-spec page about https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[L2 APIs].
-
-| link:uprotocol/transport/README.adoc[`*transport*`]
-| Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by client libraries (described https://github.com/eclipse-uprotocol/up-spec/blob/main/up-l1/README.adoc[here]) for a given underlying transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
 
 |===
 

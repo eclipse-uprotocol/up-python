@@ -17,7 +17,6 @@ The following folder contains implementations of the L2 Communication Layer APIs
 | Interface | Implementation(s) | Description  
 
 | xref:publisher.py[*Publisher*] | xref:simplepublisher.py[SimplePublisher] | Producers API to send publish or notification messages
-| xref:subscriber.py[*Subscriber*] | xref:inmemorysubscriber.py[InMemorySubscriber] | Consumers API to subscribe or unsubscribe to topics
 | xref:rpcclient.py[*RpcClient*] | xref:inmemoryrpcclient.py[InMemoryRpcClient] | Client interface to invoke a method
 | xref:rpcserver.py[*RpcServer*] | xref:inmemoryrpcserver.py[InMemoryRpcServer]| Server interface to register a listener for incoming RPC requests and automatically send a response
 | xref:notifier.py[*Notifier*] | xref:simplenotifier.py[SimpleNotifier] | Notification communication pattern APIs to notify and register a listener to receive the notifications
@@ -43,33 +42,6 @@ publisher : Publisher = UClient(transport)
 publisher.publish(topic)
 ----
 
-=== Subscribe and Unsubscribe
-[,python]
-----
-transport = # your UTransport instance
-
-#subscription topic
-topic : UUri = UUri( ue_id=4, ue_version_major=1, resource_id=0x8000)
-
-#Listener to process incoming events on the topic
-class MySubscriptionListener(UListener):
-    def on_receive(self, umsg: UMessage) -> None:
-        # Handle receiving published message
-        pass
-listener = MySubscriptionListener()
-# Optional handler that is called whenever the SubscriptionState changes for the subscriber
-class MySubscriptionChangeHandler(SubscriptionChangeHandler)
-     def handle_subscription_change(self, topic: UUri, status: SubscriptionStatus) -> None:
-        # Handle subscription status changes if you're interested like when
-        # the subscription state changes from SUBSCRIBE_PENDING to SUBSCRIBED
-        pass
-
-subscriber : Subscriber = UClient(transport)
-subscriber.subscribe(topic, listener, CallOptions.DEFAULT, MySubscriptionChangeHandler())
-
-#UnSubscribe from the topic
-subscriber.unsubscribe(topic, listener)
-----
 === Invoke a method using RPCClient
 [,python]
 ----

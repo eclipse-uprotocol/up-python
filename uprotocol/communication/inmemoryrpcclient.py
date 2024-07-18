@@ -34,7 +34,7 @@ class HandleResponsesListener(UListener):
     def __init__(self, requests):
         self.requests = requests
 
-    def on_receive(self, umsg: UMessage) -> None:
+    async def on_receive(self, umsg: UMessage) -> None:
         """
         Handle the responses coming back from the server asynchronously.
 
@@ -56,7 +56,6 @@ class HandleResponsesListener(UListener):
                 UStatusError.from_code_message(code=code, message=f"Communication error [{UCode.Name(code)}]")
             )
             return
-
         future.set_result(umsg)
 
 

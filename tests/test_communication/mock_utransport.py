@@ -81,13 +81,13 @@ class MockUTransport(UTransport):
 
         if message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST:
             response = self.build_response(message)
-            self._notify_listeners(response)
+            await self._notify_listeners(response)
 
         return UStatus(code=UCode.OK)
 
-    def _notify_listeners(self, response: UMessage):
+    async def _notify_listeners(self, response: UMessage):
         for listener in self.listeners:
-            listener.on_receive(response)
+            await listener.on_receive(response)
 
     async def register_listener(self, source: UUri, listener: UListener, sink: UUri = None) -> UStatus:
         self.listeners.append(listener)
@@ -136,6 +136,6 @@ class EchoUTransport(MockUTransport):
 
     async def send(self, message):
         response = self.build_response(message)
-        executor = ThreadPoolExecutor(max_workers=1)
-        executor.submit(self._notify_listeners, response)
+
+        await self._notify_listeners(response)
         return UStatus(code=UCode.OK)

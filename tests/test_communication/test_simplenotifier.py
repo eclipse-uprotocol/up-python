@@ -62,7 +62,7 @@ class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
         self.transport.get_source.return_value = self.source
 
         class TestListener(UListener):
-            def on_receive(self, message: UMessage):
+            async def on_receive(self, message: UMessage):
                 pass
 
         listener = TestListener()
@@ -78,7 +78,7 @@ class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
         self.transport.unregister_listener.return_value = UStatus(code=UCode.OK)
 
         class TestListener(UListener):
-            def on_receive(self, message: UMessage):
+            async def on_receive(self, message: UMessage):
                 pass
 
         listener = TestListener()
@@ -97,7 +97,7 @@ class TestSimpleNotifier(unittest.IsolatedAsyncioTestCase):
         self.transport.unregister_listener.return_value = UStatus(code=UCode.NOT_FOUND)
 
         class TestListener(UListener):
-            def on_receive(self, message: UMessage):
+            async def on_receive(self, message: UMessage):
                 pass
 
         listener = TestListener()

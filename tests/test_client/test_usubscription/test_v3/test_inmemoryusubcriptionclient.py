@@ -25,6 +25,9 @@ from uprotocol.communication.simplenotifier import SimpleNotifier
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
 from uprotocol.core.usubscription.v3.usubscription_pb2 import (
+    FetchSubscribersResponse,
+    FetchSubscriptionsRequest,
+    FetchSubscriptionsResponse,
     SubscriptionResponse,
     SubscriptionStatus,
     UnsubscribeResponse,
@@ -40,7 +43,7 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class MyListener(UListener):
-    def on_receive(self, umsg: UMessage) -> None:
+    async def on_receive(self, umsg: UMessage) -> None:
         pass
 
 
@@ -149,6 +152,19 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_not_called()
         self.transport.get_source.assert_called_once()
+
+    async def test_subscribe_when_register_notification_listener_return_failed_status(self):
+        self.transport.get_source.return_value = self.source
+
+        self.notifier.register_notification_listener.return_value = UStatus(code=UCode.INTERNAL)
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
+        self.assertIsNotNone(subscriber)
+
+        with self.assertRaises(UStatusError) as context:
+            await subscriber.subscribe(self.topic, self.listener)
+        self.assertEqual(UCode.INTERNAL, context.exception.status.code)
+        self.assertEqual("Failed to register listener for rpc client", context.exception.status.message)
 
     async def test_subscribe_using_mock_rpc_client_and_simplernotifier_when_invokemethod_return_an_ustatuserror(self):
         self.transport.get_source.return_value = self.source
@@ -319,7 +335,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
             await barrier.wait()  # Wait for the barrier again
             update = Update(topic=self.topic, status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED))
             message = UMessageBuilder.notification(self.topic, self.source).build_from_upayload(UPayload.pack(update))
-            listener.on_receive(message)
+            await listener.on_receive(message)
             return UStatus(code=UCode.OK)
 
         self.notifier.register_notification_listener = AsyncMock(side_effect=register_notification_listener)
@@ -346,10 +362,25 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
 
     async def test_unregister_listener_missing_listener(self):
         notifier = MagicMock(spec=SimpleNotifier)
+
         subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, notifier)
         with self.assertRaises(ValueError) as context:
             await subscriber.unregister_listener(self.topic, None)
         self.assertEqual(str(context.exception), "Request listener missing")
+
+    async def test_unregister_listener_happy_path(self):
+        class MyListener(UListener):
+            async def on_receive(self, umsg: UMessage) -> None:
+                pass
+
+        listener = MyListener()
+        notifier = MagicMock(spec=SimpleNotifier)
+        self.transport.unregister_listener.return_value = UStatus(code=UCode.OK)
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, notifier)
+        # with self.assertRaises(ValueError) as context:
+        status = await subscriber.unregister_listener(self.topic, listener)
+        self.assertEqual(UCode.OK, status.code)
 
     async def test_unsubscribe_missing_topic(self):
         notifier = MagicMock(spec=SimpleNotifier)
@@ -365,12 +396,26 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
             await subscriber.unsubscribe(self.topic, None, CallOptions())
         self.assertEqual(str(context.exception), "Listener missing")
 
+    async def test_unsubscribe_missing_options(self):
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.unsubscribe(self.topic, self.listener, None)
+        self.assertEqual(str(context.exception), "CallOptions missing")
+
     async def test_subscribe_missing_topic(self):
         notifier = MagicMock(spec=SimpleNotifier)
         subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, notifier)
         with self.assertRaises(ValueError) as context:
             await subscriber.subscribe(None, self.listener, CallOptions())
         self.assertEqual(str(context.exception), "Subscribe topic missing")
+
+    async def test_subscribe_missing_options(self):
+        notifier = MagicMock(spec=SimpleNotifier)
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, notifier)
+        with self.assertRaises(ValueError) as context:
+            await subscriber.subscribe(self.topic, self.listener, None)
+        self.assertEqual(str(context.exception), "CallOptions missing")
 
     async def test_subscribe_missing_listener(self):
         notifier = MagicMock(spec=SimpleNotifier)
@@ -449,8 +494,9 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
 
         self.transport.get_source.return_value = self.source
 
-        self.rpc_client.invoke_method.return_value = UStatusError.from_code_message(code=UCode.PERMISSION_DENIED,
-                                                                                    message="Not permitted")
+        self.rpc_client.invoke_method.return_value = UStatusError.from_code_message(
+            code=UCode.PERMISSION_DENIED, message="Not permitted"
+        )
 
         # Initialize the subscription client
         subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
@@ -518,6 +564,118 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(self.rpc_client.invoke_method.call_count, 2)
         self.assertEqual(self.transport.get_source.call_count, 2)
+
+    async def test_unregister_notification_api_for_the_happy_path(self):
+        handler = MagicMock(spec=SubscriptionChangeHandler)
+        handler.handle_subscription_change.return_value = NotImplementedError(
+            "Unimplemented method 'handle_subscription_change'"
+        )
+        self.transport.get_source.return_value = self.source
+        self.rpc_client.invoke_method.return_value = UPayload.pack(None)
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
+        self.assertIsNotNone(subscriber)
+
+        try:
+            await subscriber.register_for_notifications(self.topic, handler)
+            await subscriber.unregister_for_notifications(self.topic, handler)
+        except Exception as e:
+            self.fail(f"Exception occurred: {e}")
+
+    async def test_unregister_notification_api_topic_missing(self):
+        handler = MagicMock(spec=SubscriptionChangeHandler)
+        handler.handle_subscription_change.return_value = NotImplementedError(
+            "Unimplemented method 'handle_subscription_change'"
+        )
+        self.transport.get_source.return_value = self.source
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
+        self.assertIsNotNone(subscriber)
+        with self.assertRaises(ValueError) as error:
+            await subscriber.unregister_for_notifications(None, handler)
+        self.assertEqual("Topic missing", str(error.exception))
+
+    async def test_unregister_notification_api_handler_missing(self):
+        self.transport.get_source.return_value = self.source
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
+        self.assertIsNotNone(subscriber)
+        with self.assertRaises(ValueError) as error:
+            await subscriber.unregister_for_notifications(self.topic, None)
+        self.assertEqual("Handler missing", str(error.exception))
+
+    async def test_unregister_notification_api_options_none(self):
+        handler = MagicMock(spec=SubscriptionChangeHandler)
+        handler.handle_subscription_change.return_value = NotImplementedError(
+            "Unimplemented method 'handle_subscription_change'"
+        )
+        self.transport.get_source.return_value = self.source
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
+        self.assertIsNotNone(subscriber)
+        with self.assertRaises(ValueError) as error:
+            await subscriber.unregister_for_notifications(self.topic, handler, None)
+        self.assertEqual("CallOptions missing", str(error.exception))
+
+    async def test_register_notification_api_options_none(self):
+        handler = MagicMock(spec=SubscriptionChangeHandler)
+        handler.handle_subscription_change.return_value = NotImplementedError(
+            "Unimplemented method 'handle_subscription_change'"
+        )
+        self.transport.get_source.return_value = self.source
+
+        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
+        self.assertIsNotNone(subscriber)
+        with self.assertRaises(ValueError) as error:
+            await subscriber.register_for_notifications(self.topic, handler, None)
+        self.assertEqual("CallOptions missing", str(error.exception))
+
+    async def test_fetch_subscribers_when_passing_null_topic(self):
+        subscriber = InMemoryUSubscriptionClient(self.transport)
+
+        with self.assertRaises(ValueError) as error:
+            await subscriber.fetch_subscribers(None)
+        self.assertEqual("Topic missing", str(error.exception))
+
+    async def test_fetch_subscribers_when_passing_null_calloptions(self):
+        subscriber = InMemoryUSubscriptionClient(self.transport)
+
+        with self.assertRaises(ValueError) as error:
+            await subscriber.fetch_subscribers(self.topic, None)
+        self.assertEqual("CallOptions missing", str(error.exception))
+
+    async def test_fetch_subscribers_passing_a_valid_topic(self):
+        subscriber = InMemoryUSubscriptionClient(MockUTransport())
+
+        try:
+            response = await subscriber.fetch_subscribers(self.topic)
+            self.assertEqual(response, FetchSubscribersResponse())
+        except Exception as e:
+            self.fail(f"Exception occurred: {e}")
+
+    async def test_fetch_subscriptions_when_passing_null_request(self):
+        subscriber = InMemoryUSubscriptionClient(self.transport)
+
+        with self.assertRaises(ValueError) as error:
+            await subscriber.fetch_subscriptions(None)
+        self.assertEqual("Request missing", str(error.exception))
+
+    async def test_fetch_subscriptions_when_passing_null_calloptions(self):
+        subscriber = InMemoryUSubscriptionClient(self.transport)
+
+        with self.assertRaises(ValueError) as error:
+            await subscriber.fetch_subscriptions(FetchSubscriptionsRequest(), None)
+        self.assertEqual("CallOptions missing", str(error.exception))
+
+    async def test_fetch_subscriptions_passing_a_valid_fetch_subscription_request(self):
+        request = FetchSubscriptionsRequest(topic=self.topic)
+        subscriber = InMemoryUSubscriptionClient(MockUTransport())
+
+        try:
+            response = await subscriber.fetch_subscriptions(request)
+            self.assertEqual(response, FetchSubscriptionsResponse())
+        except Exception as e:
+            self.fail(f"Exception occurred: {e}")
 
 
 if __name__ == '__main__':

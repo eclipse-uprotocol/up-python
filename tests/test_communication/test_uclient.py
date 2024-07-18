@@ -30,7 +30,7 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class MyListener(UListener):
-    def on_receive(self, umsg: UMessage) -> None:
+    async def on_receive(self, umsg: UMessage) -> None:
         # Handle receiving subscriptions here
         assert umsg is not None
 
@@ -185,7 +185,7 @@ class UClientTest(unittest.IsolatedAsyncioTestCase):
         client = UClient(MockUTransport())
 
         class MyUListener(UListener):
-            def on_receive(self, umsg: UMessage) -> None:
+            async def on_receive(self, umsg: UMessage) -> None:
                 pass
 
         class MyRequestHandler(RequestHandler):

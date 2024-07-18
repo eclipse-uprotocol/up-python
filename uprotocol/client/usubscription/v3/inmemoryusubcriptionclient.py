@@ -29,6 +29,7 @@ from uprotocol.core.usubscription.v3.usubscription_pb2 import (
     FetchSubscribersRequest,
     FetchSubscribersResponse,
     FetchSubscriptionsRequest,
+    FetchSubscriptionsResponse,
     NotificationsRequest,
     NotificationsResponse,
     SubscriberInfo,
@@ -39,7 +40,6 @@ from uprotocol.core.usubscription.v3.usubscription_pb2 import (
     UnsubscribeResponse,
     Update,
 )
-
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.factory.uri_factory import UriFactory
@@ -55,7 +55,7 @@ class MyNotificationListener(UListener):
     def __init__(self, handlers):
         self.handlers = handlers
 
-    def on_receive(self, message: UMessage) -> None:
+    async def on_receive(self, message: UMessage) -> None:
         """
         Handles incoming notifications from the USubscription service.
 
@@ -85,7 +85,9 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
     that also stores RPC correlation information within the objects
     """
 
-    def __init__(self, transport: UTransport, rpc_client: Optional[RpcClient] = None, notifier: Optional[Notifier] = None):
+    def __init__(
+        self, transport: UTransport, rpc_client: Optional[RpcClient] = None, notifier: Optional[Notifier] = None
+    ):
         """
         Creates a new USubscription client passing UTransport, CallOptions, and an implementation
         of RpcClient and Notifier.
@@ -150,7 +152,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
         if not listener:
             raise ValueError("Request listener missing")
         if not options:
-            raise ValueError("Call Options missing")
+            raise ValueError("CallOptions missing")
 
         if not self.is_listener_registered:
             # Ensure listener is registered before proceeding
@@ -349,4 +351,4 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
             raise ValueError("CallOptions missing")
 
         result = self.rpc_client.invoke_method(self.fetch_subscriptions_uri, UPayload.pack(request), options)
-        return await RpcMapper.map_response(result, FetchSubscribersResponse)
+        return await RpcMapper.map_response(result, FetchSubscriptionsResponse)

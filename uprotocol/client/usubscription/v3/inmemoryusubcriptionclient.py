@@ -14,16 +14,23 @@ SPDX-License-Identifier: Apache-2.0
 
 from typing import Dict, Optional
 
+from uprotocol.client.usubscription.v3.subscriptionchangehandler import SubscriptionChangeHandler
+from uprotocol.client.usubscription.v3.usubscriptionclient import USubscriptionClient
 from uprotocol.communication.calloptions import CallOptions
+from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.notifier import Notifier
 from uprotocol.communication.rpcclient import RpcClient
 from uprotocol.communication.rpcmapper import RpcMapper
-from uprotocol.communication.subscriber import Subscriber
-from uprotocol.communication.subscriptionchangehandler import SubscriptionChangeHandler
+from uprotocol.communication.simplenotifier import SimpleNotifier
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
 from uprotocol.core.usubscription.v3 import usubscription_pb2
 from uprotocol.core.usubscription.v3.usubscription_pb2 import (
+    FetchSubscribersRequest,
+    FetchSubscribersResponse,
+    FetchSubscriptionsRequest,
+    NotificationsRequest,
+    NotificationsResponse,
     SubscriberInfo,
     SubscriptionRequest,
     SubscriptionResponse,
@@ -32,6 +39,7 @@ from uprotocol.core.usubscription.v3.usubscription_pb2 import (
     UnsubscribeResponse,
     Update,
 )
+
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.factory.uri_factory import UriFactory
@@ -70,32 +78,30 @@ class MyNotificationListener(UListener):
                     pass
 
 
-class InMemorySubscriber(Subscriber):
+class InMemoryUSubscriptionClient(USubscriptionClient):
     """
-    The following is an in-memory implementation of the Subscriber interface that
-    wraps the UTransport for implementing the Subscriber-side of the pub/sub
-    messaging pattern to allow developers to subscribe and unsubscribe to topics.
-    This implementation uses the InMemoryRpcClient and SimpleNotifier interfaces
-    to invoke the subscription request message to the usubscription service, and register
-    to receive notifications for changes from the uSubscription service.
+    Implementation of USubscriptionClient that caches state information within the object
+    and used for single tenant applications (ex. in-vehicle). The implementation uses InMemoryRpcClient
+    that also stores RPC correlation information within the objects
     """
 
-    def __init__(self, transport: UTransport, rpc_client: RpcClient, notifier: Notifier):
+    def __init__(self, transport: UTransport, rpc_client: Optional[RpcClient] = None, notifier: Optional[Notifier] = None):
         """
-        Creates a new subscriber for existing Communication Layer client implementations.
+        Creates a new USubscription client passing UTransport, CallOptions, and an implementation
+        of RpcClient and Notifier.
 
-        :param transport: The transport to use for sending the notifications
-        :param rpc_client: The RPC client to use for sending the RPC requests
-        :param notifier: The notifier to register notification listeners
+        :param transport: The transport to use for sending the notifications.
+        :param rpcClient: The RPC client to use for sending the RPC requests.
+        :param notifier: The notifier to use for registering the notification listener.
         """
         if not transport:
             raise ValueError(UTransport.TRANSPORT_NULL_ERROR)
         elif not isinstance(transport, UTransport):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
-        elif not rpc_client:
-            raise ValueError("RpcClient missing")
-        elif not notifier:
-            raise ValueError("Notifier missing")
+        if not rpc_client:
+            rpc_client = InMemoryRpcClient(transport)
+        if not notifier:
+            notifier = SimpleNotifier(transport)
         self.transport = transport
         self.rpc_client = rpc_client
         self.notifier = notifier
@@ -106,12 +112,16 @@ class InMemorySubscriber(Subscriber):
         self.notification_uri = UriFactory.from_proto(service_descriptor, 0x8000)
         self.subscribe_uri = UriFactory.from_proto(service_descriptor, 1)
         self.unsubscribe_uri = UriFactory.from_proto(service_descriptor, 2)
+        self.fetch_subscribers_uri = UriFactory.from_proto(service_descriptor, 8)
+        self.fetch_subscriptions_uri = UriFactory.from_proto(service_descriptor, 3)
+        self.register_for_notification_uri = UriFactory.from_proto(service_descriptor, 6)
+        self.unregister_for_notification_uri = UriFactory.from_proto(service_descriptor, 7)
 
     async def subscribe(
         self,
         topic: UUri,
         listener: UListener,
-        options: CallOptions = None,
+        options: CallOptions = CallOptions.DEFAULT,
         handler: Optional[SubscriptionChangeHandler] = None,
     ) -> SubscriptionResponse:
         """
@@ -128,8 +138,8 @@ class InMemorySubscriber(Subscriber):
         returned.
 
         :param topic: The topic to subscribe to.
-        :param listener: The listener function to be called when a message is received on the topic.
-        :param options: Optional call options for the subscription.
+        :param listener: The listener function to be called when messages are received.
+        :param options: Optional call options to be used for the subscription.
         :param handler: Optional handler function for handling subscription state changes.
         :return: An async operation that yields a SubscriptionResponse upon success or raises an exception with
                  the failure reason as UStatus. UCode.ALREADY_EXISTS will be returned if called multiple times
@@ -139,6 +149,8 @@ class InMemorySubscriber(Subscriber):
             raise ValueError("Subscribe topic missing")
         if not listener:
             raise ValueError("Request listener missing")
+        if not options:
+            raise ValueError("Call Options missing")
 
         if not self.is_listener_registered:
             # Ensure listener is registered before proceeding
@@ -175,7 +187,9 @@ class InMemorySubscriber(Subscriber):
             self.handlers[topic_str] = handler
         return response
 
-    async def unsubscribe(self, topic: UUri, listener: UListener, options: CallOptions = None) -> UStatus:
+    async def unsubscribe(
+        self, topic: UUri, listener: UListener, options: CallOptions = CallOptions.DEFAULT
+    ) -> UStatus:
         """
         Unsubscribes from a given topic.
 
@@ -186,13 +200,15 @@ class InMemorySubscriber(Subscriber):
 
         :param topic: The topic to unsubscribe from.
         :param listener: The listener function associated with the topic.
-        :param options: Optional call options for the subscription.
+        :param options: Optional call options to be used for the unsubscription.
         :return: An async operation that yields a UStatus indicating the result of the unsubscribe request.
         """
         if not topic:
             raise ValueError("Unsubscribe topic missing")
         if not listener:
             raise ValueError("Listener missing")
+        if not options:
+            raise ValueError("CallOptions missing")
         unsubscribe_request = UnsubscribeRequest(topic=topic)
         future_result = self.rpc_client.invoke_method(self.unsubscribe_uri, UPayload.pack(unsubscribe_request), options)
 
@@ -218,7 +234,9 @@ class InMemorySubscriber(Subscriber):
             raise ValueError("Unsubscribe topic missing")
         if not listener:
             raise ValueError("Request listener missing")
-        return await self.transport.unregister_listener(topic, listener)
+        status = await self.transport.unregister_listener(topic, listener)
+        self.handlers.pop(UriSerializer.serialize(topic), None)
+        return status
 
     def close(self):
         """
@@ -226,3 +244,109 @@ class InMemorySubscriber(Subscriber):
         """
         self.handlers.clear()
         self.notifier.unregister_notification_listener(self.notification_uri, self.notification_handler)
+
+    async def register_for_notifications(
+        self, topic: UUri, handler: SubscriptionChangeHandler, options: Optional[CallOptions] = CallOptions.DEFAULT
+    ):
+        """
+        Register for Subscription Change Notifications.
+
+        This API allows producers to register to receive subscription change notifications for
+        topics that they produce only.
+
+        :param topic: UUri, The topic to register for notifications.
+        :param handler: callable, The SubscriptionChangeHandler to handle the subscription changes.
+        :param options: CallOptions, The CallOptions to be used for the register request.
+
+        :return: asyncio.Future[NotificationsResponse], A future object that completes with NotificationsResponse
+            if the uSubscription service accepts the request to register the caller to be notified of subscription
+            changes, or raises an exception if there is a failure reason.
+        """
+        if not topic:
+            raise ValueError("Topic missing")
+        if not handler:
+            raise ValueError("Handler missing")
+        if not options:
+            raise ValueError("CallOptions missing")
+
+        request = NotificationsRequest(topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source()))
+
+        response = self.rpc_client.invoke_method(self.register_for_notification_uri, UPayload.pack(request), options)
+        notifications_response = await RpcMapper.map_response(response, NotificationsResponse)
+        if handler:
+            topic_str = UriSerializer.serialize(topic)
+            if topic_str in self.handlers and self.handlers[topic_str] != handler:
+                raise UStatusError.from_code_message(UCode.ALREADY_EXISTS, "Handler already registered")
+            self.handlers[topic_str] = handler
+
+        return notifications_response
+
+    async def unregister_for_notifications(
+        self, topic: UUri, handler: SubscriptionChangeHandler, options: Optional[CallOptions] = CallOptions.DEFAULT
+    ):
+        """
+        Unregister for subscription change notifications.
+
+        :param topic: The topic to unregister for notifications.
+        :param handler: The `SubscriptionChangeHandler` to handle the subscription changes.
+        :param options: The `CallOptions` to be used for the unregister request.
+        :return: A `NotificationResponse` with the status of the API call to the uSubscription service,
+                 or a `UStatus` with the reason for the failure. `UCode.PERMISSION_DENIED` is returned if the
+                 topic `ue_id` does not equal the caller's `ue_id`.
+        """
+        if not topic:
+            raise ValueError("Topic missing")
+        if not handler:
+            raise ValueError("Handler missing")
+        if not options:
+            raise ValueError("CallOptions missing")
+
+        request = NotificationsRequest(topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source()))
+
+        response = self.rpc_client.invoke_method(self.unregister_for_notification_uri, UPayload.pack(request), options)
+        notifications_response = await RpcMapper.map_response(response, NotificationsResponse)
+
+        self.handlers.pop(UriSerializer.serialize(topic), None)
+
+        return notifications_response
+
+    async def fetch_subscribers(self, topic: UUri, options: Optional[CallOptions] = CallOptions.DEFAULT):
+        """
+        Fetch the list of subscribers for a given produced topic.
+
+        :param topic: The topic to fetch the subscribers for.
+        :param options: The `CallOptions` to be used for the fetch request.
+        :return: A `FetchSubscribersResponse` that contains the list of subscribers,
+                 or a `UStatus` with the reason for the failure.
+        """
+        if topic is None:
+            raise ValueError("Topic missing")
+        if options is None:
+            raise ValueError("CallOptions missing")
+
+        request = FetchSubscribersRequest(topic=topic)
+        result = self.rpc_client.invoke_method(self.fetch_subscribers_uri, UPayload.pack(request), options)
+        return await RpcMapper.map_response(result, FetchSubscribersResponse)
+
+    async def fetch_subscriptions(
+        self, request: FetchSubscriptionsRequest, options: Optional[CallOptions] = CallOptions.DEFAULT
+    ):
+        """
+        Fetch the list of subscriptions for a given topic.
+
+        This API provides more information than `fetch_subscribers()` as it also returns
+        `SubscribeAttributes` per subscriber, which might be useful for the producer to know.
+
+        :param request: The request to fetch subscriptions for.
+        :param options: The `CallOptions` to be used for the request.
+        :return: A `FetchSubscriptionsResponse` that contains the subscription information per subscriber to the topic.
+                 If unsuccessful, returns a `UStatus` with the reason for the failure.
+                 `UCode.PERMISSION_DENIED` is returned if the topic `ue_id` does not equal the caller's `ue_id`.
+        """
+        if request is None:
+            raise ValueError("Request missing")
+        if options is None:
+            raise ValueError("CallOptions missing")
+
+        result = self.rpc_client.invoke_method(self.fetch_subscriptions_uri, UPayload.pack(request), options)
+        return await RpcMapper.map_response(result, FetchSubscribersResponse)

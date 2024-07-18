@@ -22,12 +22,6 @@ from uprotocol.communication.requesthandler import RequestHandler
 from uprotocol.communication.uclient import UClient
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
-from uprotocol.core.usubscription.v3.usubscription_pb2 import (
-    SubscriptionResponse,
-    SubscriptionStatus,
-    UnsubscribeResponse,
-)
-from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.ulistener import UListener
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.umessage_pb2 import UMessage
@@ -159,24 +153,6 @@ class UClientTest(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(future_result1.exception())
         self.assertFalse(future_result2.exception())
 
-    async def test_subscribe_happy_path(self):
-        topic = UUri(ue_id=4, ue_version_major=1, resource_id=0x8000)
-        transport = HappySubscribeUTransport()
-        upclient = UClient(transport)
-        subscription_response = await upclient.subscribe(topic, self.listener, CallOptions(timeout=5000))
-        # check for successfully subscribed
-        self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
-
-    async def test_unregister_listener(self):
-        topic = create_topic()
-        my_listener = create_autospec(UListener, instance=True)
-
-        subscriber = UClient(HappySubscribeUTransport())
-        subscription_response = await subscriber.subscribe(topic, my_listener, CallOptions.DEFAULT)
-        self.assertTrue(subscription_response.status.state == SubscriptionStatus.State.SUBSCRIBED)
-        status = await subscriber.unregister_listener(topic, my_listener)
-        self.assertEqual(status.code, UCode.OK)
-
     async def test_registering_request_listener(self):
         handler = create_autospec(RequestHandler, instance=True)
         server = UClient(MockUTransport())
@@ -225,9 +201,6 @@ class UClientTest(unittest.IsolatedAsyncioTestCase):
                 client.notify(create_topic(), create_destination_uri()),
                 client.publish(create_topic()),
                 client.invoke_method(create_method_uri(), UPayload.pack(None), CallOptions.DEFAULT),
-                client.subscribe(create_topic(), listener),
-                client.unsubscribe(create_topic(), listener),
-                unregister_listener_not_registered(client, listener),
                 client.register_notification_listener(create_topic(), listener),
                 client.unregister_notification_listener(create_topic(), listener),
                 register_and_unregister_request_handler(client, handler),
@@ -249,26 +222,6 @@ def create_destination_uri():
 
 def create_method_uri():
     return UUri(authority_name="neelam", ue_id=4, ue_version_major=1, resource_id=3)
-
-
-class HappySubscribeUTransport(MockUTransport):
-    def build_response(self, request):
-        return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(
-            UPayload.pack(
-                SubscriptionResponse(
-                    status=SubscriptionStatus(
-                        state=SubscriptionStatus.State.SUBSCRIBED, message="Successfully Subscribed"
-                    )
-                )
-            )
-        )
-
-
-class HappyUnSubscribeUTransport(MockUTransport):
-    def build_response(self, request):
-        return UMessageBuilder.response_for_request(request.attributes).build_from_upayload(
-            UPayload.pack(UnsubscribeResponse())
-        )
 
 
 class CommStatusTransport(MockUTransport):

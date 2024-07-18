@@ -15,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 from abc import ABC, abstractmethod
 
 from uprotocol.transport.ulistener import UListener
+from uprotocol.uri.factory.uri_factory import UriFactory
 from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
@@ -39,7 +40,9 @@ class UTransport(ABC):
         pass
 
     @abstractmethod
-    async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def register_listener(
+        self, source_filter: UUri, listener: UListener, sink_filter: UUri = UriFactory.ANY
+    ) -> UStatus:
         """Register UListener for UUri source and sink filters to be called when
         a message is received.
 
@@ -56,7 +59,9 @@ class UTransport(ABC):
         pass
 
     @abstractmethod
-    async def unregister_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
+    async def unregister_listener(
+        self, source_filter: UUri, listener: UListener, sink_filter: UUri = UriFactory.ANY
+    ) -> UStatus:
         """Unregister UListener for UUri source and sink filters. Messages
         arriving at this topic will no longer be processed by this listener.
 

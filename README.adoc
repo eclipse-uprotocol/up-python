@@ -76,7 +76,7 @@ The Library is broken up into different packages that are described in <<sdk-pac
 
 | link:uprotocol/communication/README.adoc[`*communication*`]
 | https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)]
-| Common implementation of communication messaging patterns (publisher, subscriber, Rpcclient, RpcServer, etc..) tha t is build on top of the L1 transport interface (see below)
+| Common implementation of communication messaging patterns (publisher, subscriber, Rpcclient, RpcServer, etc..) that is build on top of the L1 transport interface (see below)
 
 | link:uprotocol/transport/README.adoc[`*transport*`]
 | https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[Transport Layer (uP-L1)]

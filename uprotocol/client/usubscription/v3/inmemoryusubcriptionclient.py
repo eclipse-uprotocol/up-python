@@ -53,6 +53,13 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 
 class MyNotificationListener(UListener):
     def __init__(self, handlers):
+        """
+        Initializes a new instance of the MyNotificationListener class.
+
+        :param handlers: A dictionary mapping topics to their respective handlers.
+                         The handlers are responsible for processing subscription
+                         change notifications for their corresponding topics.
+        """
         self.handlers = handlers
 
     async def on_receive(self, message: UMessage) -> None:
@@ -93,12 +100,12 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
         of RpcClient and Notifier.
 
         :param transport: The transport to use for sending the notifications.
-        :param rpcClient: The RPC client to use for sending the RPC requests.
+        :param rpc_client: The RPC client to use for sending the RPC requests.
         :param notifier: The notifier to use for registering the notification listener.
         """
         if not transport:
             raise ValueError(UTransport.TRANSPORT_NULL_ERROR)
-        elif not isinstance(transport, UTransport):
+        if not isinstance(transport, UTransport):
             raise ValueError(UTransport.TRANSPORT_NOT_INSTANCE_ERROR)
         if not rpc_client:
             rpc_client = InMemoryRpcClient(transport)

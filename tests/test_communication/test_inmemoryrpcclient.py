@@ -14,7 +14,12 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from tests.test_communication.mock_utransport import CommStatusTransport, MockUTransport, TimeoutUTransport
+from tests.test_communication.mock_utransport import (
+    CommStatusTransport,
+    CommStatusUCodeOKTransport,
+    MockUTransport,
+    TimeoutUTransport,
+)
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.upayload import UPayload
@@ -100,6 +105,12 @@ class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):
             await rpc_client.invoke_method(self.create_method_uri(), payload, None)
         self.assertEqual(UCode.FAILED_PRECONDITION, context.exception.status.code)
         self.assertEqual("Communication error [FAILED_PRECONDITION]", context.exception.status.message)
+
+    async def test_invoke_method_with_comm_status_transport(self):
+        rpc_client = InMemoryRpcClient(CommStatusUCodeOKTransport())
+        payload = UPayload.pack_to_any(UUri())
+        response = await rpc_client.invoke_method(self.create_method_uri(), payload, None)
+        self.assertEqual(UCode.OK, UPayload.unpack(response, UStatus).code)
 
     async def test_invoke_method_with_error_transport(self):
         class ErrorUTransport(MockUTransport):

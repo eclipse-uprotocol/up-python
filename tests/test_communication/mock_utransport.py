@@ -130,6 +130,16 @@ class CommStatusTransport(MockUTransport):
         )
 
 
+class CommStatusUCodeOKTransport(MockUTransport):
+    def build_response(self, request):
+        status = UStatus(code=UCode.OK, message="No Communication Error")
+        return (
+            UMessageBuilder.response_for_request(request.attributes)
+            .with_commstatus(status.code)
+            .build_from_upayload(UPayload.pack(status))
+        )
+
+
 class EchoUTransport(MockUTransport):
     def build_response(self, request):
         return request

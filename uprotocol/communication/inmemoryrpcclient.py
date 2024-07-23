@@ -50,7 +50,7 @@ class HandleResponsesListener(UListener):
         if not future:
             return
 
-        if response_attributes.commstatus:
+        if response_attributes.commstatus and response_attributes.commstatus != UCode.OK:
             code = response_attributes.commstatus
             future.set_exception(
                 UStatusError.from_code_message(code=code, message=f"Communication error [{UCode.Name(code)}]")

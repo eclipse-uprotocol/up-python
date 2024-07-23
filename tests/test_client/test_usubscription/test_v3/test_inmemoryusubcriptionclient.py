@@ -272,6 +272,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.transport.get_source.call_count, 2)
 
     async def test_unsubscribe_using_mock_rpcclient_and_simplernotifier(self):
+        self.transport.get_source.return_value = self.source
         self.transport.register_listener.return_value = UStatus(code=UCode.OK)
         self.transport.unregister_listener.return_value = UStatus(code=UCode.OK)
         self.rpc_client.invoke_method.return_value = UPayload.pack(UnsubscribeResponse())
@@ -289,6 +290,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.transport.unregister_listener.assert_called_once()
 
     async def test_unsubscribe_when_invokemethod_return_an_exception(self):
+        self.transport.get_source.return_value = self.source
         self.transport.register_listener.return_value = UStatus(code=UCode.OK)
         self.transport.unregister_listener.return_value = UStatus(code=UCode.OK)
         self.rpc_client.invoke_method.return_value = UStatusError.from_code_message(
@@ -306,6 +308,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.transport.unregister_listener.assert_not_called()
 
     async def test_unsubscribe_when_invokemethod_returned_ok_but_we_failed_to_unregister_the_listener(self):
+        self.transport.get_source.return_value = self.source
         self.transport.register_listener.return_value = UStatus(code=UCode.OK)
         self.transport.unregister_listener.return_value = UStatusError.from_code_message(UCode.ABORTED, "aborted")
         self.rpc_client.invoke_method.return_value = UPayload.pack(

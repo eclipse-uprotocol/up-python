@@ -218,7 +218,9 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
             raise ValueError("Listener missing")
         if not options:
             raise ValueError("CallOptions missing")
-        unsubscribe_request = UnsubscribeRequest(topic=topic)
+        unsubscribe_request = UnsubscribeRequest(
+            topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source())
+        )
         future_result = self.rpc_client.invoke_method(self.unsubscribe_uri, UPayload.pack(unsubscribe_request), options)
 
         response = await RpcMapper.map_response_to_result(future_result, UnsubscribeResponse)

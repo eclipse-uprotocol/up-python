@@ -17,26 +17,20 @@ from typing import Optional
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.inmemoryrpcserver import InMemoryRpcServer
-from uprotocol.communication.inmemorysubscriber import InMemorySubscriber
 from uprotocol.communication.notifier import Notifier
 from uprotocol.communication.publisher import Publisher
 from uprotocol.communication.rpcclient import RpcClient
 from uprotocol.communication.rpcserver import RpcServer
 from uprotocol.communication.simplenotifier import SimpleNotifier
 from uprotocol.communication.simplepublisher import SimplePublisher
-from uprotocol.communication.subscriber import Subscriber
-from uprotocol.communication.subscriptionchangehandler import SubscriptionChangeHandler
 from uprotocol.communication.upayload import UPayload
-from uprotocol.core.usubscription.v3.usubscription_pb2 import (
-    SubscriptionResponse,
-)
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
 
 
-class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
+class UClient(RpcServer, Notifier, Publisher, RpcClient):
     """
     UClient provides a unified interface for various communication patterns over a UTransport instance,
     including RPC, subscriptions, notifications, and message publishing. It combines functionalities
@@ -64,59 +58,6 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
         self.publisher = SimplePublisher(self.transport)
         self.notifier = SimpleNotifier(self.transport)
         self.rpc_client = InMemoryRpcClient(self.transport)
-        self.subscriber = InMemorySubscriber(self.transport, self.rpc_client, self.notifier)
-
-    async def subscribe(
-        self,
-        topic: UUri,
-        listener: UListener,
-        options: Optional[CallOptions] = None,
-        handler: Optional[SubscriptionChangeHandler] = None,
-    ) -> SubscriptionResponse:
-        """
-        Subscribe to a given topic asynchronously.
-
-        The API will return a SubscriptionResponse or raise an exception if the subscription fails.
-        It registers the listener to be called when messages are received and allows the caller to register
-        a SubscriptionChangeHandler that is called whenever the subscription state changes (e.g., PENDING_SUBSCRIBED to
-        SUBSCRIBED, SUBSCRIBED to UNSUBSCRIBED, etc.).
-
-        :param topic: The topic to subscribe to.
-        :param listener: The UListener that is called when published messages are received.
-        :param options: The CallOptions to provide additional information (timeout, token, etc.).
-        :param handler: SubscriptionChangeHandler to handle changes to subscription states.
-        :return: Returns the SubscriptionResponse or raises an exception with the failure reason as UStatus.
-        """
-        return await self.subscriber.subscribe(topic, listener, options, handler)
-
-    async def unsubscribe(
-        self, topic: UUri, listener: UListener, options: Optional[CallOptions] = CallOptions.DEFAULT
-    ) -> UStatus:
-        """
-        Unsubscribe to a given topic asynchronously.
-
-        The subscriber no longer wishes to be subscribed to the specified topic, trigger an unsubscribe
-        request to the USubscription service.
-
-        :param topic: The topic to unsubscribe to.
-        :param listener: The listener to be called when a message is received on the topic.
-        :param options: The call options for the subscription.
-        :return: Returns UStatus with the result from the unsubscribe request.
-        """
-        return await self.subscriber.unsubscribe(topic, listener, options)
-
-    async def unregister_listener(self, topic: UUri, listener: UListener) -> UStatus:
-        """
-        Unregister a listener from a topic.
-
-        This method will only unregister the listener for a given subscription thus allowing a uE to stay
-        subscribed even if the listener is removed.
-
-        :param topic: The topic to subscribe to.
-        :param listener: The listener to be called when a message is received on the topic.
-        :return: Returns UStatus with the status of the listener unregister request.
-        """
-        return await self.subscriber.unregister_listener(topic, listener)
 
     async def notify(
         self, topic: UUri, destination: UUri, options: Optional[CallOptions] = None, payload: Optional[UPayload] = None
@@ -207,5 +148,3 @@ class UClient(RpcServer, Subscriber, Notifier, Publisher, RpcClient):
     def close(self):
         if self.rpc_client:
             self.rpc_client.close()
-        if self.subscriber:
-            self.subscriber.close()

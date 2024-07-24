@@ -34,7 +34,7 @@ class HandleRequestListener(UListener):
         self.transport = transport
         self.request_handlers = request_handlers
 
-    def on_receive(self, request: UMessage) -> None:
+    async def on_receive(self, request: UMessage) -> None:
         """
         Generic incoming handler to process RPC requests from clients.
 
@@ -61,8 +61,7 @@ class HandleRequestListener(UListener):
             if isinstance(e, UStatusError):
                 code = e.get_code()
             response_builder.with_commstatus(code)
-
-        self.transport.send(response_builder.build_from_upayload(response_payload))
+        await self.transport.send(response_builder.build_from_upayload(response_payload))
 
 
 class InMemoryRpcServer(RpcServer):

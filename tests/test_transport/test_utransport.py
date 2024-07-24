@@ -23,8 +23,8 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class MyListener(UListener):
-    def on_receive(self, message):
-        super().on_receive(message)
+    async def on_receive(self, message):
+        await super().on_receive(message)
         pass
 
 
@@ -36,7 +36,7 @@ class HappyUTransport(UTransport):
         return UStatus(code=UCode.INVALID_ARGUMENT if message is None else UCode.OK)
 
     async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
-        listener.on_receive(UMessage())
+        await listener.on_receive(UMessage())
         return UStatus(code=UCode.OK)
 
     async def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):
@@ -54,7 +54,7 @@ class SadUTransport(UTransport):
         return UStatus(code=UCode.INTERNAL)
 
     async def register_listener(self, source_filter: UUri, listener: UListener, sink_filter: UUri = None) -> UStatus:
-        listener.on_receive(None)
+        await listener.on_receive(None)
         return UStatus(code=UCode.INTERNAL)
 
     async def unregister_listener(self, source_filter: UUri, listener, sink_filter: UUri = None):

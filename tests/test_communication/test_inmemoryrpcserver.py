@@ -18,6 +18,8 @@ from typing import Dict
 from unittest.mock import AsyncMock, MagicMock
 
 from tests.test_communication.mock_utransport import EchoUTransport
+from uprotocol.communication.calloptions import CallOptions
+from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.inmemoryrpcserver import InMemoryRpcServer
 from uprotocol.communication.requesthandler import RequestHandler
 from uprotocol.communication.upayload import UPayload
@@ -27,6 +29,7 @@ from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
 
@@ -136,7 +139,7 @@ class TestInMemoryRpcServer(unittest.IsolatedAsyncioTestCase):
         async def custom_send_behavior(message):
             serialized_uri = UriSerializer().serialize(message.attributes.sink)
             if serialized_uri in listeners:
-                listeners[serialized_uri].on_receive(message)
+                await listeners[serialized_uri].on_receive(message)
             return UStatus(code=UCode.OK)
 
         self.mock_transport.send = AsyncMock(side_effect=custom_send_behavior)
@@ -195,6 +198,22 @@ class TestInMemoryRpcServer(unittest.IsolatedAsyncioTestCase):
         # fake sending a request message that will trigger the handler to be called
         status = await transport.send(request)
         self.assertEqual(status.code, UCode.OK)
+
+    async def test_end_to_end_rpc_with_test_transport(self):
+        class MyRequestHandler(RequestHandler):
+            def handle_request(self, message: UMessage) -> UPayload:
+                return UPayload.pack(UUri())
+
+        handler = MyRequestHandler()
+        test_transport = EchoUTransport()
+        server = InMemoryRpcServer(test_transport)
+        method = self.create_method_uri()
+
+        self.assertEqual((await server.register_request_handler(method, handler)).code, UCode.OK)
+        rpc_client = InMemoryRpcClient(test_transport)
+        response = await rpc_client.invoke_method(method, None, CallOptions.DEFAULT)
+        self.assertIsNotNone(response)
+        self.assertEqual(response, UPayload.pack(UUri()))
 
 
 if __name__ == '__main__':

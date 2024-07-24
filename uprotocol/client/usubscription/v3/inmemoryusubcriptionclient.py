@@ -148,7 +148,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
 
         :param topic: The topic to subscribe to.
         :param listener: The listener function to be called when messages are received.
-        :param options: Optional call options to be used for the subscription.
+        :param options: Optional CallOptions used to communicate with USubscription service.
         :param handler: Optional handler function for handling subscription state changes.
         :return: An async operation that yields a SubscriptionResponse upon success or raises an exception with
                  the failure reason as UStatus. UCode.ALREADY_EXISTS will be returned if called multiple times
@@ -209,7 +209,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
 
         :param topic: The topic to unsubscribe from.
         :param listener: The listener function associated with the topic.
-        :param options: Optional call options to be used for the unsubscription.
+        :param options: Optional CallOptions used to communication with USubscription service.
         :return: An async operation that yields a UStatus indicating the result of the unsubscribe request.
         """
         if not topic:

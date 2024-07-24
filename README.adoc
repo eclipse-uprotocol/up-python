@@ -80,7 +80,7 @@ The Library is broken up into different packages that are described in <<sdk-pac
 
 | link:uprotocol/transport/README.adoc[`*transport*`]
 | https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[Transport Layer (uP-L1)]
-| Interface and data model for how to send() and receive() messages in a common way across various transport technologies (ex. zenoh, mqtt, http, etc...). the interface is implemented by transports (ex. up-transport-android-java), and the interface is then used to build the uProtocol layer 2 communication layer implementation.
+| Interface and data model for how to send() and receive() messages in a common way across various transport technologies (ex. zenoh, mqtt, http, etc...). the interface is implemented by transports (ex. up-transport-zenoh-python), and the interface is then used to build the uProtocol layer 2 communication layer implementation.
 
 | link:uprotocol/uri/README.adoc[`*uri*`]
 |

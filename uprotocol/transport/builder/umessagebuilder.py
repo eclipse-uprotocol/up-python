@@ -13,7 +13,10 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 from uprotocol.communication.upayload import UPayload
+from uprotocol.transport.validator.uattributesvalidator import UAttributesValidator
+from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.uuid.factory.uuidfactory import Factories
+from uprotocol.uuid.validator.uuidvalidator import Validators
 from uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UMessageType,
@@ -43,6 +46,9 @@ class UMessageBuilder:
         """
         if source is None:
             raise ValueError(SOURCE_ERROR)
+        # Validate the source
+        if not UriValidator.is_topic(source):
+            raise ValueError("source must be a topic.")
         return UMessageBuilder(
             source,
             Factories.UPROTOCOL.create(),
@@ -62,6 +68,9 @@ class UMessageBuilder:
             raise ValueError(SOURCE_ERROR)
         if sink is None:
             raise ValueError(SINK_ERROR)
+        # Validate the source and sink
+        if not (UriValidator.is_topic(source) and UriValidator.is_rpc_response(sink)):
+            raise ValueError("source must be a topic and sink must be a response.")
         return UMessageBuilder(
             source,
             Factories.UPROTOCOL.create(),
@@ -84,6 +93,13 @@ class UMessageBuilder:
             raise ValueError(SINK_ERROR)
         if ttl is None:
             raise ValueError(TTL_ERROR)
+        # Validate the source and sink
+        if not (UriValidator.is_rpc_method(sink) and UriValidator.is_rpc_response(source)):
+            raise ValueError("source must be a response and sink must be an rpc method.")
+        # Validate the ttl
+        if ttl <= 0:
+            raise ValueError("ttl must be greater than 0.")
+
         return (
             UMessageBuilder(
                 source,
@@ -111,6 +127,11 @@ class UMessageBuilder:
             raise ValueError(SINK_ERROR)
         if reqid is None:
             raise ValueError(REQID_ERROR)
+        # Validate the source and sink
+        if not (UriValidator.is_rpc_response(sink) and UriValidator.is_rpc_method(source)):
+            raise ValueError("sink must be a response and source must be an rpc method.")
+        if Validators.UPROTOCOL.validator().validate(reqid).code != UCode.OK:
+            raise ValueError("reqid is not a valid UUID.")
 
         return (
             UMessageBuilder(
@@ -133,6 +154,8 @@ class UMessageBuilder:
         """
         if request is None:
             raise ValueError(REQUEST_ERROR)
+        if UAttributesValidator.get_validator(request).validate(request).is_failure():
+            raise ValueError("request must contain valid request attributes.")
         return (
             UMessageBuilder(
                 request.sink,

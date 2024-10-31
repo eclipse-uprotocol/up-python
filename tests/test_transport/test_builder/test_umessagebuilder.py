@@ -28,6 +28,7 @@ from uprotocol.v1.uattributes_pb2 import (
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.uuid_pb2 import UUID
 
 
 def build_source():
@@ -36,6 +37,14 @@ def build_source():
 
 def build_sink():
     return UUri(ue_id=2, ue_version_major=1, resource_id=0)
+
+
+def build_topic():
+    return UUri(ue_id=2, ue_version_major=1, resource_id=0x8000)
+
+
+def build_method():
+    return UUri(ue_id=2, ue_version_major=1, resource_id=1)
 
 
 def get_uuid():
@@ -47,7 +56,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test Publish
         """
-        publish: UMessage = UMessageBuilder.publish(build_source()).build()
+        publish: UMessage = UMessageBuilder.publish(build_topic()).build()
         self.assertIsNotNone(publish)
         self.assertEqual(UMessageType.UMESSAGE_TYPE_PUBLISH, publish.attributes.type)
         self.assertEqual(UPriority.UPRIORITY_CS1, publish.attributes.priority)
@@ -57,7 +66,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         Test Notification
         """
         sink = build_sink()
-        notification: UMessage = UMessageBuilder.notification(build_source(), sink).build()
+        notification: UMessage = UMessageBuilder.notification(build_topic(), sink).build()
         self.assertIsNotNone(notification)
         self.assertEqual(
             UMessageType.UMESSAGE_TYPE_NOTIFICATION,
@@ -70,7 +79,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test Request
         """
-        sink = build_sink()
+        sink = build_method()
         ttl = 1000
         request: UMessage = UMessageBuilder.request(build_source(), sink, ttl).build()
         self.assertIsNotNone(request)
@@ -83,7 +92,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test Request
         """
-        sink = build_sink()
+        sink = build_method()
         ttl = 1000
         request: UMessage = (
             UMessageBuilder.request(build_source(), sink, ttl).with_priority(UPriority.UPRIORITY_CS5).build()
@@ -100,7 +109,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         sink = build_sink()
         req_id = get_uuid()
-        response: UMessage = UMessageBuilder.response(build_source(), sink, req_id).build()
+        response: UMessage = UMessageBuilder.response(build_method(), sink, req_id).build()
         self.assertIsNotNone(response)
         self.assertEqual(UMessageType.UMESSAGE_TYPE_RESPONSE, response.attributes.type)
         self.assertEqual(UPriority.UPRIORITY_CS4, response.attributes.priority)
@@ -111,7 +120,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test Response with existing request
         """
-        request: UMessage = UMessageBuilder.request(build_source(), build_sink(), 1000).build()
+        request: UMessage = UMessageBuilder.request(build_source(), build_method(), 1000).build()
         response: UMessage = UMessageBuilder.response_for_request(request.attributes).build()
         self.assertIsNotNone(response)
         self.assertEqual(UMessageType.UMESSAGE_TYPE_RESPONSE, response.attributes.type)
@@ -126,7 +135,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         Test Build
         """
         builder: UMessageBuilder = (
-            UMessageBuilder.publish(build_source())
+            UMessageBuilder.publish(build_topic())
             .with_token("test_token")
             .with_permission_level(2)
             .with_commstatus(UCode.CANCELLED)
@@ -147,7 +156,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test building UMessage with UPayload payload
         """
-        message: UMessage = UMessageBuilder.publish(build_source()).build_from_upayload(
+        message: UMessage = UMessageBuilder.publish(build_topic()).build_from_upayload(
             UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, data=build_sink().SerializeToString())
         )
         self.assertIsNotNone(message)
@@ -162,7 +171,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test building UMessage with Any payload
         """
-        message: UMessage = UMessageBuilder.publish(build_source()).build_from_upayload(
+        message: UMessage = UMessageBuilder.publish(build_topic()).build_from_upayload(
             UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, data=Any().SerializeToString())
         )
         self.assertIsNotNone(message)
@@ -179,7 +188,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         sink = build_sink()
         req_id = get_uuid()
-        response = UMessageBuilder.response(build_source(), sink, req_id).with_priority(UPriority.UPRIORITY_CS3).build()
+        response = UMessageBuilder.response(build_method(), sink, req_id).with_priority(UPriority.UPRIORITY_CS3).build()
         self.assertIsNotNone(response)
         self.assertEqual(UMessageType.UMESSAGE_TYPE_RESPONSE, response.attributes.type)
         self.assertEqual(UPriority.UPRIORITY_CS4, response.attributes.priority)
@@ -190,7 +199,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test building request with wrong priority
         """
-        sink = build_sink()
+        sink = build_method()
         ttl = 1000
         request = UMessageBuilder.request(build_source(), sink, ttl).with_priority(UPriority.UPRIORITY_CS0).build()
         self.assertIsNotNone(request)
@@ -204,7 +213,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         Test building notification with wrong priority
         """
         sink = build_sink()
-        notification = UMessageBuilder.notification(build_source(), sink).with_priority(UPriority.UPRIORITY_CS0).build()
+        notification = UMessageBuilder.notification(build_topic(), sink).with_priority(UPriority.UPRIORITY_CS0).build()
         self.assertIsNotNone(notification)
         self.assertEqual(
             UMessageType.UMESSAGE_TYPE_NOTIFICATION,
@@ -217,7 +226,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test building publish with wrong priority
         """
-        publish = UMessageBuilder.publish(build_source()).with_priority(UPriority.UPRIORITY_CS0).build()
+        publish = UMessageBuilder.publish(build_topic()).with_priority(UPriority.UPRIORITY_CS0).build()
         self.assertIsNotNone(publish)
         self.assertEqual(UMessageType.UMESSAGE_TYPE_PUBLISH, publish.attributes.type)
         self.assertEqual(UPriority.UPRIORITY_CS1, publish.attributes.priority)
@@ -226,7 +235,7 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         Test building publish with priority
         """
-        publish = UMessageBuilder.publish(build_source()).with_priority(UPriority.UPRIORITY_CS4).build()
+        publish = UMessageBuilder.publish(build_topic()).with_priority(UPriority.UPRIORITY_CS4).build()
         self.assertIsNotNone(publish)
         self.assertEqual(UMessageType.UMESSAGE_TYPE_PUBLISH, publish.attributes.type)
         self.assertEqual(UPriority.UPRIORITY_CS4, publish.attributes.priority)
@@ -293,3 +302,63 @@ class TestUMessageBuilder(unittest.IsolatedAsyncioTestCase):
         """
         with self.assertRaises(ValueError):
             UMessageBuilder.response(build_source(), build_sink(), None)
+
+    def test_publish_with_invalid_source(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.publish(build_source()).build()
+
+    def test_notification_with_invalid_source(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.notification(build_source(), build_sink()).build()
+
+    def test_notification_with_invalid_sink(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.notification(build_topic(), build_topic()).build()
+
+    def test_request_with_invalid_source(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_method(), build_method(), 1000).build()
+
+    def test_request_with_invalid_sink(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_source(), build_source(), 1000).build()
+
+    def test_request_with_invalid_source_and_sink(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_method(), build_source(), 1000).build()
+
+    def test_request_with_null_ttl(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_source(), build_method(), None).build()
+
+    def test_request_with_negative_ttl(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.request(build_source(), build_method(), -1).build()
+
+    def test_response_with_invalid_source(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_sink(), build_sink(), Factories.UPROTOCOL.create()).build()
+
+    def test_response_with_invalid_sink(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_method(), build_method(), Factories.UPROTOCOL.create()).build()
+
+    def test_response_with_invalid_source_and_sink(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_source(), build_source(), Factories.UPROTOCOL.create()).build()
+
+    def test_response_with_null_req_id(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_method(), build_sink(), None).build()
+
+    def test_response_with_invalid_req_id(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response(build_method(), build_sink(), UUID()).build()
+
+    def test_notification_with_invalid_source_and_sink(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.notification(build_sink(), build_source()).build()
+
+    def test_response_builder_with_invalid_request_type(self):
+        with self.assertRaises(ValueError):
+            UMessageBuilder.response_for_request(UAttributes()).build()

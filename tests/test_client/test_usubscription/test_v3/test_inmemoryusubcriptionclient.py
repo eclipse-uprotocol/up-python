@@ -581,43 +581,26 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
 
         try:
             await subscriber.register_for_notifications(self.topic, handler)
-            await subscriber.unregister_for_notifications(self.topic, handler)
+            await subscriber.unregister_for_notifications(self.topic)
         except Exception as e:
             self.fail(f"Exception occurred: {e}")
 
     async def test_unregister_notification_api_topic_missing(self):
-        handler = MagicMock(spec=SubscriptionChangeHandler)
-        handler.handle_subscription_change.return_value = NotImplementedError(
-            "Unimplemented method 'handle_subscription_change'"
-        )
         self.transport.get_source.return_value = self.source
 
         subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
         self.assertIsNotNone(subscriber)
         with self.assertRaises(ValueError) as error:
-            await subscriber.unregister_for_notifications(None, handler)
+            await subscriber.unregister_for_notifications(None)
         self.assertEqual("Topic missing", str(error.exception))
 
-    async def test_unregister_notification_api_handler_missing(self):
+    async def test_unregister_notification_api_options_none(self):
         self.transport.get_source.return_value = self.source
 
         subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
         self.assertIsNotNone(subscriber)
         with self.assertRaises(ValueError) as error:
             await subscriber.unregister_for_notifications(self.topic, None)
-        self.assertEqual("Handler missing", str(error.exception))
-
-    async def test_unregister_notification_api_options_none(self):
-        handler = MagicMock(spec=SubscriptionChangeHandler)
-        handler.handle_subscription_change.return_value = NotImplementedError(
-            "Unimplemented method 'handle_subscription_change'"
-        )
-        self.transport.get_source.return_value = self.source
-
-        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, self.notifier)
-        self.assertIsNotNone(subscriber)
-        with self.assertRaises(ValueError) as error:
-            await subscriber.unregister_for_notifications(self.topic, handler, None)
         self.assertEqual("CallOptions missing", str(error.exception))
 
     async def test_register_notification_api_options_none(self):

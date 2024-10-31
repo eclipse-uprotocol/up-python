@@ -292,14 +292,11 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
 
         return notifications_response
 
-    async def unregister_for_notifications(
-        self, topic: UUri, handler: SubscriptionChangeHandler, options: Optional[CallOptions] = CallOptions.DEFAULT
-    ):
+    async def unregister_for_notifications(self, topic: UUri, options: Optional[CallOptions] = CallOptions.DEFAULT):
         """
         Unregister for subscription change notifications.
 
         :param topic: The topic to unregister for notifications.
-        :param handler: The `SubscriptionChangeHandler` to handle the subscription changes.
         :param options: The `CallOptions` to be used for the unregister request.
         :return: A `NotificationResponse` with the status of the API call to the uSubscription service,
                  or a `UStatus` with the reason for the failure. `UCode.PERMISSION_DENIED` is returned if the
@@ -307,8 +304,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
         """
         if not topic:
             raise ValueError("Topic missing")
-        if not handler:
-            raise ValueError("Handler missing")
+
         if not options:
             raise ValueError("CallOptions missing")
 

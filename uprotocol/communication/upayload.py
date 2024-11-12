@@ -21,6 +21,7 @@ import google.protobuf.message as message
 from uprotocol.v1.uattributes_pb2 import (
     UPayloadFormat,
 )
+from uprotocol.v1.umessage_pb2 import UMessage
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,20 @@ class UPayload:
         return UPayload(data, format)
 
     @staticmethod
+    def unpack_from_umessage(umsg: UMessage, clazz: Type[message.Message]) -> Optional[Type[message.Message]]:
+        """
+        Unpack a UMessage into a google.protobuf.Message.
+
+        :param umsg: The message to unpack
+        :param clazz: The class of the message to unpack
+        :return: The unpacked message or None if the message is None
+        """
+        if umsg is None:
+            return None
+
+        return UPayload.unpack_data_format(umsg.payload, umsg.attributes.payload_format, clazz)
+
+    @staticmethod
     def unpack(payload: Optional['UPayload'], clazz: Type[message.Message]) -> Optional[message.Message]:
         if payload is None:
             return None
@@ -68,7 +83,11 @@ class UPayload:
         if data is None or len(data) == 0:
             return None
         try:
-            if format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY:
+            # Default is WRAPPED_IN_ANY
+            if format in [
+                UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED,
+                UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
+            ]:
                 message = clazz()
                 any_message = any_pb2.Any()
                 any_message.ParseFromString(data)

@@ -17,6 +17,7 @@ import unittest
 
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.validator.uattributesvalidator import UAttributesValidator, Validators
+from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.v1.uattributes_pb2 import UAttributes, UMessageType, UPriority
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.uuid_pb2 import UUID
@@ -93,11 +94,17 @@ class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(str(validator), "UAttributesValidator.Response")
 
     def test_uattributes_validator_request_with_publish_validator(self):
-        message = UMessageBuilder.request(build_default_uuri(), build_topic_uuri(), 1000).build()
-
+        attributes = UAttributes(
+            source=build_default_uuri(),
+            sink=build_topic_uuri(),
+            id=Factories.UPROTOCOL.create(),
+            type=UMessageType.UMESSAGE_TYPE_REQUEST,
+            priority=UPriority.UPRIORITY_CS4,
+            ttl=1000,
+        )
         validator = Validators.PUBLISH.validator()
 
-        result = validator.validate(message.attributes)
+        result = validator.validate(attributes)
 
         self.assertFalse(result.is_success())
         self.assertEqual(str(validator), "UAttributesValidator.Publish")
@@ -144,10 +151,16 @@ class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
         )
 
     def test_uattribute_validator_request_missing_sink(self):
-        message = UMessageBuilder.request(build_default_uuri(), build_default_uuri(), 1000).build()
-
-        validator = UAttributesValidator.get_validator(message.attributes)
-        result = validator.validate(message.attributes)
+        attributes = UAttributes(
+            source=build_default_uuri(),
+            sink=build_default_uuri(),
+            id=Factories.UPROTOCOL.create(),
+            type=UMessageType.UMESSAGE_TYPE_REQUEST,
+            priority=UPriority.UPRIORITY_CS4,
+            ttl=1000,
+        )
+        validator = UAttributesValidator.get_validator(attributes)
+        result = validator.validate(attributes)
         self.assertTrue(result.is_failure())
         self.assertEqual(str(validator), "UAttributesValidator.Request")
         self.assertEqual(result.message, "Invalid Sink Uri")
@@ -212,9 +225,15 @@ class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.message, "Missing Sink")
 
     def test_uattribute_validator_notification_default_resource_id(self):
-        message = UMessageBuilder.notification(build_topic_uuri(), build_topic_uuri()).build()
-        validator = UAttributesValidator.get_validator(message.attributes)
-        result = validator.validate(message.attributes)
+        attributes = UAttributes(
+            source=build_topic_uuri(),
+            sink=build_method_uuri(),
+            id=Factories.UPROTOCOL.create(),
+            type=UMessageType.UMESSAGE_TYPE_NOTIFICATION,
+            priority=UPriority.UPRIORITY_CS1,
+        )
+        validator = UAttributesValidator.get_validator(attributes)
+        result = validator.validate(attributes)
 
         self.assertTrue(result.is_failure())
         self.assertEqual(str(validator), "UAttributesValidator.Notification")
@@ -278,10 +297,17 @@ class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.message, "Missing Sink")
 
     def test_uattribute_validator_validate_sink_response_default_resource_id(self):
-        request = UMessageBuilder.request(build_method_uuri(), build_default_uuri(), 1000).build()
-        response = UMessageBuilder.response_for_request(request.attributes).build()
-        validator = UAttributesValidator.get_validator(response.attributes)
-        result = validator.validate(response.attributes)
+        attributes = UAttributes(
+            source=build_method_uuri(),
+            sink=build_method_uuri(),
+            id=Factories.UPROTOCOL.create(),
+            type=UMessageType.UMESSAGE_TYPE_RESPONSE,
+            priority=UPriority.UPRIORITY_CS4,
+            reqid=Factories.UPROTOCOL.create(),
+        )
+
+        validator = UAttributesValidator.get_validator(attributes)
+        result = validator.validate(attributes)
 
         self.assertTrue(result.is_failure())
         self.assertEqual(str(validator), "UAttributesValidator.Response")
@@ -325,11 +351,15 @@ class TestUAttributesValidator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.message, "Invalid correlation UUID")
 
     def test_validate_priority_is_cs0(self):
-        message = UMessageBuilder.publish(build_default_uuri()).build()
-        message.attributes.priority = UPriority.UPRIORITY_CS0
+        attributes = UAttributes(
+            source=build_default_uuri(),
+            id=Factories.UPROTOCOL.create(),
+            type=UMessageType.UMESSAGE_TYPE_PUBLISH,
+            priority=UPriority.UPRIORITY_CS0,
+        )
 
-        validator = UAttributesValidator.get_validator(message.attributes)
-        result = validator.validate(message.attributes)
+        validator = UAttributesValidator.get_validator(attributes)
+        result = validator.validate(attributes)
 
         self.assertTrue(result.is_failure())
         self.assertEqual(str(validator), "UAttributesValidator.Publish")

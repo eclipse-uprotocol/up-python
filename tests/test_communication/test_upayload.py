@@ -42,6 +42,7 @@ class TestUPayload(unittest.TestCase):
         self.assertTrue(UPayload.is_empty(None))
 
     def test_unpacking_a_upayload_calling_unpack_with_null(self):
+        self.assertFalse(isinstance(UPayload.unpack_from_umessage(None, UUri), message.Message))
         self.assertFalse(isinstance(UPayload.unpack(None, UUri), message.Message))
         self.assertFalse(isinstance(UPayload.unpack(UPayload.pack(None), UUri), message.Message))
 
@@ -112,6 +113,14 @@ class TestUPayload(unittest.TestCase):
         uri = UUri(authority_name="Neelam")
         payload = UPayload.pack_to_any(uri)
         self.assertEqual(payload.__hash__(), payload.__hash__())
+
+    def test_unpack_passing_a_valid_umessage(self):
+        uri = UUri(authority_name="Neelam")
+        payload = UPayload.pack_to_any(uri)
+        umsg = UMessage(payload=payload.data)
+        unpacked = UPayload.unpack_from_umessage(umsg, UUri)
+        self.assertTrue(isinstance(unpacked, message.Message))
+        self.assertEqual(uri, unpacked)
 
 
 if __name__ == '__main__':

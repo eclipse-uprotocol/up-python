@@ -26,7 +26,7 @@ from uprotocol.v1.ustatus_pb2 import UStatus
 class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.transport = MagicMock(spec=UTransport)
-        self.topic = UUri(authority_name="neelam", ue_id=3, ue_version_major=1, resource_id=2)
+        self.topic = UUri(authority_name="neelam", ue_id=3, ue_version_major=1, resource_id=0x8000)
 
     async def test_send_publish(self):
         self.transport.send.return_value = UStatus(code=UCode.OK)

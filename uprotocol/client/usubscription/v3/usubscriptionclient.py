@@ -127,13 +127,12 @@ class USubscriptionClient(ABC):
 
     @abstractmethod
     async def unregister_for_notifications(
-        self, topic: UUri, handler: SubscriptionChangeHandler, options: Optional[CallOptions] = CallOptions.DEFAULT
+        self, topic: UUri, options: Optional[CallOptions] = CallOptions.DEFAULT
     ) -> NotificationsResponse:
         """
         Unregister for subscription change notifications.
 
         :param topic: The topic to unregister for notifications.
-        :param handler: The SubscriptionChangeHandler to be unregistered.
         :param options: The CallOptions to be used for the request. Default is CallOptions.DEFAULT.
 
         :return: Returns NotificationsResponse completed successfully with the status of the API call to

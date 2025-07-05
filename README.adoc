@@ -44,7 +44,7 @@ git submodule update --init --recursive
 +
 [source]
 ----
-python scripts/generate_proto.py
+python generate_proto.py
 ----
 This script will compile the `up-spec` protos locally and generate Python proto files under the appropriate package folders for local use in your environment.
 

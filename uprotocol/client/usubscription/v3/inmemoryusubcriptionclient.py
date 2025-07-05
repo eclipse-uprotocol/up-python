@@ -14,6 +14,7 @@ SPDX-License-Identifier: Apache-2.0
 from typing import Optional
 
 from uprotocol.client.usubscription.v3.subscriptionchangehandler import SubscriptionChangeHandler
+from uprotocol.client.usubscription.v3.usubscriptionclient import USubscriptionClient
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.rpcmapper import RpcMapper
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
@@ -26,7 +27,7 @@ from uprotocol.v1 import ustatus_pb2 as UStatusModule
 from uprotocol.v1 import uri_pb2 as UUri
 
 
-class InMemoryUSubscriptionClient:
+class InMemoryUSubscriptionClient(USubscriptionClient):
     def __init__(self, transport: UTransport, rpc_client: InMemoryRpcClient):
         self.transport = transport
         self.rpc_client = rpc_client
@@ -47,7 +48,8 @@ class InMemoryUSubscriptionClient:
         if not self.is_listener_registered and self.notifier:
             status = await self.notifier.register_notification_listener(self.notification_uri, self.notification_handler)
             if status.code != UCode.OK:
-                raise UStatusError(status.code, "Failed to register notification listener")
+                raise UStatusError(status, "Failed to register notification listener")
+
             self.is_listener_registered = True
 
         request = usubscription_pb2.SubscriptionRequest(topic=topic)
@@ -131,3 +133,15 @@ class InMemoryUSubscriptionClient:
             usubscription_pb2.FetchSubscriptionsResponse
         )
         return response
+    
+    async def unregister_listener(self, topic: UUri, listener: UListener) -> UStatusModule.UStatus:
+        """
+        Unregisters a listener and removes any registered SubscriptionChangeHandler for the topic.
+        """
+        if not topic:
+            raise ValueError("Unsubscribe topic missing")
+        if not listener:
+            raise ValueError("Request listener missing")
+        status = await self.transport.unregister_listener(topic, listener)
+        return status
+

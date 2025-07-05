@@ -62,6 +62,164 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.status.state, SubscriptionStatus.State.SUBSCRIBED)
         self.rpc_client.invoke_method.assert_called_once()
 
+    async def test_subscribe_missing_topic_raises_valueerror(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.subscribe(None, self.listener)
+        self.assertEqual(str(cm.exception), "Subscribe topic missing")
+
+    async def test_subscribe_missing_listener_raises_valueerror(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.subscribe(self.topic, None)
+        self.assertEqual(str(cm.exception), "Request listener missing")
+
+    async def test_subscribe_missing_options_raises_valueerror(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.subscribe(self.topic, self.listener, options=None)
+        self.assertEqual(str(cm.exception), "CallOptions missing")
+
+    async def test_unsubscribe_raises_when_topic_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.unsubscribe(None, self.listener)
+        self.assertEqual(str(cm.exception), "Unsubscribe topic missing")
+
+    async def test_unsubscribe_raises_when_listener_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.unsubscribe(self.topic, None)
+        self.assertEqual(str(cm.exception), "Listener missing")
+
+    async def test_unsubscribe_raises_when_options_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.unsubscribe(self.topic, self.listener, options=None)
+        self.assertEqual(str(cm.exception), "CallOptions missing")
+
+    async def test_register_for_notifications_raises_when_topic_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        class DummyHandler(SubscriptionChangeHandler):
+            async def handle_subscription_change(self, topic, status): pass
+        handler = DummyHandler()
+        with self.assertRaises(ValueError) as cm:
+            await client.register_for_notifications(None, handler)
+        self.assertEqual(str(cm.exception), "Topic missing")
+
+    async def test_register_for_notifications_raises_when_handler_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.register_for_notifications(self.topic, None)
+        self.assertEqual(str(cm.exception), "Handler missing")
+
+    async def test_register_for_notifications_raises_when_options_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        class DummyHandler(SubscriptionChangeHandler):
+            async def handle_subscription_change(self, topic, status): pass
+        handler = DummyHandler()
+        with self.assertRaises(ValueError) as cm:
+            await client.register_for_notifications(self.topic, handler, options=None)
+        self.assertEqual(str(cm.exception), "CallOptions missing")
+
+    async def test_unregister_for_notifications_raises_when_topic_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        class DummyHandler(SubscriptionChangeHandler):
+            async def handle_subscription_change(self, topic, status): pass
+        handler = DummyHandler()
+        with self.assertRaises(ValueError) as cm:
+            await client.unregister_for_notifications(None, handler)
+        self.assertEqual(str(cm.exception), "Topic missing")
+
+    async def test_unregister_for_notifications_raises_when_handler_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.unregister_for_notifications(self.topic, None)
+        self.assertEqual(str(cm.exception), "Handler missing")
+
+    async def test_unregister_for_notifications_raises_when_options_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        class DummyHandler(SubscriptionChangeHandler):
+            async def handle_subscription_change(self, topic, status): pass
+        handler = DummyHandler()
+        with self.assertRaises(ValueError) as cm:
+            await client.unregister_for_notifications(self.topic, handler, options=None)
+        self.assertEqual(str(cm.exception), "CallOptions missing")
+
+    async def test_fetch_subscribers_raises_when_topic_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.fetch_subscribers(None)
+        self.assertEqual(str(cm.exception), "Topic missing")
+
+    async def test_fetch_subscribers_raises_when_options_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.fetch_subscribers(self.topic, options=None)
+        self.assertEqual(str(cm.exception), "CallOptions missing")
+
+    async def test_fetch_subscriptions_raises_when_request_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.fetch_subscriptions(None)
+        self.assertEqual(str(cm.exception), "Request missing")
+
+    async def test_fetch_subscriptions_raises_when_options_missing(self):
+        request = FetchSubscriptionsRequest(topic=self.topic)
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.fetch_subscriptions(request, options=None)
+        self.assertEqual(str(cm.exception), "CallOptions missing")
+
+    async def test_subscribe_listener_registration_failure_raises_ustatuserror(self):
+        # simulate self.notifier present
+        class DummyNotifier:
+            async def register_notification_listener(self, uri, handler):
+                return UStatus(code=UCode.INTERNAL)
+
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        client.notifier = DummyNotifier()
+        client.notification_uri = self.topic
+        client.notification_handler = MagicMock()
+
+        # rpc_client.invoke_method needs to return something valid to bypass later call
+        async def coro_response(*args, **kwargs):
+            return SubscriptionResponse(
+                topic=self.topic,
+                status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED)
+            )
+
+        self.rpc_client.invoke_method.side_effect = coro_response
+
+        with self.assertRaises(UStatusError) as cm:
+            await client.subscribe(self.topic, self.listener)
+
+        self.assertEqual(cm.exception.status.code, UCode.INTERNAL)
+
+    async def test_subscribe_listener_registration_success_sets_flag(self):
+        class DummyNotifier:
+            async def register_notification_listener(self, uri, handler):
+                return UStatus(code=UCode.OK)
+
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        client.notifier = DummyNotifier()
+        client.notification_uri = self.topic
+        client.notification_handler = MagicMock()
+
+        # rpc_client.invoke_method needs to return something valid
+        async def coro_response(*args, **kwargs):
+            return SubscriptionResponse(
+                topic=self.topic,
+                status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED)
+            )
+
+        self.rpc_client.invoke_method.side_effect = coro_response
+
+        result = await client.subscribe(self.topic, self.listener)
+        self.assertTrue(client.is_listener_registered)
+        self.assertEqual(result.status.state, SubscriptionStatus.State.SUBSCRIBED)
+
+
     async def test_subscribe_with_error(self):
         self.rpc_client.invoke_method.side_effect = UStatusError.from_code_message(
             UCode.PERMISSION_DENIED, "Denied"
@@ -156,6 +314,30 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
         response = await client.fetch_subscriptions(request)
         self.assertEqual(response, expected_response)
+
+    async def test_unregister_listener_success(self):
+        # Mock transport.unregister_listener to return a successful UStatus
+        expected_status = UStatus(code=UCode.OK)
+        self.transport.unregister_listener.return_value = expected_status
+
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        status = await client.unregister_listener(self.topic, self.listener)
+
+        self.transport.unregister_listener.assert_called_once_with(self.topic, self.listener)
+        self.assertEqual(status.code, UCode.OK)
+
+    async def test_unregister_listener_raises_when_topic_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.unregister_listener(None, self.listener)
+        self.assertEqual(str(cm.exception), "Unsubscribe topic missing")
+
+    async def test_unregister_listener_raises_when_listener_missing(self):
+        client = InMemoryUSubscriptionClient(self.transport, rpc_client=self.rpc_client)
+        with self.assertRaises(ValueError) as cm:
+            await client.unregister_listener(self.topic, None)
+        self.assertEqual(str(cm.exception), "Request listener missing")
+
 
 
 if __name__ == '__main__':

@@ -99,9 +99,9 @@ class MockUTransport(UTransport):
             return UStatus(code=UCode.OK)
         return UStatus(code=UCode.NOT_FOUND)
 
-    def close(self):
-        self.listeners.clear()
-        self.executor.shutdown()
+    async def close(self):
+        await self.listeners.clear()
+        await self.executor.shutdown()
 
 
 class TimeoutUTransport(MockUTransport, ABC):

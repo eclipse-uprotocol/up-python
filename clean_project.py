@@ -36,6 +36,16 @@ def clean_project():
         shutil.rmtree('dist')
         print("Removed dist/")
 
+    # Remove htmlcov/ directory
+    if os.path.exists('htmlcov'):
+        shutil.rmtree('htmlcov')
+        print("Removed htmlcov/")
+    
+    # Remove .pytest_cache/ directory
+    if os.path.exists('.pytest_cache'):
+        shutil.rmtree('.pytest_cache')
+        print("Removed .pytest_cache/")
+
     # Remove *.egg-info/ directories
     egg_info_directories = [d for d in os.listdir() if d.endswith('.egg-info')]
     for egg_info_directory in egg_info_directories:

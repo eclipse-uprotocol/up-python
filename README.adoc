@@ -18,14 +18,7 @@ image:https://raw.githubusercontent.com/eclipse-uprotocol/up-spec/main/up_librar
 === Prerequisites
 Before proceeding with the setup of this project, ensure that the following prerequisites are met:
 
-* Maven is installed and configured in your environment. You can verify this by running the following command in your terminal:
-[,bash]
-----
-mvn -version
-----
-If Maven is properly installed, you should see information about the Maven version and configuration. +
-
-NOTE: Ensure you are using Java 17 with your Maven installation before continuing with the next steps. Other versions of Java may not be supported.
+* python & pip is installed
 
 === Importing the Library
 
@@ -38,11 +31,11 @@ To set up SDK, follow the steps below:
 git clone https://github.com/eclipse-uprotocol/up-python.git
 ----
 
-. Execute the `pull_and_compile_protos.py` script using the following commands:
+Pull the latest up-spec as submodule and generate the protobuf:
 +
 [source]
 ----
-cd scripts
+git submodule update --init --recursive
 python pull_and_compile_protos.py
 ----
 This script automates the following tasks:
@@ -54,7 +47,7 @@ This script automates the following tasks:
 +
 [source]
 ----
-python -m pip install ../
+python -m pip install .
 ----
 
 *This will install up-python, making its classes and modules available for import in your python code.*

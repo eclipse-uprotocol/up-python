@@ -30,31 +30,37 @@ class RpcMapper:
 
     @staticmethod
     async def map_response(response_coro: Coroutine, expected_cls):
-        """
-        Map a response from invoking a method on a uTransport service into a result
-        containing the declared expected return type of the RPC method.
-
-        :param response_coro: Coroutine response from uTransport.
-        :param expected_cls: The class name of the declared expected return type of the RPC method.
-        :return: Returns the declared expected return type of the RPC method or raises an exception.
-        """
         try:
             response = await response_coro
+        except UStatusError as e:
+            raise e
         except Exception as e:
             raise RuntimeError(f"Unexpected exception: {str(e)}") from e
+
         if isinstance(response, UStatusError):
             raise response
+
         if isinstance(response, Exception):
             raise response
-        if response is not None:
-            if not response.data:
-                return expected_cls()
-            else:
-                result = UPayload.unpack(response, expected_cls)
-                if result:
-                    return result
 
-        raise RuntimeError(f"Unknown payload. Expected [{expected_cls.__name__}]")
+        if isinstance(response, UPayload):
+            result = UPayload.unpack(response, expected_cls)
+            if result is not None:
+                return result
+            else:
+                return expected_cls()
+
+        if isinstance(response, expected_cls):
+            return response
+
+        if response is None:
+            raise TypeError(f"Unknown payload. Expected [{expected_cls.__name__}]")
+
+        raise TypeError(
+            f"Expected response of type {expected_cls}, but got {type(response)}"
+        )
+
+
 
     @staticmethod
     async def map_response_to_result(response_coro: Coroutine, expected_cls) -> RpcResult:

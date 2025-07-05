@@ -23,21 +23,47 @@ SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
 
+TRACK_FILE = "generated_proto_files.txt"
 
 def clean_project():
     # Remove build/ directory
     if os.path.exists('build'):
         shutil.rmtree('build')
+        print("Removed build/")
 
     # Remove dist/ directory
     if os.path.exists('dist'):
         shutil.rmtree('dist')
+        print("Removed dist/")
 
     # Remove *.egg-info/ directories
     egg_info_directories = [d for d in os.listdir() if d.endswith('.egg-info')]
     for egg_info_directory in egg_info_directories:
         shutil.rmtree(egg_info_directory)
+        print(f"Removed {egg_info_directory}/")
 
+    # Remove generated proto files
+    if os.path.exists(TRACK_FILE):
+        with open(TRACK_FILE, "r") as f:
+            files = [line.strip() for line in f if line.strip()]
+        for file in files:
+            if os.path.exists(file):
+                os.remove(file)
+                print(f"Deleted {file}")
+            else:
+                print(f"{file} not found, skipping.")
+        os.remove(TRACK_FILE)
+        print(f"Removed {TRACK_FILE}")
+    else:
+        print(f"No {TRACK_FILE} found, skipping proto cleanup.")
+
+    # Remove __pycache__ folders recursively
+    for root, dirs, _ in os.walk('.'):
+        for d in dirs:
+            if d == "__pycache__":
+                cache_path = os.path.join(root, d)
+                shutil.rmtree(cache_path)
+                print(f"Removed {cache_path}")
 
 if __name__ == "__main__":
     clean_project()

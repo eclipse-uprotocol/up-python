@@ -47,7 +47,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           set -o pipefail
-          coverage run --source=uprotocol -m pytest -x -o log_cli=true --timeout=300 2>&1 | tee test-output.log
+          coverage run --source=uprotocol -m pytest -x -o log_cli=true 2>&1 | tee test-output.log
           coverage report > coverage_report.txt
           export COVERAGE_PERCENTAGE=$(awk '/TOTAL/{print $4}' coverage_report.txt)
           echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV

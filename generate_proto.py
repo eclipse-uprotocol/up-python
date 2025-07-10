@@ -37,14 +37,16 @@ def generate_all_protos():
                 proto_file = os.path.join(root, file)
                 print(f"Compiling {proto_file}...")
 
-                result = protoc.main([
-                    '',
-                    f'-I{PROTO_DIR}',
-                    f'-I{PROTOBUF_INCLUDE}',
-                    f'--python_out={OUTPUT_DIR}',
-                    f'--grpc_python_out={OUTPUT_DIR}',
-                    proto_file
-                ])
+                result = protoc.main(
+                    [
+                        '',
+                        f'-I{PROTO_DIR}',
+                        f'-I{PROTOBUF_INCLUDE}',
+                        f'--python_out={OUTPUT_DIR}',
+                        f'--grpc_python_out={OUTPUT_DIR}',
+                        proto_file,
+                    ]
+                )
 
                 if result != 0:
                     print(f"Failed to compile {proto_file}")

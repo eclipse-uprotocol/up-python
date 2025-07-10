@@ -25,19 +25,13 @@ import shutil
 
 TRACK_FILE = "generated_proto_files.txt"
 
+
 def clean_project():
     # Directories to remove
-    directories_to_remove = [
-        "build",
-        "dist",
-        "htmlcov",
-        ".pytest_cache"
-    ]
+    directories_to_remove = ["build", "dist", "htmlcov", ".pytest_cache"]
 
     # Add *.egg-info dynamically
-    directories_to_remove.extend([
-        d for d in os.listdir() if d.endswith('.egg-info')
-    ])
+    directories_to_remove.extend([d for d in os.listdir() if d.endswith('.egg-info')])
 
     # Remove listed directories if they exist
     for directory in directories_to_remove:

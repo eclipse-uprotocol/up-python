@@ -621,7 +621,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         topic_str = UriSerializer.serialize(self.topic)
         handlers = {topic_str: mock_handler}
         listener = MyNotificationListener(handlers)
-        update = Update(topic=self.topic, status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED)        )
+        update = Update(topic=self.topic, status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED))
         umsg = UMessageBuilder.notification(self.topic, self.source).build_from_upayload(UPayload.pack(update))
         await listener.on_receive(umsg)
         mock_handler.handle_subscription_change.assert_called_once_with(update.topic, update.status)
@@ -642,11 +642,10 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         topic_str = UriSerializer.serialize(self.topic)
         handlers = {topic_str: mock_handler}
         listener = MyNotificationListener(handlers)
-        update = Update(topic=self.topic,status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED))
+        update = Update(topic=self.topic, status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED))
         umsg = UMessageBuilder.notification(self.topic, self.source).build_from_upayload(UPayload.pack(update))
         await listener.on_receive(umsg)
         mock_handler.handle_subscription_change.assert_called_once_with(update.topic, update.status)
-
 
     async def test_register_notification_api_options_none(self):
         handler = MagicMock(spec=SubscriptionChangeHandler)

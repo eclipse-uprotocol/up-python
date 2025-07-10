@@ -59,6 +59,8 @@ def generate_all_protos():
 
     # Ensure __init__.py in all generated proto folders
     for root, dirs, _ in os.walk(OUTPUT_DIR):
+        if '.git' in root or os.path.commonpath([root, PROTO_DIR]) == PROTO_DIR:
+            continue
         init_file = os.path.join(root, '__init__.py')
         if not os.path.exists(init_file):
             open(init_file, 'a').close()

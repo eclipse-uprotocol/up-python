@@ -26,22 +26,48 @@ from config import TRACK_FILE
 
 
 def clean_project():
-    # Directories to remove
+    # -----------------------------------
+    # Remove known build and cache folders
+    # -----------------------------------
     directories_to_remove = ["build", "dist", "htmlcov", ".pytest_cache"]
-
-    # Add *.egg-info dynamically
     directories_to_remove.extend([d for d in os.listdir() if d.endswith('.egg-info')])
 
-    # Remove listed directories if they exist
     for directory in directories_to_remove:
         if os.path.exists(directory):
             shutil.rmtree(directory)
-            print(f"Removed {directory}/")
+            print(f"Removed directory: {directory}/")
 
+    # -----------------------------------
     # Remove generated proto files
+    # -----------------------------------
     if os.path.exists(TRACK_FILE):
         with open(TRACK_FILE, "r") as f:
             files = [line.strip() for line in f if line.strip()]
+
         for file in files:
-            if os.path.exists(file):
-                os.remove(file)
+            # Normalize path to avoid './' issues
+            file_path = file.lstrip("./")
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"Deleted file: {file_path}")
+            else:
+                print(f"File not found, skipping: {file_path}")
+
+        # Remove the tracking file itself
+        os.remove(TRACK_FILE)
+        print(f"Removed tracking file: {TRACK_FILE}")
+    else:
+        print(f"No {TRACK_FILE} found, skipping proto cleanup.")
+
+    # -----------------------------------
+    # Remove all __pycache__ directories
+    # -----------------------------------
+    for root, dirs, _ in os.walk("."):
+        for d in dirs:
+            if d == "__pycache__":
+                cache_path = os.path.join(root, d)
+                shutil.rmtree(cache_path)
+                print(f"Removed __pycache__: {cache_path}")
+
+if __name__ == "__main__":
+    clean_project()

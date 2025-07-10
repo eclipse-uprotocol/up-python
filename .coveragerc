@@ -1,5 +1,5 @@
 [run]
-omit = uprotocol/core/*,uprotocol/v1/*, uprotocol/uoptions_pb2.py ,uprotocol/uoptions_pb2_grpc.py ,uprotocol/cloudevent/*_pb2.py, tests/*, */__init__.py
+omit = uprotocol/core/*,uprotocol/v1/*, uprotocol/uoptions_pb2.py, uprotocol/uoptions_pb2_grpc.py, uprotocol/cloudevent/*_pb2.py, tests/*, */__init__.py
 [report]
 exclude_lines =
     pragma: no cover

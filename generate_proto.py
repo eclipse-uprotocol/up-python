@@ -1,5 +1,5 @@
 """
-SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+SPDX-FileCopyrightText: 2025 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -14,10 +14,16 @@ SPDX-License-Identifier: Apache-2.0
 
 from grpc_tools import protoc
 import os
+import google.protobuf
 
 PROTO_DIR = "up-spec/up-core-api"
 OUTPUT_DIR = "."
 TRACK_FILE = "generated_proto_files.txt"
+
+# Add google protobuf include path
+import pkg_resources
+PROTOBUF_INCLUDE = pkg_resources.resource_filename('grpc_tools', '_proto')
+
 
 def generate_all_protos():
     if not os.path.exists(OUTPUT_DIR):
@@ -33,6 +39,7 @@ def generate_all_protos():
                 result = protoc.main([
                     '',
                     f'-I{PROTO_DIR}',
+                    f'-I{PROTOBUF_INCLUDE}',   # <--- Add this
                     f'--python_out={OUTPUT_DIR}',
                     f'--grpc_python_out={OUTPUT_DIR}',
                     proto_file
@@ -41,7 +48,7 @@ def generate_all_protos():
                     print(f"Failed to compile {proto_file}")
                 else:
                     print(f"Compiled {proto_file} successfully.")
-                    
+
                     base_name = os.path.splitext(file)[0]
                     rel_dir = os.path.relpath(root, PROTO_DIR)
                     output_dir = os.path.join(OUTPUT_DIR, rel_dir)

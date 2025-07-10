@@ -13,8 +13,9 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 import os
-from grpc_tools import protoc
+
 import pkg_resources
+from grpc_tools import protoc
 
 PROTO_DIR = "up-spec/up-core-api"
 OUTPUT_DIR = "."

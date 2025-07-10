@@ -16,8 +16,8 @@ import os
 
 import pkg_resources
 from grpc_tools import protoc
-from config import PROTO_DIR, OUTPUT_DIR, TRACK_FILE
 
+from config import OUTPUT_DIR, PROTO_DIR, TRACK_FILE
 
 # Add google protobuf include path
 PROTOBUF_INCLUDE = pkg_resources.resource_filename('grpc_tools', '_proto')

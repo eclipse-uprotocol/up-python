@@ -20,7 +20,12 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
+#Input location of protofile
 PROTO_DIR = "up-spec/up-core-api"
+
+#Output location of the proto
 OUTPUT_DIR = "."
+
+#The list of generated files
 TRACK_FILE = "generated_proto_files.txt"
 

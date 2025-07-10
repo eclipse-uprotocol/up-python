@@ -1,7 +1,9 @@
 name: Python Test and Coverage
 
 on:
-  always
+  push:
+    branches:
+      - '**'
   #pull_request:
   #  branches:
   #    - main

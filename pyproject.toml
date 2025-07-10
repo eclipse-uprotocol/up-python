@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "up-python"
 version = "0.2.0-dev"
 description = "Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more."
-authors = [{ name = "Neelam Kushwah", email = "neelam.kushwah@gm.com" }]
+authors = [{ name = "Eclipse Foundation uProtocol Project", email = "uprotocol-dev@eclipse.org" }]
 license = "Apache-2.0"
 readme = { file = "README.adoc", content-type = "text/asciidoc" }
 

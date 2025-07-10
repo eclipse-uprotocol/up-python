@@ -1,9 +1,9 @@
 name: Python Test and Coverage
 
-on:
-  pull_request:
-    branches:
-      - main
+#on:
+#  pull_request:
+#    branches:
+#      - main
 
 jobs:
   test-and-coverage:

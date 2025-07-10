@@ -42,7 +42,7 @@ jobs:
 
       - name: Generate protobufs
         run: |
-          python scripts/generate_proto.py
+          python generate_proto.py
 
       - name: Run tests with coverage
         run: |

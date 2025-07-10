@@ -7,7 +7,7 @@ name = "up-python"
 version = "0.2.0-dev"
 description = "Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more."
 authors = [{ name = "Eclipse Foundation uProtocol Project", email = "uprotocol-dev@eclipse.org" }]
-license = "Apache-2.0"
+license = { file = "LICENSE" }
 readme = { file = "README.adoc", content-type = "text/asciidoc" }
 
 dependencies = [

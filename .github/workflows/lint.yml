@@ -6,7 +6,7 @@
 name: Run Linter
 
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
 
 permissions:

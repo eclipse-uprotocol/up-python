@@ -70,5 +70,6 @@ def clean_project():
                 shutil.rmtree(cache_path)
                 print(f"Removed __pycache__: {cache_path}")
 
+
 if __name__ == "__main__":
     clean_project()

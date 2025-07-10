@@ -20,28 +20,7 @@ SPDX-FileType: SOURCE
 SPDX-License-Identifier: Apache-2.0
 """
 
-import os
-import shutil
-from config import TRACK_FILE
+PROTO_DIR = "up-spec/up-core-api"
+OUTPUT_DIR = "."
+TRACK_FILE = "generated_proto_files.txt"
 
-
-def clean_project():
-    # Directories to remove
-    directories_to_remove = ["build", "dist", "htmlcov", ".pytest_cache"]
-
-    # Add *.egg-info dynamically
-    directories_to_remove.extend([d for d in os.listdir() if d.endswith('.egg-info')])
-
-    # Remove listed directories if they exist
-    for directory in directories_to_remove:
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-            print(f"Removed {directory}/")
-
-    # Remove generated proto files
-    if os.path.exists(TRACK_FILE):
-        with open(TRACK_FILE, "r") as f:
-            files = [line.strip() for line in f if line.strip()]
-        for file in files:
-            if os.path.exists(file):
-                os.remove(file)

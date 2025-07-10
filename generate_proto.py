@@ -16,10 +16,8 @@ import os
 
 import pkg_resources
 from grpc_tools import protoc
+from config import PROTO_DIR, OUTPUT_DIR, TRACK_FILE
 
-PROTO_DIR = "up-spec/up-core-api"
-OUTPUT_DIR = "."
-TRACK_FILE = "generated_proto_files.txt"
 
 # Add google protobuf include path
 PROTOBUF_INCLUDE = pkg_resources.resource_filename('grpc_tools', '_proto')

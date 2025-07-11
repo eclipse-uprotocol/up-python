@@ -32,7 +32,6 @@ from uprotocol.core.usubscription.v3.usubscription_pb2 import (
     FetchSubscriptionsResponse,
     NotificationsRequest,
     NotificationsResponse,
-    SubscriberInfo,
     SubscriptionRequest,
     SubscriptionResponse,
     SubscriptionStatus,
@@ -170,7 +169,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
                 raise UStatusError.from_code_message(status.code, "Failed to register listener for rpc client")
             self.is_listener_registered = True
 
-        request = SubscriptionRequest(topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source()))
+        request = SubscriptionRequest(topic=topic)
         # Send the subscription request and handle the response
 
         future_result = self.rpc_client.invoke_method(self.subscribe_uri, UPayload.pack(request), options)
@@ -218,10 +217,8 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
             raise ValueError("Listener missing")
         if not options:
             raise ValueError("CallOptions missing")
-        unsubscribe_request = UnsubscribeRequest(
-            topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source())
-        )
-        future_result = self.rpc_client.invoke_method(self.unsubscribe_uri, UPayload.pack(unsubscribe_request), options)
+        request = UnsubscribeRequest(topic=topic)
+        future_result = self.rpc_client.invoke_method(self.unsubscribe_uri, UPayload.pack(request), options)
 
         response = await RpcMapper.map_response_to_result(future_result, UnsubscribeResponse)
         if response.is_success():
@@ -249,12 +246,12 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
         self.handlers.pop(UriSerializer.serialize(topic), None)
         return status
 
-    def close(self):
+    async def close(self):
         """
         Close the InMemoryRpcClient by clearing stored requests and unregistering the listener.
         """
         self.handlers.clear()
-        self.notifier.unregister_notification_listener(self.notification_uri, self.notification_handler)
+        await self.notifier.unregister_notification_listener(self.notification_uri, self.notification_handler)
 
     async def register_for_notifications(
         self, topic: UUri, handler: SubscriptionChangeHandler, options: Optional[CallOptions] = CallOptions.DEFAULT
@@ -280,7 +277,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
         if not options:
             raise ValueError("CallOptions missing")
 
-        request = NotificationsRequest(topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source()))
+        request = NotificationsRequest(topic=topic)
 
         response = self.rpc_client.invoke_method(self.register_for_notification_uri, UPayload.pack(request), options)
         notifications_response = await RpcMapper.map_response(response, NotificationsResponse)
@@ -312,7 +309,7 @@ class InMemoryUSubscriptionClient(USubscriptionClient):
         if not options:
             raise ValueError("CallOptions missing")
 
-        request = NotificationsRequest(topic=topic, subscriber=SubscriberInfo(uri=self.transport.get_source()))
+        request = NotificationsRequest(topic=topic)
 
         response = self.rpc_client.invoke_method(self.unregister_for_notification_uri, UPayload.pack(request), options)
         notifications_response = await RpcMapper.map_response(response, NotificationsResponse)

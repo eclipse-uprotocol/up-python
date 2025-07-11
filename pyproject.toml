@@ -1,29 +1,33 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "up-python"
 version = "0.2.0-dev"
 description = "Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more."
-authors = ["Neelam Kushwah <neelam.kushwah@gm.com>"]
-license = "The Apache License, Version 2.0"
-readme = "README.adoc"
-repository = "https://github.com/eclipse-uprotocol/up-python"
-packages = [{ include = "uprotocol" },
-    { include = "tests" },
-    { include = "scripts" }
+authors = [{ name = "Eclipse Foundation uProtocol Project", email = "uprotocol-dev@eclipse.org" }]
+license = { file = "LICENSE" }
+readme = { file = "README.adoc", content-type = "text/asciidoc" }
 
+dependencies = [
+    "cloudevents",
+    "googleapis-common-protos>=1.56.4",
+    "protobuf>=4.24.2",
+    "grpcio>=1.60.0",
+    "grpcio-tools>=1.60.0"
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-cloudevents = "*"
-gitpython = ">=3.1.41"
-googleapis-common-protos = ">=1.56.4"
-protobuf = "4.24.2"
-pytest = ">=6.2.5"
-pytest-asyncio = ">=0.15.1"
-coverage = ">=6.5.0"
-pytest-timeout = ">=1.4.2"
+[project.urls]
+Repository = "https://github.com/eclipse-uprotocol/up-python"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.2.5",
+    "pytest-asyncio>=0.15.1",
+    "coverage>=6.5.0",
+    "pytest-timeout>=1.4.2"
+]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools.packages.find]
+include = ["uprotocol*", "tests*", "scripts*"]

@@ -18,37 +18,35 @@ image:https://raw.githubusercontent.com/eclipse-uprotocol/up-spec/main/up_librar
 === Prerequisites
 Before proceeding with the setup of this project, ensure that the following prerequisites are met:
 
-* Maven is installed and configured in your environment. You can verify this by running the following command in your terminal:
-[,bash]
-----
-mvn -version
-----
-If Maven is properly installed, you should see information about the Maven version and configuration. +
+* `git` is installed and configured in your environment.
 
-NOTE: Ensure you are using Java 17 with your Maven installation before continuing with the next steps. Other versions of Java may not be supported.
+* Python 3.8+ is installed and configured in your environment.
 
 === Importing the Library
 
 To set up SDK, follow the steps below:
 
-. Clone the code from the GitHub repository:
+. Clone the code from the GitHub repository , The repository contains the reference to up-spec main branch as the git submodule:
 +
 [source]
 ----
-git clone https://github.com/eclipse-uprotocol/up-python.git
+git clone --recurse-submodules https://github.com/eclipse-uprotocol/up-python.git
+cd up-python
 ----
-
-. Execute the `pull_and_compile_protos.py` script using the following commands:
+If you have already cloned without `--recurse-submodules`, you can initialize and update using:
 +
 [source]
 ----
-cd scripts
-python pull_and_compile_protos.py
+git submodule update --init --recursive
 ----
-This script automates the following tasks:
 
-1. **Cloning and Compilation of Protos:**
-   Clones the `up-core-api` protos from the `up-spec` repository, compiles them, and generates Python protofiles in the protos folder.
+. Generate Python proto bindings using the provided script:
++
+[source]
+----
+python generate_proto.py
+----
+This script will compile the `up-spec` protos locally and generate Python proto files under the appropriate package folders for local use in your environment.
 
 . Install up-python
 +

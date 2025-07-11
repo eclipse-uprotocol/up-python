@@ -17,8 +17,13 @@ import unittest
 from unittest.mock import AsyncMock, MagicMock
 
 from tests.test_communication.mock_utransport import MockUTransport
-from uprotocol.client.usubscription.v3.inmemoryusubcriptionclient import InMemoryUSubscriptionClient
-from uprotocol.client.usubscription.v3.subscriptionchangehandler import SubscriptionChangeHandler
+from uprotocol.client.usubscription.v3.inmemoryusubcriptionclient import (
+    InMemoryUSubscriptionClient,
+    MyNotificationListener,
+)
+from uprotocol.client.usubscription.v3.subscriptionchangehandler import (
+    SubscriptionChangeHandler,
+)
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.simplenotifier import SimpleNotifier
@@ -36,6 +41,8 @@ from uprotocol.core.usubscription.v3.usubscription_pb2 import (
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
+from uprotocol.uri.serializer.uriserializer import UriSerializer
+from uprotocol.v1 import uattributes_pb2
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
@@ -79,7 +86,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_called_once()
-        self.transport.get_source.assert_called_once()
 
     async def test_simple_mock_of_rpc_client_and_notifier_returned_subscribe_pending(self):
         response = SubscriptionResponse(
@@ -105,7 +111,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_called_once()
-        self.transport.get_source.assert_called_once()
 
     async def test_simple_mock_of_rpc_client_and_notifier_returned_unsubscribed(self):
         response = SubscriptionResponse(
@@ -131,7 +136,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_not_called()
-        self.transport.get_source.assert_called_once()
 
     async def test_subscribe_using_mock_rpc_client_and_simplernotifier_when_invokemethod_return_an_exception(self):
         self.transport.get_source.return_value = self.source
@@ -151,7 +155,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_not_called()
-        self.transport.get_source.assert_called_once()
 
     async def test_subscribe_when_register_notification_listener_return_failed_status(self):
         self.transport.get_source.return_value = self.source
@@ -185,7 +188,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_not_called()
-        self.transport.get_source.assert_called_once()
 
     async def test_subscribe_when_we_pass_a_subscription_change_notification_handler(self):
         self.transport.get_source.return_value = self.source
@@ -212,7 +214,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_called_once()
-        self.transport.get_source.assert_called_once()
 
     async def test_subscribe_when_we_try_to_subscribe_to_the_same_topic_twice_with_same_notification_handler(self):
         self.transport.get_source.return_value = self.source
@@ -240,7 +241,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(self.rpc_client.invoke_method.call_count, 2)
         self.notifier.register_notification_listener.assert_called_once()
-        self.assertEqual(self.transport.get_source.call_count, 2)
 
     async def test_subscribe_when_we_try_to_subscribe_to_the_same_topic_twice_with_different_notification_handler(self):
         self.transport.get_source.return_value = self.source
@@ -269,7 +269,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(2, self.rpc_client.invoke_method.call_count)
         self.notifier.register_notification_listener.assert_called_once()
-        self.assertEqual(self.transport.get_source.call_count, 2)
 
     async def test_unsubscribe_using_mock_rpcclient_and_simplernotifier(self):
         self.transport.get_source.return_value = self.source
@@ -284,7 +283,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         response = await subscriber.unsubscribe(self.topic, self.listener)
         self.assertEqual(response.message, "")
         self.assertEqual(response.code, UCode.OK)
-        subscriber.close()
+        await subscriber.close()
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.unregister_notification_listener.assert_called_once()
         self.transport.unregister_listener.assert_called_once()
@@ -302,7 +301,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         response = await subscriber.unsubscribe(self.topic, self.listener)
         self.assertEqual(response.message, "Operation cancelled")
         self.assertEqual(response.code, UCode.CANCELLED)
-        subscriber.close()
+        await subscriber.close()
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.unregister_notification_listener.assert_called_once()
         self.transport.unregister_listener.assert_not_called()
@@ -320,7 +319,7 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         response = await subscriber.unsubscribe(self.topic, self.listener)
         self.assertEqual(response.status.code, UCode.ABORTED)
         self.assertEqual(response.status.message, "aborted")
-        subscriber.close()
+        await subscriber.close()
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.unregister_notification_listener.assert_called_once()
         self.transport.unregister_listener.assert_called_once()
@@ -354,7 +353,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.rpc_client.invoke_method.assert_called_once()
         self.notifier.register_notification_listener.assert_called_once()
         self.transport.register_listener.assert_called_once()
-        self.transport.get_source.assert_called_once()
 
     async def test_unregister_listener_missing_topic(self):
         notifier = MagicMock(spec=SimpleNotifier)
@@ -377,11 +375,11 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
                 pass
 
         listener = MyListener()
-        notifier = MagicMock(spec=SimpleNotifier)
-        self.transport.unregister_listener.return_value = UStatus(code=UCode.OK)
-
-        subscriber = InMemoryUSubscriptionClient(self.transport, self.rpc_client, notifier)
-        # with self.assertRaises(ValueError) as context:
+        self.transport = MockUTransport()
+        subscriber = InMemoryUSubscriptionClient(self.transport)
+        # Register the listener before attempting to unregister
+        await self.transport.register_listener(self.topic, listener)
+        # Now attempt to unregister
         status = await subscriber.unregister_listener(self.topic, listener)
         self.assertEqual(UCode.OK, status.code)
 
@@ -538,7 +536,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result is not None)
 
         self.assertEqual(self.rpc_client.invoke_method.call_count, 2)
-        self.assertEqual(self.transport.get_source.call_count, 2)
 
     async def test_register_for_notifications_to_the_same_topic_twice_with_different_notification_handler(self):
         self.transport.get_source.return_value = self.source
@@ -566,7 +563,6 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("Handler already registered", context.exception.status.message)
 
         self.assertEqual(self.rpc_client.invoke_method.call_count, 2)
-        self.assertEqual(self.transport.get_source.call_count, 2)
 
     async def test_unregister_notification_api_for_the_happy_path(self):
         handler = MagicMock(spec=SubscriptionChangeHandler)
@@ -619,6 +615,37 @@ class TestInMemoryUSubscriptionClient(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError) as error:
             await subscriber.unregister_for_notifications(self.topic, handler, None)
         self.assertEqual("CallOptions missing", str(error.exception))
+
+    async def test_my_notification_listener_dispatches_correctly(self):
+        mock_handler = MagicMock(spec=SubscriptionChangeHandler)
+        topic_str = UriSerializer.serialize(self.topic)
+        handlers = {topic_str: mock_handler}
+        listener = MyNotificationListener(handlers)
+        update = Update(topic=self.topic, status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED))
+        umsg = UMessageBuilder.notification(self.topic, self.source).build_from_upayload(UPayload.pack(update))
+        await listener.on_receive(umsg)
+        mock_handler.handle_subscription_change.assert_called_once_with(update.topic, update.status)
+
+    async def test_my_notification_listener_ignores_wrong_message_type(self):
+        mock_handler = MagicMock(spec=SubscriptionChangeHandler)
+        topic_str = UriSerializer.serialize(self.topic)
+        handlers = {topic_str: mock_handler}
+        listener = MyNotificationListener(handlers)
+        umsg = UMessage()
+        umsg.attributes.type = uattributes_pb2.UMESSAGE_TYPE_REQUEST
+        await listener.on_receive(umsg)
+        mock_handler.handle_subscription_change.assert_not_called()
+
+    async def test_my_notification_listener_handles_handler_exception(self):
+        mock_handler = MagicMock(spec=SubscriptionChangeHandler)
+        mock_handler.handle_subscription_change.side_effect = RuntimeError("Simulated handler error")
+        topic_str = UriSerializer.serialize(self.topic)
+        handlers = {topic_str: mock_handler}
+        listener = MyNotificationListener(handlers)
+        update = Update(topic=self.topic, status=SubscriptionStatus(state=SubscriptionStatus.State.SUBSCRIBED))
+        umsg = UMessageBuilder.notification(self.topic, self.source).build_from_upayload(UPayload.pack(update))
+        await listener.on_receive(umsg)
+        mock_handler.handle_subscription_change.assert_called_once_with(update.topic, update.status)
 
     async def test_register_notification_api_options_none(self):
         handler = MagicMock(spec=SubscriptionChangeHandler)

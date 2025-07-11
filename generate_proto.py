@@ -40,8 +40,8 @@ def generate_all_protos():
                         '',
                         f'-I{PROTO_DIR}',
                         f'-I{PROTOBUF_INCLUDE}',
-                        f'--python_out={OUTPUT_DIR}',
-                        f'--grpc_python_out={OUTPUT_DIR}',
+                        '--python_out=.',
+                        '--grpc_python_out=.',
                         proto_file,
                     ]
                 )

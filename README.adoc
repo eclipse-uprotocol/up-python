@@ -1,6 +1,15 @@
 = Eclipse uProtocol Python Library
 :toc:
 
+[IMPORTANT,caption="ATTENTION: "]
+====
+The uProtocol core specification is continually evolving, including major and breaking changes to various aspects of the API and core services.
+In contrast to that, the Python uProtocol language library is currently *UNMAINTAINED*. The code in this repository will likely not work together with other, more up-to-date uProtocol language bindings.
+
+Please consider using the Rust uProtocol libraries, as these are by far the most advanced and best maintained uProtocol repositories.
+Should you be capable and willing to pick up up-python maintainance, we would love to welcome you in our weekly developer call! (https://eclipsesdv.org/get-involved/ - uProtocol call each Thursday afternoon (UTC))
+====
+
 == Overview
 
 This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Python defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.

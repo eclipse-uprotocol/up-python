@@ -17,6 +17,11 @@ import unittest
 from typing import Dict
 from unittest.mock import AsyncMock, MagicMock
 
+from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.umessage_pb2 import UMessage
+from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.ustatus_pb2 import UStatus
+
 from tests.test_communication.mock_utransport import EchoUTransport
 from uprotocol.communication.calloptions import CallOptions
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
@@ -28,10 +33,6 @@ from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.serializer.uriserializer import UriSerializer
-from uprotocol.v1.ucode_pb2 import UCode
-from uprotocol.v1.umessage_pb2 import UMessage
-from uprotocol.v1.uri_pb2 import UUri
-from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class TestInMemoryRpcServer(unittest.IsolatedAsyncioTestCase):

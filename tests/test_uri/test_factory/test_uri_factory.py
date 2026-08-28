@@ -15,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 
 from uprotocol.core.usubscription.v3 import usubscription_pb2
+
 from uprotocol.uri.factory.uri_factory import UriFactory
 
 

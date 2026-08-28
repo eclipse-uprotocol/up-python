@@ -15,11 +15,12 @@ SPDX-License-Identifier: Apache-2.0
 import time
 import unittest
 
-from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
-from uprotocol.transport.validator.uattributesvalidator import UAttributesValidator, Validators
 from uprotocol.v1.uattributes_pb2 import UAttributes, UMessageType, UPriority
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.uuid_pb2 import UUID
+
+from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
+from uprotocol.transport.validator.uattributesvalidator import UAttributesValidator, Validators
 
 
 def build_default_uuri():

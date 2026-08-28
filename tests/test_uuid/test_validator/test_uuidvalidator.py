@@ -15,12 +15,13 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 from datetime import datetime, timezone
 
+from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.uuid_pb2 import UUID
+
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
 from uprotocol.uuid.validator.uuidvalidator import UuidValidator, Validators
-from uprotocol.v1.ucode_pb2 import UCode
-from uprotocol.v1.uuid_pb2 import UUID
 from uprotocol.validation.validationresult import ValidationResult
 
 

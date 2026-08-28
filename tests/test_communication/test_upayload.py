@@ -15,13 +15,13 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 
 from google.protobuf import message
-
-from uprotocol.communication.upayload import UPayload
 from uprotocol.v1.uattributes_pb2 import (
     UPayloadFormat,
 )
 from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
+
+from uprotocol.communication.upayload import UPayload
 
 
 class TestUPayload(unittest.TestCase):

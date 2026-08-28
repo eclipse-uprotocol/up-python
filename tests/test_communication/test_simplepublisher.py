@@ -15,12 +15,13 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 from unittest.mock import MagicMock
 
-from uprotocol.communication.simplepublisher import SimplePublisher
-from uprotocol.communication.upayload import UPayload
-from uprotocol.transport.utransport import UTransport
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
 from uprotocol.v1.ustatus_pb2 import UStatus
+
+from uprotocol.communication.simplepublisher import SimplePublisher
+from uprotocol.communication.upayload import UPayload
+from uprotocol.transport.utransport import UTransport
 
 
 class TestSimplePublisher(unittest.IsolatedAsyncioTestCase):

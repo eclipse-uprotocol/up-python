@@ -15,10 +15,11 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 from datetime import datetime, timedelta, timezone
 
+from uprotocol.v1.uuid_pb2 import UUID
+
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
 from uprotocol.uuid.serializer.uuidserializer import UuidSerializer
-from uprotocol.v1.uuid_pb2 import UUID
 
 
 class TestUUIDFactory(unittest.IsolatedAsyncioTestCase):

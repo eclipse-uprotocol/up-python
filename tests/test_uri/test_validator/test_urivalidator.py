@@ -14,9 +14,10 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
+from uprotocol.v1.uri_pb2 import UUri
+
 from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
-from uprotocol.v1.uri_pb2 import UUri
 
 
 class TestUriValidator(unittest.IsolatedAsyncioTestCase):

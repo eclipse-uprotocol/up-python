@@ -16,6 +16,21 @@ import asyncio
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 
+from uprotocol.core.usubscription.v3.usubscription_pb2 import (
+    FetchSubscribersResponse,
+    FetchSubscriptionsRequest,
+    FetchSubscriptionsResponse,
+    SubscriptionResponse,
+    SubscriptionStatus,
+    UnsubscribeResponse,
+    Update,
+)
+from uprotocol.v1 import uattributes_pb2
+from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.umessage_pb2 import UMessage
+from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.ustatus_pb2 import UStatus
+
 from tests.test_communication.mock_utransport import MockUTransport
 from uprotocol.client.usubscription.v3.inmemoryusubcriptionclient import (
     InMemoryUSubscriptionClient,
@@ -29,24 +44,10 @@ from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.simplenotifier import SimpleNotifier
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
-from uprotocol.core.usubscription.v3.usubscription_pb2 import (
-    FetchSubscribersResponse,
-    FetchSubscriptionsRequest,
-    FetchSubscriptionsResponse,
-    SubscriptionResponse,
-    SubscriptionStatus,
-    UnsubscribeResponse,
-    Update,
-)
 from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
 from uprotocol.transport.ulistener import UListener
 from uprotocol.transport.utransport import UTransport
 from uprotocol.uri.serializer.uriserializer import UriSerializer
-from uprotocol.v1 import uattributes_pb2
-from uprotocol.v1.ucode_pb2 import UCode
-from uprotocol.v1.umessage_pb2 import UMessage
-from uprotocol.v1.uri_pb2 import UUri
-from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class MyListener(UListener):

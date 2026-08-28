@@ -14,6 +14,11 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
+from uprotocol.v1.uattributes_pb2 import UPriority
+from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.ustatus_pb2 import UStatus
+
 from tests.test_communication.mock_utransport import (
     CommStatusTransport,
     CommStatusUCodeOKTransport,
@@ -25,10 +30,6 @@ from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
 from uprotocol.transport.utransport import UTransport
-from uprotocol.v1.uattributes_pb2 import UPriority
-from uprotocol.v1.ucode_pb2 import UCode
-from uprotocol.v1.uri_pb2 import UUri
-from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class TestInMemoryRpcClient(unittest.IsolatedAsyncioTestCase):

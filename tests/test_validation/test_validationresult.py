@@ -16,6 +16,7 @@ import unittest
 
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.ustatus_pb2 import UStatus
+
 from uprotocol.validation.validationresult import ValidationResult
 
 

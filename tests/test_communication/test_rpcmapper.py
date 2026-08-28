@@ -14,14 +14,15 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
+from uprotocol.v1.ucode_pb2 import UCode
+from uprotocol.v1.uri_pb2 import UUri
+from uprotocol.v1.ustatus_pb2 import UStatus
+
 from tests.test_communication.mock_utransport import MockUTransport
 from uprotocol.communication.inmemoryrpcclient import InMemoryRpcClient
 from uprotocol.communication.rpcmapper import RpcMapper
 from uprotocol.communication.upayload import UPayload
 from uprotocol.communication.ustatuserror import UStatusError
-from uprotocol.v1.ucode_pb2 import UCode
-from uprotocol.v1.uri_pb2 import UUri
-from uprotocol.v1.ustatus_pb2 import UStatus
 
 
 class TestRpcMapper(unittest.IsolatedAsyncioTestCase):

@@ -14,11 +14,12 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.communication.calloptions import CallOptions
 from uprotocol.v1.uattributes_pb2 import (
     UPriority,
 )
 from uprotocol.v1.uri_pb2 import UUri
+
+from uprotocol.communication.calloptions import CallOptions
 
 
 class TestCallOptions(unittest.TestCase):

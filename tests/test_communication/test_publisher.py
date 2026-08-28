@@ -14,10 +14,11 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from tests.test_communication.mock_utransport import MockUTransport
-from uprotocol.communication.uclient import UClient
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.uri_pb2 import UUri
+
+from tests.test_communication.mock_utransport import MockUTransport
+from uprotocol.communication.uclient import UClient
 
 
 class TestPublisher(unittest.IsolatedAsyncioTestCase):

@@ -15,10 +15,6 @@ SPDX-License-Identifier: Apache-2.0
 import unittest
 
 from google.protobuf.any_pb2 import Any
-
-from uprotocol.communication.upayload import UPayload
-from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
-from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.v1.uattributes_pb2 import (
     UAttributes,
     UMessageType,
@@ -28,6 +24,10 @@ from uprotocol.v1.uattributes_pb2 import (
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.umessage_pb2 import UMessage
 from uprotocol.v1.uri_pb2 import UUri
+
+from uprotocol.communication.upayload import UPayload
+from uprotocol.transport.builder.umessagebuilder import UMessageBuilder
+from uprotocol.uuid.factory.uuidfactory import Factories
 
 
 def build_source():

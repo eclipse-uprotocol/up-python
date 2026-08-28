@@ -16,9 +16,10 @@ import datetime
 import time
 import unittest
 
+from uprotocol.v1.uuid_pb2 import UUID
+
 from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
-from uprotocol.v1.uuid_pb2 import UUID
 
 
 def create_id():

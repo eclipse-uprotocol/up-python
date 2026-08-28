@@ -14,9 +14,10 @@ SPDX-License-Identifier: Apache-2.0
 
 import unittest
 
-from uprotocol.communication.rpcresult import RpcResult
 from uprotocol.v1.ucode_pb2 import UCode
 from uprotocol.v1.ustatus_pb2 import UStatus
+
+from uprotocol.communication.rpcresult import RpcResult
 
 
 class TestRpcResult(unittest.TestCase):
